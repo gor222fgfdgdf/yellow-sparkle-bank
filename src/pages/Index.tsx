@@ -6,6 +6,7 @@ import StoriesBanner from "@/components/banking/StoriesBanner";
 import TransactionList, { type Transaction } from "@/components/banking/TransactionList";
 import TransferModal from "@/components/banking/TransferModal";
 import BottomNav from "@/components/banking/BottomNav";
+import CardManagement from "@/components/banking/CardManagement";
 
 const initialTransactions: Transaction[] = [
   { id: "1", name: "Uber Rides", category: "Transport", amount: 24.50, date: "Today", icon: Car },
@@ -28,6 +29,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showCardManagement, setShowCardManagement] = useState(false);
 
   const handleTransfer = (amount: number, recipient: string) => {
     setBalance((prev) => prev - amount);
@@ -63,7 +65,7 @@ const Index = () => {
         <StoriesBanner />
 
         {/* Balance Card */}
-        <BalanceCard balance={balance} />
+        <BalanceCard balance={balance} onCardSettings={() => setShowCardManagement(true)} />
 
         {/* Quick Actions */}
         <QuickActions 
@@ -90,6 +92,11 @@ const Index = () => {
         balance={balance}
         onTransfer={handleTransfer}
       />
+
+      {/* Card Management */}
+      {showCardManagement && (
+        <CardManagement onClose={() => setShowCardManagement(false)} />
+      )}
 
       {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
