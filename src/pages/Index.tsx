@@ -14,6 +14,7 @@ import PaymentsPage from "@/components/banking/PaymentsPage";
 import SupportPage from "@/components/banking/SupportPage";
 import MenuPage from "@/components/banking/MenuPage";
 import InternalTransferModal from "@/components/banking/InternalTransferModal";
+import AccountDetailModal from "@/components/banking/AccountDetailModal";
 
 const initialAccounts: Account[] = [
   { id: "1", type: "card", name: "Tinkoff Black", balance: 3670797, cardNumber: "7823", icon: CreditCard, color: "bg-primary text-primary-foreground" },
@@ -71,6 +72,7 @@ const Index = () => {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isAllTransactionsOpen, setIsAllTransactionsOpen] = useState(false);
   const [showCardManagement, setShowCardManagement] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
   const mainAccountBalance = accounts.find(a => a.id === "1")?.balance || 0;
 
@@ -145,9 +147,7 @@ const Index = () => {
   };
 
   const handleAccountClick = (account: Account) => {
-    if (account.type === "card") {
-      setShowCardManagement(true);
-    }
+    setSelectedAccount(account);
   };
 
   const renderTabContent = () => {
@@ -250,6 +250,21 @@ const Index = () => {
 
       {showCardManagement && (
         <CardManagement onClose={() => setShowCardManagement(false)} />
+      )}
+
+      {selectedAccount && (
+        <AccountDetailModal
+          isOpen={!!selectedAccount}
+          onClose={() => setSelectedAccount(null)}
+          account={selectedAccount}
+          transactions={transactions}
+          onTransfer={() => setIsInternalTransferOpen(true)}
+          onTopUp={() => setIsTopUpOpen(true)}
+          onCardSettings={() => {
+            setSelectedAccount(null);
+            setShowCardManagement(true);
+          }}
+        />
       )}
 
       {/* Bottom Navigation */}
