@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell } from "lucide-react";
-import BalanceCard from "@/components/banking/BalanceCard";
+import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet } from "lucide-react";
+import AccountsList, { type Account } from "@/components/banking/AccountsList";
 import QuickActions from "@/components/banking/QuickActions";
 import StoriesBanner from "@/components/banking/StoriesBanner";
 import TransactionList, { type Transaction } from "@/components/banking/TransactionList";
@@ -13,9 +13,16 @@ import AllTransactionsModal from "@/components/banking/AllTransactionsModal";
 import PaymentsPage from "@/components/banking/PaymentsPage";
 import SupportPage from "@/components/banking/SupportPage";
 import MenuPage from "@/components/banking/MenuPage";
+import InternalTransferModal from "@/components/banking/InternalTransferModal";
+
+const initialAccounts: Account[] = [
+  { id: "1", type: "card", name: "Tinkoff Black", balance: 3670797, cardNumber: "7823", icon: CreditCard, color: "bg-primary text-primary-foreground" },
+  { id: "2", type: "savings", name: "Накопительный счёт", balance: 850000, rate: 16, icon: PiggyBank, color: "bg-green-500 text-white" },
+  { id: "3", type: "investment", name: "Инвестиции", balance: 1250000, icon: TrendingUp, color: "bg-blue-500 text-white" },
+  { id: "4", type: "credit", name: "Кредитная карта", balance: -45000, cardNumber: "4521", icon: Wallet, color: "bg-purple-500 text-white" },
+];
 
 const initialTransactions: Transaction[] = [
-  // Декабрь 2024
   { id: "1", name: "Яндекс Такси", category: "Транспорт", amount: 890, date: "Сегодня", icon: Car },
   { id: "2", name: "Кофе Хауз", category: "Кафе", amount: 450, date: "Сегодня", icon: Coffee },
   { id: "3", name: "Зарплата", category: "Доход", amount: 500000, date: "10 дек", icon: Briefcase, isIncoming: true },
@@ -27,8 +34,6 @@ const initialTransactions: Transaction[] = [
   { id: "9", name: "Wildberries", category: "Покупки", amount: 5670, date: "4 дек", icon: ShoppingBag },
   { id: "10", name: "Перекрёсток", category: "Продукты", amount: 4120, date: "3 дек", icon: ShoppingBag },
   { id: "11", name: "МТС связь", category: "Связь", amount: 650, date: "1 дек", icon: Smartphone },
-  
-  // Ноябрь 2024
   { id: "12", name: "Аренда квартиры", category: "Жильё", amount: 45000, date: "28 ноя", icon: Home },
   { id: "13", name: "Электричество", category: "ЖКХ", amount: 2340, date: "25 ноя", icon: Zap },
   { id: "14", name: "Зарплата", category: "Доход", amount: 500000, date: "10 ноя", icon: Briefcase, isIncoming: true },
@@ -40,8 +45,6 @@ const initialTransactions: Transaction[] = [
   { id: "20", name: "World Class", category: "Спорт", amount: 4500, date: "10 ноя", icon: Dumbbell },
   { id: "21", name: "Водоснабжение", category: "ЖКХ", amount: 890, date: "5 ноя", icon: Droplets },
   { id: "22", name: "Ozon", category: "Покупки", amount: 3450, date: "3 ноя", icon: ShoppingBag },
-  
-  // Октябрь 2024
   { id: "23", name: "Аренда квартиры", category: "Жильё", amount: 45000, date: "28 окт", icon: Home },
   { id: "24", name: "Зарплата", category: "Доход", amount: 500000, date: "10 окт", icon: Briefcase, isIncoming: true },
   { id: "25", name: "Лента", category: "Продукты", amount: 6780, date: "25 окт", icon: ShoppingBag },
@@ -52,8 +55,6 @@ const initialTransactions: Transaction[] = [
   { id: "30", name: "Перевод от Ивана", category: "Переводы", amount: 15000, date: "8 окт", icon: ArrowUpRight, isIncoming: true },
   { id: "31", name: "Интернет Ростелеком", category: "Связь", amount: 750, date: "5 окт", icon: Smartphone },
   { id: "32", name: "Электричество", category: "ЖКХ", amount: 2100, date: "2 окт", icon: Zap },
-  
-  // Сентябрь 2024
   { id: "33", name: "Аренда квартиры", category: "Жильё", amount: 45000, date: "28 сен", icon: Home },
   { id: "34", name: "Зарплата", category: "Доход", amount: 500000, date: "10 сен", icon: Briefcase, isIncoming: true },
   { id: "35", name: "Яндекс Такси", category: "Транспорт", amount: 1100, date: "22 сен", icon: Car },
@@ -61,17 +62,22 @@ const initialTransactions: Transaction[] = [
 ];
 
 const Index = () => {
-  const [balance, setBalance] = useState(3670797);
+  const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [activeTab, setActiveTab] = useState("home");
   const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [isInternalTransferOpen, setIsInternalTransferOpen] = useState(false);
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isAllTransactionsOpen, setIsAllTransactionsOpen] = useState(false);
   const [showCardManagement, setShowCardManagement] = useState(false);
 
+  const mainAccountBalance = accounts.find(a => a.id === "1")?.balance || 0;
+
   const handleTransfer = (amount: number, recipient: string) => {
-    setBalance((prev) => prev - amount);
+    setAccounts(prev => prev.map(acc => 
+      acc.id === "1" ? { ...acc, balance: acc.balance - amount } : acc
+    ));
     const newTransaction: Transaction = {
       id: Date.now().toString(),
       name: `Перевод: ${recipient}`,
@@ -84,8 +90,32 @@ const Index = () => {
     setTransactions((prev) => [newTransaction, ...prev]);
   };
 
+  const handleInternalTransfer = (fromId: string, toId: string, amount: number) => {
+    setAccounts(prev => prev.map(acc => {
+      if (acc.id === fromId) return { ...acc, balance: acc.balance - amount };
+      if (acc.id === toId) return { ...acc, balance: acc.balance + amount };
+      return acc;
+    }));
+    
+    const fromAccount = accounts.find(a => a.id === fromId);
+    const toAccount = accounts.find(a => a.id === toId);
+    
+    const newTransaction: Transaction = {
+      id: Date.now().toString(),
+      name: `${fromAccount?.name} → ${toAccount?.name}`,
+      category: "Перевод между счетами",
+      amount: amount,
+      date: "Сегодня",
+      icon: ArrowUpRight,
+      isIncoming: false,
+    };
+    setTransactions((prev) => [newTransaction, ...prev]);
+  };
+
   const handleTopUp = (amount: number, method: string) => {
-    setBalance((prev) => prev + amount);
+    setAccounts(prev => prev.map(acc => 
+      acc.id === "1" ? { ...acc, balance: acc.balance + amount } : acc
+    ));
     const newTransaction: Transaction = {
       id: Date.now().toString(),
       name: `Пополнение: ${method}`,
@@ -99,7 +129,9 @@ const Index = () => {
   };
 
   const handlePayment = (amount: number, provider: string) => {
-    setBalance((prev) => prev - amount);
+    setAccounts(prev => prev.map(acc => 
+      acc.id === "1" ? { ...acc, balance: acc.balance - amount } : acc
+    ));
     const newTransaction: Transaction = {
       id: Date.now().toString(),
       name: `Оплата: ${provider}`,
@@ -110,6 +142,12 @@ const Index = () => {
       isIncoming: false,
     };
     setTransactions((prev) => [newTransaction, ...prev]);
+  };
+
+  const handleAccountClick = (account: Account) => {
+    if (account.type === "card") {
+      setShowCardManagement(true);
+    }
   };
 
   const renderTabContent = () => {
@@ -126,13 +164,17 @@ const Index = () => {
             {/* Stories Banner */}
             <StoriesBanner />
 
-            {/* Balance Card */}
-            <BalanceCard balance={balance} onCardSettings={() => setShowCardManagement(true)} />
+            {/* Accounts List */}
+            <AccountsList 
+              accounts={accounts} 
+              onAccountClick={handleAccountClick}
+              onCardSettings={() => setShowCardManagement(true)}
+            />
 
             {/* Quick Actions */}
             <QuickActions 
               onTopUpClick={() => setIsTopUpOpen(true)}
-              onTransferClick={() => setIsTransferOpen(true)} 
+              onTransferClick={() => setIsInternalTransferOpen(true)} 
               onHistoryClick={() => setIsAllTransactionsOpen(true)}
               onMoreClick={() => setIsMoreOpen(true)}
             />
@@ -178,8 +220,15 @@ const Index = () => {
       <TransferModal
         isOpen={isTransferOpen}
         onClose={() => setIsTransferOpen(false)}
-        balance={balance}
+        balance={mainAccountBalance}
         onTransfer={handleTransfer}
+      />
+
+      <InternalTransferModal
+        isOpen={isInternalTransferOpen}
+        onClose={() => setIsInternalTransferOpen(false)}
+        accounts={accounts}
+        onTransfer={handleInternalTransfer}
       />
 
       <TopUpModal
