@@ -153,7 +153,7 @@ const Index = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "payments":
-        return <PaymentsPage onPayment={handlePayment} />;
+        return <PaymentsPage onPayment={handlePayment} transactions={transactions} />;
       case "support":
         return <SupportPage />;
       case "menu":
@@ -175,23 +175,9 @@ const Index = () => {
             <QuickActions 
               onTopUpClick={() => setIsTopUpOpen(true)}
               onTransferClick={() => setIsInternalTransferOpen(true)} 
-              onHistoryClick={() => setIsAllTransactionsOpen(true)}
+              onHistoryClick={() => setActiveTab("payments")}
               onMoreClick={() => setIsMoreOpen(true)}
             />
-
-            {/* Transaction History */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between px-1">
-                <h2 className="text-lg font-bold text-foreground">Последние операции</h2>
-                <button 
-                  onClick={() => setIsAllTransactionsOpen(true)}
-                  className="text-sm font-medium text-primary hover:underline"
-                >
-                  Все
-                </button>
-              </div>
-              <TransactionList transactions={transactions.slice(0, 5)} />
-            </div>
           </>
         );
     }

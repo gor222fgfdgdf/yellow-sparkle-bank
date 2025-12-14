@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { X, Smartphone, Zap, Droplets, Wifi, Car, Home, CreditCard, Plus, Check } from "lucide-react";
+import { useState, useMemo } from "react";
+import { X, Smartphone, Zap, Droplets, Wifi, Car, Home, CreditCard, Plus, Check, ChevronDown, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import type { Transaction } from "./TransactionList";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -128,11 +129,25 @@ const PaymentModal = ({ isOpen, onClose, category, onPayment }: PaymentModalProp
 
 interface PaymentsPageProps {
   onPayment: (amount: number, provider: string) => void;
+  transactions: Transaction[];
 }
 
-const PaymentsPage = ({ onPayment }: PaymentsPageProps) => {
-  const [selectedCategory, setSelectedCategory] = useState<{ icon: any; label: string; color: string } | null>(null);
+type MonthFilter = "current" | "1month" | "2months" | "3months";
+
+const monthFilterLabels: Record<MonthFilter, string> = {
+  current: "Текущий месяц",
+  "1month": "За месяц",
+  "2months": "За 2 месяца",
+  "3months": "За 3 месяца",
+};
+
+const ITEMS_PER_PAGE = 10;
+
+const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
+  const [selectedCategory, setSelectedCategory] = useState<{ icon: LucideIcon; label: string; color: string } | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [monthFilter, setMonthFilter] = useState<MonthFilter>("current");
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
   const categories = [
     { icon: Smartphone, label: "Мобильная связь", color: "bg-blue-500/10 text-blue-600" },
@@ -145,16 +160,66 @@ const PaymentsPage = ({ onPayment }: PaymentsPageProps) => {
     { icon: Plus, label: "Ещё", color: "bg-muted text-muted-foreground" },
   ];
 
-  const recentPayments = [
-    { name: "МТС", amount: 650, date: "10 дек", category: "Мобильная связь" },
-    { name: "Мосэнергосбыт", amount: 2340, date: "8 дек", category: "Электричество" },
-    { name: "Ростелеком", amount: 750, date: "5 дек", category: "Интернет" },
-  ];
-
   const handleCategoryClick = (cat: typeof categories[0]) => {
     setSelectedCategory(cat);
     setIsPaymentModalOpen(true);
   };
+
+  const handleFilterChange = (filter: MonthFilter) => {
+    setMonthFilter(filter);
+    setVisibleCount(ITEMS_PER_PAGE);
+  };
+
+  const filteredTransactions = useMemo(() => {
+    const dateMap: Record<string, number> = {
+      "Сегодня": 0,
+      "Вчера": 1,
+    };
+    
+    const getMonthsAgo = (dateStr: string): number => {
+      if (dateStr === "Сегодня" || dateStr === "Вчера") return 0;
+      
+      const monthMap: Record<string, number> = {
+        "янв": 0, "фев": 1, "мар": 2, "апр": 3, "май": 4, "июн": 5,
+        "июл": 6, "авг": 7, "сен": 8, "окт": 9, "ноя": 10, "дек": 11,
+      };
+      
+      const parts = dateStr.split(" ");
+      if (parts.length < 2) return 0;
+      
+      const monthStr = parts[1].toLowerCase();
+      const transMonth = monthMap[monthStr] ?? 11;
+      const currentMonth = new Date().getMonth();
+      
+      let diff = currentMonth - transMonth;
+      if (diff < 0) diff += 12;
+      return diff;
+    };
+
+    const maxMonths = monthFilter === "current" ? 0 : 
+                      monthFilter === "1month" ? 1 : 
+                      monthFilter === "2months" ? 2 : 3;
+
+    return transactions.filter(t => getMonthsAgo(t.date) <= maxMonths);
+  }, [transactions, monthFilter]);
+
+  const visibleTransactions = filteredTransactions.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredTransactions.length;
+
+  const loadMore = () => {
+    setVisibleCount(prev => prev + ITEMS_PER_PAGE);
+  };
+
+  const groupTransactionsByDate = (txns: Transaction[]) => {
+    const groups: Record<string, Transaction[]> = {};
+    txns.forEach(t => {
+      if (!groups[t.date]) groups[t.date] = [];
+      groups[t.date].push(t);
+    });
+    return groups;
+  };
+
+  const groupedTransactions = groupTransactionsByDate(visibleTransactions);
 
   return (
     <div className="space-y-6">
@@ -176,27 +241,69 @@ const PaymentsPage = ({ onPayment }: PaymentsPageProps) => {
         ))}
       </div>
 
-      {/* Recent Payments */}
+      {/* Transaction History */}
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-foreground px-1">Последние платежи</h3>
-        <div className="bg-card rounded-2xl divide-y divide-border">
-          {recentPayments.map((payment, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                const cat = categories.find(c => c.label === payment.category);
-                if (cat) handleCategoryClick(cat);
-              }}
-              className="w-full flex items-center justify-between p-4 hover:bg-muted transition-colors text-left"
-            >
-              <div>
-                <p className="font-medium text-foreground">{payment.name}</p>
-                <p className="text-sm text-muted-foreground">{payment.date}</p>
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-lg font-bold text-foreground">История операций</h3>
+          <select
+            value={monthFilter}
+            onChange={(e) => handleFilterChange(e.target.value as MonthFilter)}
+            className="text-sm font-medium text-primary bg-transparent border-none cursor-pointer focus:outline-none"
+          >
+            {Object.entries(monthFilterLabels).map(([key, label]) => (
+              <option key={key} value={key}>{label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="bg-card rounded-2xl divide-y divide-border overflow-hidden">
+          {Object.entries(groupedTransactions).map(([date, txns]) => (
+            <div key={date}>
+              <div className="px-4 py-2 bg-muted/50">
+                <span className="text-sm font-medium text-muted-foreground">{date}</span>
               </div>
-              <span className="font-semibold text-foreground">{formatCurrency(payment.amount)} ₽</span>
-            </button>
+              {txns.map((transaction) => {
+                const IconComponent = transaction.icon;
+                return (
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                        <IconComponent className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">{transaction.name}</p>
+                        <p className="text-sm text-muted-foreground">{transaction.category}</p>
+                      </div>
+                    </div>
+                    <span className={`font-semibold ${transaction.isIncoming ? "text-green-600" : "text-foreground"}`}>
+                      {transaction.isIncoming ? "+" : "-"}{formatCurrency(transaction.amount)} ₽
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           ))}
         </div>
+
+        {hasMore && (
+          <Button
+            variant="ghost"
+            onClick={loadMore}
+            className="w-full flex items-center justify-center gap-2"
+          >
+            <ChevronDown className="w-4 h-4" />
+            Загрузить ещё
+          </Button>
+        )}
+
+        {filteredTransactions.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            Нет операций за выбранный период
+          </div>
+        )}
       </div>
 
       <PaymentModal
