@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
-import { X, Smartphone, Zap, Droplets, Wifi, Car, Home, CreditCard, Plus, Check, ChevronDown, type LucideIcon } from "lucide-react";
+import { X, Smartphone, Zap, Droplets, Wifi, Car, Home, CreditCard, Plus, Check, ChevronDown, type LucideIcon, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Transaction } from "./TransactionList";
+import AnalyticsSection from "./AnalyticsSection";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -148,7 +149,7 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [monthFilter, setMonthFilter] = useState<MonthFilter>("current");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const categories = [
     { icon: Smartphone, label: "Мобильная связь", color: "bg-blue-500/10 text-blue-600" },
     { icon: Zap, label: "Электричество", color: "bg-yellow-500/10 text-yellow-600" },
@@ -223,23 +224,48 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-bold text-foreground px-1">Оплата услуг</h2>
-      
-      {/* Categories Grid */}
-      <div className="grid grid-cols-4 gap-4">
-        {categories.map((cat) => (
-          <button
-            key={cat.label}
-            onClick={() => handleCategoryClick(cat)}
-            className="flex flex-col items-center gap-2 group"
-          >
-            <div className={`w-14 h-14 rounded-2xl ${cat.color} flex items-center justify-center group-hover:scale-105 transition-transform`}>
-              <cat.icon className="w-6 h-6" />
-            </div>
-            <span className="text-xs font-medium text-foreground text-center">{cat.label}</span>
-          </button>
-        ))}
+      {/* Tab Toggle */}
+      <div className="flex gap-2 p-1 bg-muted rounded-xl">
+        <button
+          onClick={() => setShowAnalytics(false)}
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+            !showAnalytics ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          Платежи
+        </button>
+        <button
+          onClick={() => setShowAnalytics(true)}
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+            showAnalytics ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          Аналитика
+        </button>
       </div>
+
+      {showAnalytics ? (
+        <AnalyticsSection transactions={transactions} />
+      ) : (
+        <>
+          <h2 className="text-lg font-bold text-foreground px-1">Оплата услуг</h2>
+          
+          {/* Categories Grid */}
+          <div className="grid grid-cols-4 gap-4">
+            {categories.map((cat) => (
+              <button
+                key={cat.label}
+                onClick={() => handleCategoryClick(cat)}
+                className="flex flex-col items-center gap-2 group"
+              >
+                <div className={`w-14 h-14 rounded-2xl ${cat.color} flex items-center justify-center group-hover:scale-105 transition-transform`}>
+                  <cat.icon className="w-6 h-6" />
+                </div>
+                <span className="text-xs font-medium text-foreground text-center">{cat.label}</span>
+              </button>
+            ))}
+          </div>
 
       {/* Transaction History */}
       <div className="space-y-4">
@@ -299,12 +325,14 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
           </Button>
         )}
 
-        {filteredTransactions.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            Нет операций за выбранный период
-          </div>
-        )}
-      </div>
+          {filteredTransactions.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              Нет операций за выбранный период
+            </div>
+          )}
+        </div>
+        </>
+      )}
 
       <PaymentModal
         isOpen={isPaymentModalOpen}
