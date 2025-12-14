@@ -66,11 +66,24 @@ const Index = () => {
     };
     setTransactions((prev) => [newTransaction, ...prev]);
   };
+  const handlePayment = (amount: number, provider: string) => {
+    setBalance((prev) => prev - amount);
+    const newTransaction: Transaction = {
+      id: Date.now().toString(),
+      name: `Payment to ${provider}`,
+      category: "Payment",
+      amount: amount,
+      date: "Today",
+      icon: ArrowUpRight,
+      isIncoming: false,
+    };
+    setTransactions((prev) => [newTransaction, ...prev]);
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "payments":
-        return <PaymentsPage />;
+        return <PaymentsPage onPayment={handlePayment} />;
       case "support":
         return <SupportPage />;
       case "menu":
