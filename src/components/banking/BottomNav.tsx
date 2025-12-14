@@ -7,10 +7,10 @@ interface BottomNavProps {
 
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   const tabs = [
-    { id: "home", icon: Home, label: "Home" },
-    { id: "payments", icon: CreditCard, label: "Payments" },
-    { id: "support", icon: MessageCircle, label: "Support" },
-    { id: "menu", icon: Menu, label: "Menu" },
+    { id: "home", icon: Home, label: "Главная" },
+    { id: "payments", icon: CreditCard, label: "Платежи" },
+    { id: "support", icon: MessageCircle, label: "Чат" },
+    { id: "menu", icon: Menu, label: "Меню" },
   ];
 
   return (

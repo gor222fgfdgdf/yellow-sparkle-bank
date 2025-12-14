@@ -21,66 +21,66 @@ const stories: Story[] = [
   { 
     id: 1, 
     icon: Percent, 
-    title: "Cashback 5%", 
-    subtitle: "On groceries", 
+    title: "Кэшбэк 5%", 
+    subtitle: "На продукты", 
     gradient: "from-primary to-amber-400",
     content: {
-      heading: "5% Cashback on Groceries!",
-      description: "Get 5% back on all grocery purchases this month. No limits!",
-      cta: "Activate Now",
-      details: ["Valid until Dec 31", "All grocery stores included", "Max $50 cashback per month"],
+      heading: "5% кэшбэк на продукты!",
+      description: "Получайте 5% возврата со всех покупок в супермаркетах в этом месяце.",
+      cta: "Активировать",
+      details: ["Действует до 31 декабря", "Все супермаркеты", "Максимум 3 000 ₽ в месяц"],
     }
   },
   { 
     id: 2, 
     icon: Crown, 
     title: "Premium", 
-    subtitle: "Upgrade now", 
+    subtitle: "Подключить", 
     gradient: "from-foreground to-neutral-600",
     content: {
-      heading: "Upgrade to Premium",
-      description: "Unlock exclusive benefits with our Premium account.",
-      cta: "Upgrade for $9.99/mo",
-      details: ["No foreign transaction fees", "Priority customer support", "Exclusive rewards"],
+      heading: "Тинькофф Premium",
+      description: "Получите эксклюзивные привилегии с премиальным обслуживанием.",
+      cta: "Подключить за 990 ₽/мес",
+      details: ["Повышенный кэшбэк до 10%", "Приоритетная поддержка", "Бесплатные переводы"],
     }
   },
   { 
     id: 3, 
     icon: Gift, 
-    title: "Invite", 
-    subtitle: "Get $50", 
+    title: "Пригласи", 
+    subtitle: "Получи 1000 ₽", 
     gradient: "from-emerald-500 to-teal-400",
     content: {
-      heading: "Invite Friends, Get $50",
-      description: "Share your referral code and earn $50 for each friend who joins.",
-      cta: "Share Code",
-      details: ["Unlimited referrals", "Friends get $25 too", "Credited within 24 hours"],
+      heading: "Приведи друга — получи 1000 ₽",
+      description: "Поделитесь кодом приглашения и получите бонус за каждого друга.",
+      cta: "Поделиться",
+      details: ["Без ограничений по количеству", "Друг тоже получит 500 ₽", "Начисление в течение 24 часов"],
     }
   },
   { 
     id: 4, 
     icon: Zap, 
-    title: "Instant", 
-    subtitle: "Transfers", 
+    title: "СБП", 
+    subtitle: "Мгновенно", 
     gradient: "from-primary to-orange-400",
     content: {
-      heading: "Instant Transfers",
-      description: "Send money instantly to any bank account, 24/7.",
-      cta: "Try Now",
-      details: ["Arrives in seconds", "Free for Premium", "Available to all banks"],
+      heading: "Переводы через СБП",
+      description: "Мгновенные бесплатные переводы по номеру телефона в любой банк.",
+      cta: "Перевести",
+      details: ["Моментальное зачисление", "Бесплатно до 100 000 ₽/мес", "В любой банк России"],
     }
   },
   { 
     id: 5, 
     icon: Plane, 
-    title: "Travel", 
-    subtitle: "Miles bonus", 
+    title: "Путешествия", 
+    subtitle: "Мили x2", 
     gradient: "from-sky-500 to-blue-400",
     content: {
-      heading: "Earn 2X Travel Miles",
-      description: "Double miles on all travel purchases this holiday season.",
-      cta: "Learn More",
-      details: ["Hotels, flights, car rentals", "No expiration on miles", "Redeem for any airline"],
+      heading: "Двойные мили за путешествия",
+      description: "Получайте х2 мили за все покупки связанные с путешествиями.",
+      cta: "Подробнее",
+      details: ["Отели, авиабилеты, ж/д", "Мили не сгорают", "Обмен на любые авиакомпании"],
     }
   },
 ];
@@ -95,8 +95,8 @@ const StoriesBanner = () => {
 
   const handleCTA = (story: Story) => {
     toast({ 
-      title: "Success!", 
-      description: `${story.content.cta} activated for ${story.title}` 
+      title: "Готово!", 
+      description: `${story.content.cta} — ${story.title}` 
     });
     setSelectedStory(null);
   };

@@ -7,6 +7,10 @@ interface AllTransactionsModalProps {
   transactions: Transaction[];
 }
 
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("ru-RU").format(value);
+};
+
 const AllTransactionsModal = ({ isOpen, onClose, transactions }: AllTransactionsModalProps) => {
   if (!isOpen) return null;
 
@@ -16,7 +20,7 @@ const AllTransactionsModal = ({ isOpen, onClose, transactions }: AllTransactions
         {/* Header */}
         <div className="sticky top-0 bg-background border-b border-border p-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-foreground">All Transactions</h2>
+            <h2 className="text-xl font-bold text-foreground">Все операции</h2>
             <button
               onClick={onClose}
               className="p-2 rounded-full hover:bg-muted transition-colors"
@@ -31,7 +35,7 @@ const AllTransactionsModal = ({ isOpen, onClose, transactions }: AllTransactions
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search transactions..."
+                placeholder="Поиск операций..."
                 className="w-full pl-10 pr-4 py-3 bg-muted rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
               />
             </div>
@@ -60,7 +64,7 @@ const AllTransactionsModal = ({ isOpen, onClose, transactions }: AllTransactions
                 <span className={`font-semibold whitespace-nowrap ${
                   transaction.isIncoming ? "text-green-600" : "text-foreground"
                 }`}>
-                  {transaction.isIncoming ? "+" : "-"}${transaction.amount.toFixed(2)}
+                  {transaction.isIncoming ? "+" : "-"}{formatCurrency(transaction.amount)} ₽
                 </span>
               </div>
             );
