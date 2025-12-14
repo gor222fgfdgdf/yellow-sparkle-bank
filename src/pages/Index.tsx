@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Car, Coffee, Apple, ShoppingBag, Tv, Utensils, Fuel, Music } from "lucide-react";
+import { Car, Coffee, Apple, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight } from "lucide-react";
 import BalanceCard from "@/components/banking/BalanceCard";
 import QuickActions from "@/components/banking/QuickActions";
 import StoriesBanner from "@/components/banking/StoriesBanner";
@@ -7,11 +7,17 @@ import TransactionList, { type Transaction } from "@/components/banking/Transact
 import TransferModal from "@/components/banking/TransferModal";
 import BottomNav from "@/components/banking/BottomNav";
 import CardManagement from "@/components/banking/CardManagement";
+import TopUpModal from "@/components/banking/TopUpModal";
+import MoreActionsSheet from "@/components/banking/MoreActionsSheet";
+import AllTransactionsModal from "@/components/banking/AllTransactionsModal";
+import PaymentsPage from "@/components/banking/PaymentsPage";
+import SupportPage from "@/components/banking/SupportPage";
+import MenuPage from "@/components/banking/MenuPage";
 
 const initialTransactions: Transaction[] = [
   { id: "1", name: "Uber Rides", category: "Transport", amount: 24.50, date: "Today", icon: Car },
   { id: "2", name: "Starbucks", category: "Food & Drinks", amount: 6.75, date: "Today", icon: Coffee },
-  { id: "3", name: "Salary Deposit", category: "Income", amount: 2000, date: "Today", icon: ShoppingBag, isIncoming: true },
+  { id: "3", name: "Salary Deposit", category: "Income", amount: 2000, date: "Today", icon: ArrowUpRight, isIncoming: true },
   { id: "4", name: "Apple Services", category: "Subscription", amount: 14.99, date: "Yesterday", icon: Apple },
   { id: "5", name: "Whole Foods", category: "Groceries", amount: 87.32, date: "Yesterday", icon: ShoppingBag },
   { id: "6", name: "Netflix", category: "Entertainment", amount: 15.99, date: "Yesterday", icon: Tv },
@@ -19,7 +25,7 @@ const initialTransactions: Transaction[] = [
   { id: "8", name: "Shell Gas", category: "Transport", amount: 45.00, date: "Dec 12", icon: Fuel },
   { id: "9", name: "Spotify", category: "Subscription", amount: 9.99, date: "Dec 11", icon: Music },
   { id: "10", name: "Amazon", category: "Shopping", amount: 156.78, date: "Dec 11", icon: ShoppingBag },
-  { id: "11", name: "Transfer from John", category: "Transfer", amount: 250, date: "Dec 10", icon: ShoppingBag, isIncoming: true },
+  { id: "11", name: "Transfer from John", category: "Transfer", amount: 250, date: "Dec 10", icon: ArrowUpRight, isIncoming: true },
   { id: "12", name: "Chipotle", category: "Food & Drinks", amount: 18.50, date: "Dec 10", icon: Utensils },
 ];
 
@@ -28,7 +34,9 @@ const Index = () => {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [activeTab, setActiveTab] = useState("home");
   const [isTransferOpen, setIsTransferOpen] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isAllTransactionsOpen, setIsAllTransactionsOpen] = useState(false);
   const [showCardManagement, setShowCardManagement] = useState(false);
 
   const handleTransfer = (amount: number, recipient: string) => {
@@ -39,10 +47,67 @@ const Index = () => {
       category: "Transfer",
       amount: amount,
       date: "Today",
-      icon: ShoppingBag,
+      icon: ArrowUpRight,
       isIncoming: false,
     };
     setTransactions((prev) => [newTransaction, ...prev]);
+  };
+
+  const handleTopUp = (amount: number, method: string) => {
+    setBalance((prev) => prev + amount);
+    const newTransaction: Transaction = {
+      id: Date.now().toString(),
+      name: `Top Up via ${method}`,
+      category: "Top Up",
+      amount: amount,
+      date: "Today",
+      icon: ArrowUpRight,
+      isIncoming: true,
+    };
+    setTransactions((prev) => [newTransaction, ...prev]);
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "payments":
+        return <PaymentsPage />;
+      case "support":
+        return <SupportPage />;
+      case "menu":
+        return <MenuPage onOpenCardManagement={() => setShowCardManagement(true)} />;
+      default:
+        return (
+          <>
+            {/* Stories Banner */}
+            <StoriesBanner />
+
+            {/* Balance Card */}
+            <BalanceCard balance={balance} onCardSettings={() => setShowCardManagement(true)} />
+
+            {/* Quick Actions */}
+            <QuickActions 
+              onTopUpClick={() => setIsTopUpOpen(true)}
+              onTransferClick={() => setIsTransferOpen(true)} 
+              onHistoryClick={() => setIsAllTransactionsOpen(true)}
+              onMoreClick={() => setIsMoreOpen(true)}
+            />
+
+            {/* Transaction History */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-1">
+                <h2 className="text-lg font-bold text-foreground">Recent Transactions</h2>
+                <button 
+                  onClick={() => setIsAllTransactionsOpen(true)}
+                  className="text-sm font-medium text-primary hover:underline"
+                >
+                  See All
+                </button>
+              </div>
+              <TransactionList transactions={transactions.slice(0, 5)} />
+            </div>
+          </>
+        );
+    }
   };
 
   return (
@@ -61,31 +126,10 @@ const Index = () => {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        {/* Stories Banner */}
-        <StoriesBanner />
-
-        {/* Balance Card */}
-        <BalanceCard balance={balance} onCardSettings={() => setShowCardManagement(true)} />
-
-        {/* Quick Actions */}
-        <QuickActions 
-          onTransferClick={() => setIsTransferOpen(true)} 
-          onHistoryClick={() => setShowHistory(!showHistory)}
-        />
-
-        {/* Transaction History */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-lg font-bold text-foreground">Recent Transactions</h2>
-            <button className="text-sm font-medium text-primary hover:underline">
-              See All
-            </button>
-          </div>
-          <TransactionList transactions={transactions} />
-        </div>
+        {renderTabContent()}
       </main>
 
-      {/* Transfer Modal */}
+      {/* Modals */}
       <TransferModal
         isOpen={isTransferOpen}
         onClose={() => setIsTransferOpen(false)}
@@ -93,7 +137,23 @@ const Index = () => {
         onTransfer={handleTransfer}
       />
 
-      {/* Card Management */}
+      <TopUpModal
+        isOpen={isTopUpOpen}
+        onClose={() => setIsTopUpOpen(false)}
+        onTopUp={handleTopUp}
+      />
+
+      <MoreActionsSheet
+        isOpen={isMoreOpen}
+        onClose={() => setIsMoreOpen(false)}
+      />
+
+      <AllTransactionsModal
+        isOpen={isAllTransactionsOpen}
+        onClose={() => setIsAllTransactionsOpen(false)}
+        transactions={transactions}
+      />
+
       {showCardManagement && (
         <CardManagement onClose={() => setShowCardManagement(false)} />
       )}
