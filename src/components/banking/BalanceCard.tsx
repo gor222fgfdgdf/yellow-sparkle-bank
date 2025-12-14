@@ -1,11 +1,12 @@
-import { CreditCard, Eye, EyeOff } from "lucide-react";
+import { CreditCard, Eye, EyeOff, Settings } from "lucide-react";
 import { useState } from "react";
 
 interface BalanceCardProps {
   balance: number;
+  onCardSettings?: () => void;
 }
 
-const BalanceCard = ({ balance }: BalanceCardProps) => {
+const BalanceCard = ({ balance, onCardSettings }: BalanceCardProps) => {
   const [showBalance, setShowBalance] = useState(true);
 
   const formatBalance = (amount: number) => {
@@ -28,16 +29,27 @@ const BalanceCard = ({ balance }: BalanceCardProps) => {
             <p className="text-sm font-medium text-foreground">•••• •••• •••• 4582</p>
           </div>
         </div>
-        <button
-          onClick={() => setShowBalance(!showBalance)}
-          className="p-2 hover:bg-muted rounded-full transition-colors"
-        >
-          {showBalance ? (
-            <EyeOff className="w-5 h-5 text-muted-foreground" />
-          ) : (
-            <Eye className="w-5 h-5 text-muted-foreground" />
+        <div className="flex items-center gap-1">
+          {onCardSettings && (
+            <button
+              onClick={onCardSettings}
+              className="p-2 hover:bg-muted rounded-full transition-colors"
+              title="Card Settings"
+            >
+              <Settings className="w-5 h-5 text-muted-foreground" />
+            </button>
           )}
-        </button>
+          <button
+            onClick={() => setShowBalance(!showBalance)}
+            className="p-2 hover:bg-muted rounded-full transition-colors"
+          >
+            {showBalance ? (
+              <EyeOff className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <Eye className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="space-y-1">
