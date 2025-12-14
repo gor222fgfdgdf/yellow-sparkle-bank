@@ -14,28 +14,32 @@ const TopUpModal = ({ isOpen, onClose, onTopUp }: TopUpModalProps) => {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("ru-RU").format(value);
+  };
+
   const methods = [
-    { id: "card", icon: CreditCard, label: "From Card" },
-    { id: "bank", icon: Building, label: "Bank Transfer" },
-    { id: "mobile", icon: Smartphone, label: "Mobile Payment" },
+    { id: "card", icon: CreditCard, label: "С карты" },
+    { id: "bank", icon: Building, label: "Со счёта" },
+    { id: "sbp", icon: Smartphone, label: "Через СБП" },
   ];
 
-  const presets = [50, 100, 250, 500, 1000];
+  const presets = [1000, 5000, 10000, 25000, 50000];
 
   const handleTopUp = () => {
     const topUpAmount = parseFloat(amount);
     if (!selectedMethod) {
       toast({
-        title: "Select method",
-        description: "Please select a top-up method",
+        title: "Выберите способ",
+        description: "Выберите способ пополнения",
         variant: "destructive",
       });
       return;
     }
     if (!amount || topUpAmount <= 0) {
       toast({
-        title: "Invalid amount",
-        description: "Please enter a valid amount",
+        title: "Ошибка",
+        description: "Введите корректную сумму",
         variant: "destructive",
       });
       return;
@@ -43,8 +47,8 @@ const TopUpModal = ({ isOpen, onClose, onTopUp }: TopUpModalProps) => {
 
     onTopUp(topUpAmount, selectedMethod);
     toast({
-      title: "Top-up successful!",
-      description: `$${topUpAmount.toFixed(2)} added to your account`,
+      title: "Успешно!",
+      description: `${formatCurrency(topUpAmount)} ₽ зачислено на счёт`,
     });
     setAmount("");
     setSelectedMethod(null);
@@ -57,7 +61,7 @@ const TopUpModal = ({ isOpen, onClose, onTopUp }: TopUpModalProps) => {
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
       <div className="w-full max-w-lg bg-card rounded-t-3xl p-6 animate-in slide-in-from-bottom duration-300">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-foreground">Top Up Balance</h2>
+          <h2 className="text-xl font-bold text-foreground">Пополнить счёт</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-muted transition-colors"
@@ -68,7 +72,7 @@ const TopUpModal = ({ isOpen, onClose, onTopUp }: TopUpModalProps) => {
 
         {/* Methods */}
         <div className="space-y-3 mb-6">
-          <p className="text-sm font-medium text-muted-foreground">Select method</p>
+          <p className="text-sm font-medium text-muted-foreground">Способ пополнения</p>
           <div className="grid grid-cols-3 gap-3">
             {methods.map((method) => (
               <button
@@ -91,15 +95,15 @@ const TopUpModal = ({ isOpen, onClose, onTopUp }: TopUpModalProps) => {
 
         {/* Amount Input */}
         <div className="space-y-3 mb-6">
-          <p className="text-sm font-medium text-muted-foreground">Amount</p>
+          <p className="text-sm font-medium text-muted-foreground">Сумма</p>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-foreground">$</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-foreground">₽</span>
             <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              className="w-full pl-10 pr-4 py-4 text-2xl font-bold bg-muted rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+              placeholder="0"
+              className="w-full pl-12 pr-4 py-4 text-2xl font-bold bg-muted rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
             />
           </div>
         </div>
@@ -112,7 +116,7 @@ const TopUpModal = ({ isOpen, onClose, onTopUp }: TopUpModalProps) => {
               onClick={() => setAmount(preset.toString())}
               className="px-4 py-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors font-medium text-foreground whitespace-nowrap"
             >
-              ${preset}
+              {formatCurrency(preset)} ₽
             </button>
           ))}
         </div>
@@ -121,7 +125,7 @@ const TopUpModal = ({ isOpen, onClose, onTopUp }: TopUpModalProps) => {
           onClick={handleTopUp}
           className="w-full h-14 text-lg font-semibold"
         >
-          Add Money
+          Пополнить
         </Button>
       </div>
     </div>

@@ -9,10 +9,10 @@ interface QuickActionsProps {
 
 const QuickActions = ({ onTopUpClick, onTransferClick, onHistoryClick, onMoreClick }: QuickActionsProps) => {
   const actions = [
-    { icon: Plus, label: "Top Up", onClick: onTopUpClick },
-    { icon: ArrowRightLeft, label: "Transfer", onClick: onTransferClick },
-    { icon: History, label: "History", onClick: onHistoryClick },
-    { icon: MoreHorizontal, label: "More", onClick: onMoreClick },
+    { icon: Plus, label: "Пополнить", onClick: onTopUpClick },
+    { icon: ArrowRightLeft, label: "Перевод", onClick: onTransferClick },
+    { icon: History, label: "История", onClick: onHistoryClick },
+    { icon: MoreHorizontal, label: "Ещё", onClick: onMoreClick },
   ];
 
   return (

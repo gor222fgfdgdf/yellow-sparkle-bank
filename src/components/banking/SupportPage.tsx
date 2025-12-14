@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageCircle, Phone, Mail, FileQuestion, ChevronRight, X, Send, ArrowLeft } from "lucide-react";
+import { MessageCircle, Phone, Mail, FileQuestion, ChevronRight, Send, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,26 +16,26 @@ const SupportPage = () => {
   const [isFaqOpen, setIsFaqOpen] = useState(false);
   const [selectedFaq, setSelectedFaq] = useState<{ question: string; answer: string } | null>(null);
   const [messages, setMessages] = useState<Message[]>([
-    { id: "1", text: "Hello! How can I help you today?", isUser: false, time: "Now" },
+    { id: "1", text: "Здравствуйте! Чем могу помочь?", isUser: false, time: "Сейчас" },
   ]);
   const [inputMessage, setInputMessage] = useState("");
 
   const faqs = [
     { 
-      question: "How do I reset my PIN?", 
-      answer: "To reset your PIN, go to Menu > Cards > View PIN. You can view your current PIN or request a new one. The new PIN will be sent to your registered email within 24 hours." 
+      question: "Как сменить ПИН-код?", 
+      answer: "Чтобы сменить ПИН-код, перейдите в Меню → Карты → Посмотреть ПИН. Там вы можете просмотреть текущий ПИН или запросить новый. Новый ПИН будет отправлен на ваш номер телефона." 
     },
     { 
-      question: "How to block my card?", 
-      answer: "You can instantly freeze your card from Menu > Cards > Freeze Card toggle. This will temporarily block all transactions. To permanently block, contact support via chat." 
+      question: "Как заблокировать карту?", 
+      answer: "Вы можете мгновенно заморозить карту в разделе Меню → Карты → Заморозить карту. Это временно заблокирует все операции. Для полной блокировки обратитесь в чат поддержки." 
     },
     { 
-      question: "Where can I find my statements?", 
-      answer: "Your account statements are available in More > Statements. You can download monthly statements in PDF format for the last 12 months." 
+      question: "Где найти выписку?", 
+      answer: "Выписки по счёту доступны в разделе Ещё → Выписки. Вы можете скачать ежемесячные выписки в формате PDF за последние 12 месяцев." 
     },
     { 
-      question: "How to set up automatic payments?", 
-      answer: "Go to Payments > select a category > choose your provider. After making a payment, you'll see an option to 'Make this recurring'. Set the frequency and amount for automatic payments." 
+      question: "Как настроить автоплатёж?", 
+      answer: "Перейдите в Платежи → выберите категорию → укажите поставщика. После оплаты появится опция «Сделать регулярным». Настройте периодичность и сумму для автоматических платежей." 
     },
   ];
 
@@ -46,25 +46,24 @@ const SupportPage = () => {
       id: Date.now().toString(),
       text: inputMessage,
       isUser: true,
-      time: "Now",
+      time: "Сейчас",
     };
 
     setMessages((prev) => [...prev, newMessage]);
     setInputMessage("");
 
-    // Simulate bot response
     setTimeout(() => {
       const botResponses = [
-        "Thank you for your message! Let me check that for you.",
-        "I understand. Let me help you with that.",
-        "Great question! Here's what you need to know...",
-        "I'm looking into this for you. One moment please.",
+        "Спасибо за обращение! Сейчас проверю информацию.",
+        "Понял вас. Помогу разобраться с этим вопросом.",
+        "Отличный вопрос! Вот что нужно знать...",
+        "Уже работаю над вашим запросом. Одну минуту.",
       ];
       const randomResponse = botResponses[Math.floor(Math.random() * botResponses.length)];
       
       setMessages((prev) => [
         ...prev,
-        { id: Date.now().toString(), text: randomResponse, isUser: false, time: "Now" },
+        { id: Date.now().toString(), text: randomResponse, isUser: false, time: "Сейчас" },
       ]);
     }, 1000);
   };
@@ -73,9 +72,9 @@ const SupportPage = () => {
     if (method === "Chat") {
       setIsChatOpen(true);
     } else if (method === "Call") {
-      toast({ title: "Calling Support", description: "Connecting to 1-800-555-BANK..." });
+      toast({ title: "Звонок", description: "Соединяем с 8-800-555-777..." });
     } else if (method === "Email") {
-      toast({ title: "Email Support", description: "Opening email to support@bank.com" });
+      toast({ title: "Email", description: "Открываем support@tinkbank.ru" });
     }
   };
 
@@ -84,7 +83,6 @@ const SupportPage = () => {
     setIsFaqOpen(true);
   };
 
-  // Chat View
   if (isChatOpen) {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
@@ -97,8 +95,8 @@ const SupportPage = () => {
               <MessageCircle className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <p className="font-semibold text-foreground">Support Chat</p>
-              <p className="text-xs text-green-500">Online</p>
+              <p className="font-semibold text-foreground">Чат поддержки</p>
+              <p className="text-xs text-green-500">Онлайн</p>
             </div>
           </div>
         </div>
@@ -127,7 +125,7 @@ const SupportPage = () => {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-              placeholder="Type a message..."
+              placeholder="Введите сообщение..."
               className="flex-1 px-4 py-3 bg-muted rounded-full border-none focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
             />
             <Button onClick={handleSendMessage} size="icon" className="rounded-full h-12 w-12">
@@ -139,13 +137,12 @@ const SupportPage = () => {
     );
   }
 
-  // FAQ Detail View
   if (isFaqOpen && selectedFaq) {
     return (
       <div className="space-y-6">
         <button onClick={() => setIsFaqOpen(false)} className="flex items-center gap-2 text-primary">
           <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Help</span>
+          <span className="font-medium">Назад</span>
         </button>
 
         <div className="bg-card rounded-2xl p-6 space-y-4">
@@ -157,24 +154,24 @@ const SupportPage = () => {
         </div>
 
         <div className="bg-card rounded-2xl p-4">
-          <p className="text-sm text-muted-foreground mb-3">Was this helpful?</p>
+          <p className="text-sm text-muted-foreground mb-3">Это помогло?</p>
           <div className="flex gap-2">
             <Button 
               variant="outline" 
               className="flex-1"
               onClick={() => {
-                toast({ title: "Thank you!", description: "We're glad this helped." });
+                toast({ title: "Спасибо!", description: "Рады, что помогли." });
                 setIsFaqOpen(false);
               }}
             >
-              Yes, thanks!
+              Да, спасибо!
             </Button>
             <Button 
               variant="outline" 
               className="flex-1"
               onClick={() => setIsChatOpen(true)}
             >
-              No, chat with agent
+              Нет, в чат
             </Button>
           </div>
         </div>
@@ -184,23 +181,22 @@ const SupportPage = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-bold text-foreground px-1">How can we help?</h2>
+      <h2 className="text-lg font-bold text-foreground px-1">Чем помочь?</h2>
       
-      {/* Contact Options */}
       <div className="grid grid-cols-3 gap-3">
         <button
           onClick={() => handleContact("Chat")}
           className="flex flex-col items-center gap-2 p-4 bg-card rounded-2xl hover:bg-muted transition-colors"
         >
           <MessageCircle className="w-8 h-8 text-primary" />
-          <span className="text-sm font-medium text-foreground">Chat</span>
+          <span className="text-sm font-medium text-foreground">Чат</span>
         </button>
         <button
           onClick={() => handleContact("Call")}
           className="flex flex-col items-center gap-2 p-4 bg-card rounded-2xl hover:bg-muted transition-colors"
         >
           <Phone className="w-8 h-8 text-primary" />
-          <span className="text-sm font-medium text-foreground">Call</span>
+          <span className="text-sm font-medium text-foreground">Звонок</span>
         </button>
         <button
           onClick={() => handleContact("Email")}
@@ -211,9 +207,8 @@ const SupportPage = () => {
         </button>
       </div>
 
-      {/* FAQs */}
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-foreground px-1">Frequently Asked</h3>
+        <h3 className="text-lg font-bold text-foreground px-1">Частые вопросы</h3>
         <div className="bg-card rounded-2xl divide-y divide-border">
           {faqs.map((faq, idx) => (
             <button
@@ -232,7 +227,7 @@ const SupportPage = () => {
       </div>
 
       <Button onClick={() => setIsChatOpen(true)} className="w-full h-12">
-        Start Live Chat
+        Начать чат
       </Button>
     </div>
   );
