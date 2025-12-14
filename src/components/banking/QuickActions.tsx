@@ -1,16 +1,18 @@
 import { Plus, ArrowRightLeft, History, MoreHorizontal } from "lucide-react";
 
 interface QuickActionsProps {
+  onTopUpClick: () => void;
   onTransferClick: () => void;
   onHistoryClick: () => void;
+  onMoreClick: () => void;
 }
 
-const QuickActions = ({ onTransferClick, onHistoryClick }: QuickActionsProps) => {
+const QuickActions = ({ onTopUpClick, onTransferClick, onHistoryClick, onMoreClick }: QuickActionsProps) => {
   const actions = [
-    { icon: Plus, label: "Top Up", onClick: () => {} },
+    { icon: Plus, label: "Top Up", onClick: onTopUpClick },
     { icon: ArrowRightLeft, label: "Transfer", onClick: onTransferClick },
     { icon: History, label: "History", onClick: onHistoryClick },
-    { icon: MoreHorizontal, label: "More", onClick: () => {} },
+    { icon: MoreHorizontal, label: "More", onClick: onMoreClick },
   ];
 
   return (
