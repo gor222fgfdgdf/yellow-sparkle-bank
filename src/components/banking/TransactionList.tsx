@@ -1,4 +1,4 @@
-import { Car, Coffee, Apple, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { ArrowDownLeft } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface Transaction {
@@ -15,16 +15,11 @@ interface TransactionListProps {
   transactions: Transaction[];
 }
 
-const TransactionList = ({ transactions }: TransactionListProps) => {
-  const formatAmount = (amount: number, isIncoming?: boolean) => {
-    const formatted = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-    }).format(Math.abs(amount));
-    return isIncoming ? `+${formatted}` : `-${formatted}`;
-  };
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("ru-RU").format(value);
+};
 
+const TransactionList = ({ transactions }: TransactionListProps) => {
   const groupTransactionsByDate = (transactions: Transaction[]) => {
     const groups: { [key: string]: Transaction[] } = {};
     transactions.forEach((transaction) => {
@@ -67,7 +62,7 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
                 <p className={`font-semibold ${
                   transaction.isIncoming ? "text-success" : "text-foreground"
                 }`}>
-                  {formatAmount(transaction.amount, transaction.isIncoming)}
+                  {transaction.isIncoming ? "+" : "-"}{formatCurrency(transaction.amount)} ₽
                 </p>
               </div>
             ))}
@@ -79,4 +74,3 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
 };
 
 export default TransactionList;
-export { Car, Coffee, Apple, ShoppingBag, Tv, Utensils, Fuel, Music };
