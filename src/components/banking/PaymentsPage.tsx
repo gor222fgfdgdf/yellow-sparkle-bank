@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { X, Smartphone, Zap, Droplets, Wifi, Car, Home, CreditCard, Plus, Check, ChevronDown, type LucideIcon, BarChart3, Download, FileText, Table, CalendarClock } from "lucide-react";
+import { X, Smartphone, Zap, Droplets, Wifi, Car, Home, CreditCard, Plus, Check, ChevronDown, type LucideIcon, BarChart3, Download, FileText, Table, CalendarClock, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -8,6 +8,7 @@ import autoTable from "jspdf-autotable";
 import type { Transaction } from "./TransactionList";
 import AnalyticsSection from "./AnalyticsSection";
 import AutoPaymentsModal from "./AutoPaymentsModal";
+import PaymentTemplatesModal from "./PaymentTemplatesModal";
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -151,6 +152,7 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
   const [selectedCategory, setSelectedCategory] = useState<{ icon: LucideIcon; label: string; color: string } | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isAutoPaymentsOpen, setIsAutoPaymentsOpen] = useState(false);
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [monthFilter, setMonthFilter] = useState<MonthFilter>("current");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showAnalytics, setShowAnalytics] = useState(false);
@@ -314,15 +316,26 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
         <>
           <div className="flex items-center justify-between px-1">
             <h2 className="text-lg font-bold text-foreground">Оплата услуг</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsAutoPaymentsOpen(true)}
-              className="text-primary"
-            >
-              <CalendarClock className="w-4 h-4 mr-2" />
-              Автоплатежи
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsTemplatesOpen(true)}
+                className="text-primary"
+              >
+                <Star className="w-4 h-4 mr-2" />
+                Шаблоны
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsAutoPaymentsOpen(true)}
+                className="text-primary"
+              >
+                <CalendarClock className="w-4 h-4 mr-2" />
+                Автоплатежи
+              </Button>
+            </div>
           </div>
           
           {/* Categories Grid */}
@@ -438,6 +451,12 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
         isOpen={isAutoPaymentsOpen}
         onClose={() => setIsAutoPaymentsOpen(false)}
         onExecutePayment={onPayment}
+      />
+
+      <PaymentTemplatesModal
+        isOpen={isTemplatesOpen}
+        onClose={() => setIsTemplatesOpen(false)}
+        onPayment={onPayment}
       />
     </div>
   );
