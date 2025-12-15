@@ -1,7 +1,10 @@
 import { useState, useMemo } from "react";
-import { X, Smartphone, Zap, Droplets, Wifi, Car, Home, CreditCard, Plus, Check, ChevronDown, type LucideIcon, BarChart3 } from "lucide-react";
+import { X, Smartphone, Zap, Droplets, Wifi, Car, Home, CreditCard, Plus, Check, ChevronDown, type LucideIcon, BarChart3, Download, FileText, Table } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import type { Transaction } from "./TransactionList";
 import AnalyticsSection from "./AnalyticsSection";
 
@@ -150,6 +153,7 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
   const [monthFilter, setMonthFilter] = useState<MonthFilter>("current");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const { toast } = useToast();
   const categories = [
     { icon: Smartphone, label: "Мобильная связь", color: "bg-blue-500/10 text-blue-600" },
     { icon: Zap, label: "Электричество", color: "bg-yellow-500/10 text-yellow-600" },
@@ -209,6 +213,64 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
 
   const loadMore = () => {
     setVisibleCount(prev => prev + ITEMS_PER_PAGE);
+  };
+
+  const exportToCSV = () => {
+    const headers = ["Дата", "Название", "Категория", "Сумма", "Тип"];
+    const rows = filteredTransactions.map(t => [
+      t.date,
+      t.name,
+      t.category,
+      t.amount.toString(),
+      t.isIncoming ? "Доход" : "Расход"
+    ]);
+    
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${cell}"`).join(","))
+      .join("\n");
+    
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `transactions_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    toast({ title: "Экспорт завершён", description: "CSV файл скачан" });
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("История транзакций", 14, 20);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Дата экспорта: ${new Date().toLocaleDateString("ru-RU")}`, 14, 28);
+    doc.text(`Период: ${monthFilterLabels[monthFilter]}`, 14, 34);
+    
+    const tableData = filteredTransactions.map(t => [
+      t.date,
+      t.name,
+      t.category,
+      `${t.isIncoming ? "+" : "-"}${formatCurrency(t.amount)} RUB`,
+    ]);
+    
+    autoTable(doc, {
+      head: [["Дата", "Название", "Категория", "Сумма"]],
+      body: tableData,
+      startY: 42,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [255, 221, 45] },
+    });
+    
+    doc.save(`transactions_${new Date().toISOString().split("T")[0]}.pdf`);
+    
+    toast({ title: "Экспорт завершён", description: "PDF файл скачан" });
   };
 
   const groupTransactionsByDate = (txns: Transaction[]) => {
@@ -271,15 +333,34 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-lg font-bold text-foreground">История операций</h3>
-          <select
-            value={monthFilter}
-            onChange={(e) => handleFilterChange(e.target.value as MonthFilter)}
-            className="text-sm font-medium text-primary bg-transparent border-none cursor-pointer focus:outline-none"
-          >
-            {Object.entries(monthFilterLabels).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Download className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={exportToCSV}>
+                  <Table className="w-4 h-4 mr-2" />
+                  Экспорт в CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportToPDF}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Экспорт в PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <select
+              value={monthFilter}
+              onChange={(e) => handleFilterChange(e.target.value as MonthFilter)}
+              className="text-sm font-medium text-primary bg-transparent border-none cursor-pointer focus:outline-none"
+            >
+              {Object.entries(monthFilterLabels).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="bg-card rounded-2xl divide-y divide-border overflow-hidden">
