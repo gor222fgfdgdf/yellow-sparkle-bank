@@ -94,10 +94,26 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
 
   const IconComponent = transaction.icon;
   
-  const canRepeat = !transaction.isIncoming && 
-    !transaction.category.toLowerCase().includes("перевод") && 
-    !transaction.category.toLowerCase().includes("пополнение") &&
-    !transaction.category.toLowerCase().includes("зарплата");
+  // Show repeat button only for transfers and payments (not regular purchases)
+  const category = transaction.category.toLowerCase();
+  const name = transaction.name.toLowerCase();
+  const canRepeat = !transaction.isIncoming && (
+    category.includes("перевод") ||
+    category.includes("платёж") ||
+    category.includes("платеж") ||
+    category.includes("оплата услуг") ||
+    category.includes("мобильная связь") ||
+    category.includes("жкх") ||
+    category.includes("интернет") ||
+    category.includes("кредит") ||
+    name.includes("перевод") ||
+    name.includes("пополнение") ||
+    name.includes("мтс") ||
+    name.includes("билайн") ||
+    name.includes("мегафон") ||
+    name.includes("теле2") ||
+    name.includes("ростелеком")
+  );
   
   const handleCopyId = () => {
     navigator.clipboard.writeText(transaction.id);
