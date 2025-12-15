@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, QrCode, Send, Bell, Diamond, DollarSign, CalendarCheck, FileText, Percent, Shield, Users, Scan, Globe, Coffee as TipsIcon } from "lucide-react";
+import RSHBLogo from "@/components/banking/RSHBLogo";
 import AccountsList, { type Account } from "@/components/banking/AccountsList";
 import QuickActions from "@/components/banking/QuickActions";
 import StoriesBanner from "@/components/banking/StoriesBanner";
@@ -321,9 +322,12 @@ const Index = () => {
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">Добрый день</p>
-            <h1 className="text-xl font-bold text-foreground">{userName}</h1>
+          <div className="flex items-center gap-3">
+            <RSHBLogo className="w-10 h-10" />
+            <div>
+              <p className="text-sm text-muted-foreground">Добрый день</p>
+              <h1 className="text-xl font-bold text-foreground">{userName}</h1>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
