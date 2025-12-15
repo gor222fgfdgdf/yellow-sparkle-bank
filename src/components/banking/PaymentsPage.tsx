@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { X, Smartphone, Zap, Droplets, Wifi, Car, Home, CreditCard, Plus, Check, ChevronDown, type LucideIcon, BarChart3, Download, FileText, Table, CalendarClock, Star } from "lucide-react";
+import { X, Smartphone, Zap, Droplets, Wifi, Car, Home, CreditCard, Plus, Check, ChevronDown, type LucideIcon, BarChart3, Download, FileText, Table, CalendarClock, Star, Search, ArrowDownLeft, ArrowUpRight, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -156,6 +156,9 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
   const [monthFilter, setMonthFilter] = useState<MonthFilter>("current");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
+  const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
   const categories = [
     { icon: Smartphone, label: "Мобильная связь", color: "bg-blue-500/10 text-blue-600" },
@@ -178,12 +181,14 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
     setVisibleCount(ITEMS_PER_PAGE);
   };
 
+  const resetFilters = () => {
+    setSearchQuery("");
+    setTypeFilter("all");
+    setMonthFilter("current");
+    setVisibleCount(ITEMS_PER_PAGE);
+  };
+
   const filteredTransactions = useMemo(() => {
-    const dateMap: Record<string, number> = {
-      "Сегодня": 0,
-      "Вчера": 1,
-    };
-    
     const getMonthsAgo = (dateStr: string): number => {
       if (dateStr === "Сегодня" || dateStr === "Вчера") return 0;
       
@@ -208,8 +213,26 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
                       monthFilter === "1month" ? 1 : 
                       monthFilter === "2months" ? 2 : 3;
 
-    return transactions.filter(t => getMonthsAgo(t.date) <= maxMonths);
-  }, [transactions, monthFilter]);
+    return transactions.filter(t => {
+      // Month filter
+      if (getMonthsAgo(t.date) > maxMonths) return false;
+      
+      // Type filter
+      if (typeFilter === "income" && !t.isIncoming) return false;
+      if (typeFilter === "expense" && t.isIncoming) return false;
+      
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = t.name.toLowerCase().includes(query);
+        const matchesCategory = t.category.toLowerCase().includes(query);
+        const matchesAmount = t.amount.toString().includes(query);
+        if (!matchesName && !matchesCategory && !matchesAmount) return false;
+      }
+      
+      return true;
+    });
+  }, [transactions, monthFilter, searchQuery, typeFilter]);
 
   const visibleTransactions = filteredTransactions.slice(0, visibleCount);
   const hasMore = visibleCount < filteredTransactions.length;
@@ -359,6 +382,14 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
         <div className="flex items-center justify-between px-1">
           <h3 className="text-lg font-bold text-foreground">История операций</h3>
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-8 w-8 ${showFilters ? "text-primary" : ""}`}
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="w-4 h-4" />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -386,6 +417,81 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
               ))}
             </select>
           </div>
+        </div>
+
+        {/* Search & Filters */}
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Поиск по названию, категории или сумме..."
+              className="w-full pl-10 pr-4 py-2.5 bg-muted rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground text-sm"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-background rounded-full"
+              >
+                <X className="w-3 h-3 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+
+          {showFilters && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setTypeFilter("all")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  typeFilter === "all" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                Все
+              </button>
+              <button
+                onClick={() => setTypeFilter("income")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  typeFilter === "income" 
+                    ? "bg-green-600 text-white" 
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                <ArrowDownLeft className="w-3 h-3" />
+                Доходы
+              </button>
+              <button
+                onClick={() => setTypeFilter("expense")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  typeFilter === "expense" 
+                    ? "bg-red-600 text-white" 
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                <ArrowUpRight className="w-3 h-3" />
+                Расходы
+              </button>
+              {(searchQuery || typeFilter !== "all" || monthFilter !== "current") && (
+                <button
+                  onClick={resetFilters}
+                  className="ml-auto text-xs text-primary hover:underline"
+                >
+                  Сбросить
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Results count */}
+          {(searchQuery || typeFilter !== "all") && (
+            <p className="text-sm text-muted-foreground px-1">
+              Найдено: {filteredTransactions.length} {filteredTransactions.length === 1 ? "операция" : 
+                filteredTransactions.length < 5 ? "операции" : "операций"}
+            </p>
+          )}
         </div>
 
         <div className="bg-card rounded-2xl divide-y divide-border overflow-hidden">
