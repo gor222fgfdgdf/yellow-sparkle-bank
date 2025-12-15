@@ -128,6 +128,7 @@ const Index = () => {
 
   const unreadCount = notifications?.filter(n => !n.is_read).length || 0;
   const userName = profile?.full_name || "Пользователь";
+  const cardHolderName = profile?.full_name?.toUpperCase() || "CARDHOLDER";
   const userInitials = userName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
 
   const handleTransfer = async (amount: number, recipient: string) => {
@@ -347,9 +348,9 @@ const Index = () => {
       <TopUpModal isOpen={isTopUpOpen} onClose={() => setIsTopUpOpen(false)} onTopUp={handleTopUp} />
       <MoreActionsSheet isOpen={isMoreOpen} onClose={() => setIsMoreOpen(false)} />
       <AllTransactionsModal isOpen={isAllTransactionsOpen} onClose={() => setIsAllTransactionsOpen(false)} transactions={transactions} />
-      {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} />}
+      {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} cardHolderName={cardHolderName} />}
       {selectedAccount && (
-        <AccountDetailModal isOpen={!!selectedAccount} onClose={() => setSelectedAccount(null)} account={selectedAccount} transactions={transactions} onTransfer={() => setIsInternalTransferOpen(true)} onTopUp={() => setIsTopUpOpen(true)} onCardSettings={() => { setSelectedAccount(null); setShowCardManagement(true); }} />
+        <AccountDetailModal isOpen={!!selectedAccount} onClose={() => setSelectedAccount(null)} account={selectedAccount} transactions={transactions} onTransfer={() => setIsInternalTransferOpen(true)} onTopUp={() => setIsTopUpOpen(true)} onCardSettings={() => { setSelectedAccount(null); setShowCardManagement(true); }} cardHolderName={cardHolderName} />
       )}
       <BudgetsModal isOpen={isBudgetsOpen} onClose={() => setIsBudgetsOpen(false)} transactions={transactions} />
       <SavingsGoalsModal isOpen={isSavingsGoalsOpen} onClose={() => setIsSavingsGoalsOpen(false)} onDeduct={handleSavingsDeduct} />

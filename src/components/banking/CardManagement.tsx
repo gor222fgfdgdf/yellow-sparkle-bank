@@ -21,13 +21,14 @@ import { toast } from "sonner";
 
 interface CardManagementProps {
   onClose: () => void;
+  cardHolderName?: string;
 }
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("ru-RU").format(value);
 };
 
-const CardManagement = ({ onClose }: CardManagementProps) => {
+const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManagementProps) => {
   const [isCardFrozen, setIsCardFrozen] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const [showLimits, setShowLimits] = useState(false);
@@ -205,8 +206,8 @@ const CardManagement = ({ onClose }: CardManagementProps) => {
                 <p className="text-card text-lg tracking-widest font-mono">•••• •••• •••• ••••</p>
               </div>
               <div className="absolute bottom-6 left-6">
-                <p className="text-card/70 text-xs">ВЛАДЕЛЕЦ</p>
-                <p className="text-card text-sm">АЛЕКСАНДР ПЕТРОВ</p>
+              <p className="text-card/70 text-xs">ВЛАДЕЛЕЦ</p>
+                <p className="text-card text-sm">{cardHolderName}</p>
               </div>
               <div className="absolute bottom-6 right-6">
                 <p className="text-card/70 text-xs">СРОК</p>
@@ -282,8 +283,8 @@ const CardManagement = ({ onClose }: CardManagementProps) => {
                 <p className="text-primary-foreground text-lg tracking-widest font-mono">•••• •••• •••• 7823</p>
               </div>
               <div className="absolute bottom-6 left-6">
-                <p className="text-primary-foreground/70 text-xs">ВЛАДЕЛЕЦ</p>
-                <p className="text-primary-foreground text-sm font-medium">АЛЕКСАНДР ПЕТРОВ</p>
+              <p className="text-primary-foreground/70 text-xs">ВЛАДЕЛЕЦ</p>
+                <p className="text-primary-foreground text-sm font-medium">{cardHolderName}</p>
               </div>
               <div className="absolute bottom-6 right-6">
                 <p className="text-primary-foreground/70 text-xs">СРОК</p>
