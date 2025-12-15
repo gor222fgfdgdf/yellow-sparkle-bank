@@ -73,7 +73,7 @@ const Auth = () => {
     
     // If user doesn't exist, create them
     if (error?.message?.includes("Invalid login credentials")) {
-      const signUpResult = await signUp(DEMO_EMAIL, DEMO_PASSWORD, "Егор Котиков");
+      const signUpResult = await signUp(DEMO_EMAIL, DEMO_PASSWORD, "EGOR KOTIKOV");
       if (signUpResult.error) {
         // If already exists, try signin again
         const retryResult = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
@@ -94,7 +94,7 @@ const Auth = () => {
     } else {
       toast({
         title: "Добро пожаловать!",
-        description: "Егор Котиков",
+        description: "EGOR KOTIKOV",
       });
     }
   };
@@ -161,7 +161,7 @@ const Auth = () => {
         {isLockedOut ? "Приложение заблокировано" : "Введите PIN-код"}
       </h1>
       
-      <p className="text-muted-foreground mb-6">Егор Котиков</p>
+      <p className="text-muted-foreground mb-6">EGOR KOTIKOV</p>
 
       {isLockedOut ? (
         <div className="text-center">
