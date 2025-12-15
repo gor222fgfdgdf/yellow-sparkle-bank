@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Percent, Crown, Gift, Zap, Plane, X, Check, Diamond, CreditCard, Users, Globe, Shield, GraduationCap, Calendar, Heart, Wallet, TrendingUp, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -222,6 +222,11 @@ const StoriesBanner = ({
   const [currentStoryIndex, setCurrentStoryIndex] = useState<number | null>(null);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  
+  // Swipe handling
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const touchStartTime = useRef<number>(0);
 
   const currentStory = currentStoryIndex !== null ? stories[currentStoryIndex] : null;
 
@@ -329,6 +334,43 @@ const StoriesBanner = ({
     }
   };
 
+  // Swipe handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchStartTime.current = Date.now();
+    setIsPaused(true);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setIsPaused(false);
+    
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaX = touchEndX - touchStartX.current;
+    const deltaY = touchEndY - touchStartY.current;
+    const deltaTime = Date.now() - touchStartTime.current;
+    
+    const minSwipeDistance = 50;
+    const maxSwipeTime = 300;
+    
+    // Check if it's a horizontal swipe (more horizontal than vertical)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance && deltaTime < maxSwipeTime) {
+      if (deltaX > 0) {
+        // Swipe right - go to previous
+        goToPrevStory();
+      } else {
+        // Swipe left - go to next
+        goToNextStory();
+      }
+    }
+    
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
   return (
     <>
       <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
@@ -410,12 +452,15 @@ const StoriesBanner = ({
             onMouseDown={() => setIsPaused(true)}
             onMouseUp={() => setIsPaused(false)}
             onMouseLeave={() => setIsPaused(false)}
-            onTouchStart={() => setIsPaused(true)}
-            onTouchEnd={() => setIsPaused(false)}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onTouchMove={() => {}} // Prevent default scroll
           >
             <div 
               className={`w-full max-w-sm bg-gradient-to-br ${currentStory.gradient} rounded-3xl overflow-hidden animate-scale-in`}
               onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
             >
               {/* Header */}
               <div className="p-8 text-center">
