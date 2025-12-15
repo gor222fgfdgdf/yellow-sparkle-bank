@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Percent, Crown, Gift, Zap, Plane, X, Check, Diamond, CreditCard, Users, Globe, Shield, GraduationCap, Calendar, Heart, Wallet, TrendingUp, Building2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Percent, Crown, Gift, Zap, Plane, X, Check, Diamond, CreditCard, Users, Globe, Shield, GraduationCap, Calendar, Heart, Wallet, TrendingUp, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Story {
@@ -203,6 +203,8 @@ interface StoriesBannerProps {
   onOpenGovernment?: () => void;
 }
 
+const STORY_DURATION = 5000; // 5 seconds per story
+
 const StoriesBanner = ({
   onOpenCashback,
   onOpenReferral,
@@ -217,16 +219,57 @@ const StoriesBanner = ({
   onOpenCharity,
   onOpenGovernment,
 }: StoriesBannerProps) => {
-  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
+  const [currentStoryIndex, setCurrentStoryIndex] = useState<number | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const handleStoryClick = (story: Story) => {
-    setSelectedStory(story);
+  const currentStory = currentStoryIndex !== null ? stories[currentStoryIndex] : null;
+
+  const goToNextStory = useCallback(() => {
+    if (currentStoryIndex !== null && currentStoryIndex < stories.length - 1) {
+      setCurrentStoryIndex(currentStoryIndex + 1);
+      setProgress(0);
+    } else {
+      setCurrentStoryIndex(null);
+      setProgress(0);
+    }
+  }, [currentStoryIndex]);
+
+  const goToPrevStory = useCallback(() => {
+    if (currentStoryIndex !== null && currentStoryIndex > 0) {
+      setCurrentStoryIndex(currentStoryIndex - 1);
+      setProgress(0);
+    } else if (currentStoryIndex === 0) {
+      setProgress(0);
+    }
+  }, [currentStoryIndex]);
+
+  // Auto-progress timer
+  useEffect(() => {
+    if (currentStoryIndex === null || isPaused) return;
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          goToNextStory();
+          return 0;
+        }
+        return prev + (100 / (STORY_DURATION / 50));
+      });
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [currentStoryIndex, isPaused, goToNextStory]);
+
+  const handleStoryClick = (index: number) => {
+    setCurrentStoryIndex(index);
+    setProgress(0);
   };
 
   const handleCTA = (story: Story) => {
-    setSelectedStory(null);
+    setCurrentStoryIndex(null);
+    setProgress(0);
     
-    // Navigate to the appropriate section
     setTimeout(() => {
       switch (story.actionType) {
         case "cashback":
@@ -269,14 +312,31 @@ const StoriesBanner = ({
     }, 100);
   };
 
+  const handleClose = () => {
+    setCurrentStoryIndex(null);
+    setProgress(0);
+  };
+
+  const handleAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const width = rect.width;
+    
+    if (x < width / 3) {
+      goToPrevStory();
+    } else if (x > (width * 2) / 3) {
+      goToNextStory();
+    }
+  };
+
   return (
     <>
       <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
         <div className="flex gap-3 pb-2">
-          {stories.map((story) => (
+          {stories.map((story, index) => (
             <button
               key={story.id}
-              onClick={() => handleStoryClick(story)}
+              onClick={() => handleStoryClick(index)}
               className="flex-shrink-0 w-20 group"
             >
               <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${story.gradient} p-[3px] group-hover:scale-105 transition-transform`}>
@@ -291,43 +351,101 @@ const StoriesBanner = ({
         </div>
       </div>
 
-      {/* Story Modal */}
-      {selectedStory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm bg-card rounded-3xl overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Header with gradient */}
-            <div className={`bg-gradient-to-br ${selectedStory.gradient} p-6 text-center relative`}>
-              <button
-                onClick={() => setSelectedStory(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-card/20 hover:bg-card/30 transition-colors"
+      {/* Story Modal with Instagram-style progress */}
+      {currentStory && currentStoryIndex !== null && (
+        <div className="fixed inset-0 z-50 bg-black">
+          {/* Progress bars */}
+          <div className="absolute top-0 left-0 right-0 z-10 flex gap-1 p-2 pt-3">
+            {stories.map((_, index) => (
+              <div
+                key={index}
+                className="h-[3px] flex-1 bg-white/30 rounded-full overflow-hidden"
               >
-                <X className="w-5 h-5 text-card" />
-              </button>
-              <div className="w-16 h-16 rounded-full bg-card/20 flex items-center justify-center mx-auto mb-4">
-                <selectedStory.icon className="w-8 h-8 text-card" />
+                <div
+                  className="h-full bg-white rounded-full transition-all duration-50 ease-linear"
+                  style={{
+                    width: index < currentStoryIndex 
+                      ? "100%" 
+                      : index === currentStoryIndex 
+                        ? `${progress}%` 
+                        : "0%"
+                  }}
+                />
               </div>
-              <h2 className="text-xl font-bold text-card">{selectedStory.content.heading}</h2>
-            </div>
+            ))}
+          </div>
 
-            {/* Content */}
-            <div className="p-6 space-y-4">
-              <p className="text-muted-foreground text-center">{selectedStory.content.description}</p>
-              
-              <div className="space-y-2">
-                {selectedStory.content.details.map((detail, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-500" />
-                    <span className="text-sm text-foreground">{detail}</span>
-                  </div>
-                ))}
+          {/* Close button */}
+          <button
+            onClick={handleClose}
+            className="absolute top-12 right-4 z-20 p-2 rounded-full bg-black/20 hover:bg-black/40 transition-colors"
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
+
+          {/* Story counter */}
+          <div className="absolute top-12 left-4 z-20 text-white/70 text-sm font-medium">
+            {currentStoryIndex + 1} / {stories.length}
+          </div>
+
+          {/* Navigation arrows */}
+          <button
+            onClick={goToPrevStory}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/20 hover:bg-black/40 transition-colors opacity-60 hover:opacity-100"
+            disabled={currentStoryIndex === 0}
+          >
+            <ChevronLeft className="w-6 h-6 text-white" />
+          </button>
+          <button
+            onClick={goToNextStory}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/20 hover:bg-black/40 transition-colors opacity-60 hover:opacity-100"
+          >
+            <ChevronRight className="w-6 h-6 text-white" />
+          </button>
+
+          {/* Story content */}
+          <div 
+            className="h-full flex flex-col items-center justify-center p-6"
+            onClick={handleAreaClick}
+            onMouseDown={() => setIsPaused(true)}
+            onMouseUp={() => setIsPaused(false)}
+            onMouseLeave={() => setIsPaused(false)}
+            onTouchStart={() => setIsPaused(true)}
+            onTouchEnd={() => setIsPaused(false)}
+          >
+            <div 
+              className={`w-full max-w-sm bg-gradient-to-br ${currentStory.gradient} rounded-3xl overflow-hidden animate-scale-in`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="p-8 text-center">
+                <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-6">
+                  <currentStory.icon className="w-10 h-10 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">{currentStory.content.heading}</h2>
+                <p className="text-white/80">{currentStory.content.description}</p>
               </div>
 
-              <Button 
-                className="w-full h-12 text-lg font-semibold"
-                onClick={() => handleCTA(selectedStory)}
-              >
-                {selectedStory.content.cta}
-              </Button>
+              {/* Details */}
+              <div className="bg-card rounded-t-3xl p-6 space-y-4">
+                <div className="space-y-3">
+                  {currentStory.content.details.map((detail, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
+                        <Check className="w-4 h-4 text-green-500" />
+                      </div>
+                      <span className="text-sm text-foreground">{detail}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <Button 
+                  className="w-full h-12 text-lg font-semibold"
+                  onClick={() => handleCTA(currentStory)}
+                >
+                  {currentStory.content.cta}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
