@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, QrCode, Send, Bell, Diamond, DollarSign, CalendarCheck } from "lucide-react";
 import AccountsList, { type Account } from "@/components/banking/AccountsList";
 import QuickActions from "@/components/banking/QuickActions";
 import StoriesBanner from "@/components/banking/StoriesBanner";
@@ -15,6 +15,15 @@ import SupportPage from "@/components/banking/SupportPage";
 import MenuPage from "@/components/banking/MenuPage";
 import InternalTransferModal from "@/components/banking/InternalTransferModal";
 import AccountDetailModal from "@/components/banking/AccountDetailModal";
+import BudgetsModal from "@/components/banking/BudgetsModal";
+import SavingsGoalsModal from "@/components/banking/SavingsGoalsModal";
+import QRCodeModal from "@/components/banking/QRCodeModal";
+import SBPTransferModal from "@/components/banking/SBPTransferModal";
+import NotificationsCenter from "@/components/banking/NotificationsCenter";
+import CashbackModal from "@/components/banking/CashbackModal";
+import CurrencyExchangeModal from "@/components/banking/CurrencyExchangeModal";
+import SubscriptionsModal from "@/components/banking/SubscriptionsModal";
+import PinLockScreen from "@/components/banking/PinLockScreen";
 
 const initialAccounts: Account[] = [
   { id: "1", type: "card", name: "Tinkoff Black", balance: 3670797, cardNumber: "7823", icon: CreditCard, color: "bg-primary text-primary-foreground" },
@@ -155,6 +164,18 @@ const Index = () => {
   const [isAllTransactionsOpen, setIsAllTransactionsOpen] = useState(false);
   const [showCardManagement, setShowCardManagement] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  
+  // New modals state
+  const [isBudgetsOpen, setIsBudgetsOpen] = useState(false);
+  const [isSavingsGoalsOpen, setIsSavingsGoalsOpen] = useState(false);
+  const [isQRCodeOpen, setIsQRCodeOpen] = useState(false);
+  const [isSBPTransferOpen, setIsSBPTransferOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isCashbackOpen, setIsCashbackOpen] = useState(false);
+  const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
+  const [isSubscriptionsOpen, setIsSubscriptionsOpen] = useState(false);
+  const [isLocked, setIsLocked] = useState(() => !!localStorage.getItem("banking_pin"));
+  const [isSettingUpPin, setIsSettingUpPin] = useState(false);
 
   const mainAccountBalance = accounts.find(a => a.id === "1")?.balance || 0;
 
@@ -232,6 +253,43 @@ const Index = () => {
     setSelectedAccount(account);
   };
 
+  const handleSBPTransfer = (amount: number, recipient: string, bank: string) => {
+    handleTransfer(amount, `СБП: ${recipient}`);
+  };
+
+  const handleQRReceive = (amount: number, sender: string) => {
+    handleTopUp(amount, `QR от ${sender}`);
+  };
+
+  const handleCashbackWithdraw = (amount: number) => {
+    handleTopUp(amount, "Кэшбэк");
+  };
+
+  const handleSavingsDeduct = (amount: number, goalName: string) => {
+    setAccounts(prev => prev.map(acc => 
+      acc.id === "1" ? { ...acc, balance: acc.balance - amount } : acc
+    ));
+  };
+
+  const handleCurrencyExchange = (amount: number, from: string, to: string) => {
+    // Simplified: just log the exchange
+  };
+
+  // PIN Lock Screen
+  if (isLocked) {
+    return <PinLockScreen onUnlock={() => setIsLocked(false)} />;
+  }
+
+  if (isSettingUpPin) {
+    return (
+      <PinLockScreen 
+        isSettingUp 
+        onUnlock={() => {}} 
+        onSetupComplete={() => setIsSettingUpPin(false)} 
+      />
+    );
+  }
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "payments":
@@ -260,6 +318,55 @@ const Index = () => {
               onHistoryClick={() => setActiveTab("payments")}
               onMoreClick={() => setIsMoreOpen(true)}
             />
+
+            {/* Feature Buttons */}
+            <div className="grid grid-cols-4 gap-3">
+              <button onClick={() => setIsSBPTransferOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <Send className="w-5 h-5 text-blue-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">СБП</span>
+              </button>
+              <button onClick={() => setIsQRCodeOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
+                  <QrCode className="w-5 h-5 text-purple-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">QR-код</span>
+              </button>
+              <button onClick={() => setIsCashbackOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                  <Diamond className="w-5 h-5 text-yellow-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Кэшбэк</span>
+              </button>
+              <button onClick={() => setIsCurrencyOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Валюта</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <button onClick={() => setIsBudgetsOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+                  <PiggyBank className="w-5 h-5 text-orange-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Бюджеты</span>
+              </button>
+              <button onClick={() => setIsSavingsGoalsOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center">
+                  <Target className="w-5 h-5 text-teal-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Цели</span>
+              </button>
+              <button onClick={() => setIsSubscriptionsOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center">
+                  <CalendarCheck className="w-5 h-5 text-pink-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Подписки</span>
+              </button>
+            </div>
           </>
         );
     }
@@ -274,6 +381,20 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">Добрый день</p>
             <h1 className="text-xl font-bold text-foreground">Александр Петров</h1>
           </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setIsNotificationsOpen(true)}
+              className="w-10 h-10 rounded-full bg-muted flex items-center justify-center relative"
+            >
+              <Bell className="w-5 h-5 text-foreground" />
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">2</span>
+            </button>
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-semibold">АП</span>
+            </div>
+          </div>
+        </div>
+      </header>
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-semibold">АП</span>
           </div>
@@ -334,6 +455,16 @@ const Index = () => {
           }}
         />
       )}
+
+      {/* New Modals */}
+      <BudgetsModal isOpen={isBudgetsOpen} onClose={() => setIsBudgetsOpen(false)} transactions={transactions} />
+      <SavingsGoalsModal isOpen={isSavingsGoalsOpen} onClose={() => setIsSavingsGoalsOpen(false)} onDeduct={handleSavingsDeduct} />
+      <QRCodeModal isOpen={isQRCodeOpen} onClose={() => setIsQRCodeOpen(false)} userName="Александр Петров" cardNumber="7823" onReceive={handleQRReceive} />
+      <SBPTransferModal isOpen={isSBPTransferOpen} onClose={() => setIsSBPTransferOpen(false)} balance={mainAccountBalance} onTransfer={handleSBPTransfer} />
+      <NotificationsCenter isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} />
+      <CashbackModal isOpen={isCashbackOpen} onClose={() => setIsCashbackOpen(false)} onWithdraw={handleCashbackWithdraw} />
+      <CurrencyExchangeModal isOpen={isCurrencyOpen} onClose={() => setIsCurrencyOpen(false)} balance={mainAccountBalance} onExchange={handleCurrencyExchange} />
+      <SubscriptionsModal isOpen={isSubscriptionsOpen} onClose={() => setIsSubscriptionsOpen(false)} transactions={transactions} />
 
       {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
