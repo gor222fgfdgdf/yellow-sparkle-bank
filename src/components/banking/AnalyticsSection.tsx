@@ -1,7 +1,10 @@
-import { useMemo, useState } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line, Legend } from "recharts";
-import { TrendingDown, TrendingUp, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
+import { TrendingDown, TrendingUp, ArrowUp, ArrowDown, Minus, Bell, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import type { Transaction } from "./TransactionList";
+import SpendingLimitsModal, { LimitAlerts, type SpendingLimit, type LimitAlert } from "./SpendingLimitsModal";
 
 interface AnalyticsSectionProps {
   transactions: Transaction[];
@@ -38,6 +41,13 @@ const formatCurrency = (value: number) => {
 
 const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
   const [period, setPeriod] = useState<PeriodFilter>("current");
+  const [limitsModalOpen, setLimitsModalOpen] = useState(false);
+  const [spendingLimits, setSpendingLimits] = useState<SpendingLimit[]>(() => {
+    const saved = localStorage.getItem("spendingLimits");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
+  const { toast } = useToast();
 
   const getMonthsAgo = (dateStr: string): number => {
     if (dateStr === "Сегодня" || dateStr === "Вчера") return 0;
@@ -141,6 +151,75 @@ const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
     })).sort((a, b) => b.current - a.current);
   }, [transactions]);
 
+  // Calculate current month spending per category for limit alerts
+  const currentMonthCategoryTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    transactions.forEach(t => {
+      if (t.isIncoming) return;
+      const monthsAgo = getMonthsAgo(t.date);
+      if (monthsAgo === 0) {
+        totals[t.category] = (totals[t.category] || 0) + t.amount;
+      }
+    });
+    return totals;
+  }, [transactions]);
+
+  // Get all unique categories
+  const allCategories = useMemo(() => {
+    const cats = new Set<string>();
+    transactions.forEach(t => {
+      if (!t.isIncoming) cats.add(t.category);
+    });
+    return Array.from(cats);
+  }, [transactions]);
+
+  // Calculate limit alerts
+  const limitAlerts = useMemo<LimitAlert[]>(() => {
+    return spendingLimits
+      .filter(limit => limit.enabled && limit.limit > 0)
+      .map(limit => {
+        const spent = currentMonthCategoryTotals[limit.category] || 0;
+        const percentage = (spent / limit.limit) * 100;
+        return {
+          category: limit.category,
+          spent,
+          limit: limit.limit,
+          percentage,
+        };
+      })
+      .filter(alert => alert.percentage >= 80)
+      .filter(alert => !dismissedAlerts.includes(alert.category))
+      .sort((a, b) => b.percentage - a.percentage);
+  }, [spendingLimits, currentMonthCategoryTotals, dismissedAlerts]);
+
+  // Show toast notification when limit is exceeded
+  useEffect(() => {
+    const exceededLimits = spendingLimits
+      .filter(limit => limit.enabled && limit.limit > 0)
+      .filter(limit => {
+        const spent = currentMonthCategoryTotals[limit.category] || 0;
+        return spent >= limit.limit;
+      });
+    
+    if (exceededLimits.length > 0 && !dismissedAlerts.includes(exceededLimits[0].category)) {
+      toast({
+        title: "Лимит превышен!",
+        description: `Категория "${exceededLimits[0].category}" превысила установленный лимит`,
+        variant: "destructive",
+      });
+    }
+  }, [currentMonthCategoryTotals]);
+
+  const handleSaveLimits = (limits: SpendingLimit[]) => {
+    setSpendingLimits(limits);
+    localStorage.setItem("spendingLimits", JSON.stringify(limits));
+    setDismissedAlerts([]);
+  };
+
+  const handleDismissAlert = (category: string) => {
+    setDismissedAlerts(prev => [...prev, category]);
+  };
+
   const expensesDiff = currentMonthExpenses - prevMonthExpenses;
   const expensesDiffPercent = prevMonthExpenses > 0 
     ? ((expensesDiff / prevMonthExpenses) * 100).toFixed(1) 
@@ -152,16 +231,36 @@ const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-lg font-bold text-foreground">Аналитика расходов</h2>
-        <select
-          value={period}
-          onChange={(e) => setPeriod(e.target.value as PeriodFilter)}
-          className="text-sm font-medium text-primary bg-transparent border-none cursor-pointer focus:outline-none"
-        >
-          {Object.entries(periodLabels).map(([key, label]) => (
-            <option key={key} value={key}>{label}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLimitsModalOpen(true)}
+            className="h-8 w-8"
+          >
+            <Bell className="w-4 h-4" />
+          </Button>
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as PeriodFilter)}
+            className="text-sm font-medium text-primary bg-transparent border-none cursor-pointer focus:outline-none"
+          >
+            {Object.entries(periodLabels).map(([key, label]) => (
+              <option key={key} value={key}>{label}</option>
+            ))}
+          </select>
+        </div>
       </div>
+
+      <LimitAlerts alerts={limitAlerts} onDismiss={handleDismissAlert} />
+
+      <SpendingLimitsModal
+        open={limitsModalOpen}
+        onOpenChange={setLimitsModalOpen}
+        limits={spendingLimits}
+        onSaveLimits={handleSaveLimits}
+        categories={allCategories}
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3">
