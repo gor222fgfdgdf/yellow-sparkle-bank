@@ -35,6 +35,13 @@ import BarcodeScannerModal from "@/components/banking/BarcodeScannerModal";
 import MultiCurrencyModal from "@/components/banking/MultiCurrencyModal";
 import TipsModal from "@/components/banking/TipsModal";
 import FamilyAccessModal from "@/components/banking/FamilyAccessModal";
+import VirtualCardsModal from "@/components/banking/VirtualCardsModal";
+import DepositsModal from "@/components/banking/DepositsModal";
+import GovernmentServicesModal from "@/components/banking/GovernmentServicesModal";
+import CharityModal from "@/components/banking/CharityModal";
+import LoyaltyProgramModal from "@/components/banking/LoyaltyProgramModal";
+import FinancialCalendarModal from "@/components/banking/FinancialCalendarModal";
+import FinancialEducationModal from "@/components/banking/FinancialEducationModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccounts, useUpdateAccountBalance } from "@/hooks/useAccounts";
 import { useTransactions, useCreateTransaction } from "@/hooks/useTransactions";
@@ -88,6 +95,13 @@ const Index = () => {
   const [isMultiCurrencyOpen, setIsMultiCurrencyOpen] = useState(false);
   const [isTipsOpen, setIsTipsOpen] = useState(false);
   const [isFamilyAccessOpen, setIsFamilyAccessOpen] = useState(false);
+  const [isVirtualCardsOpen, setIsVirtualCardsOpen] = useState(false);
+  const [isDepositsOpen, setIsDepositsOpen] = useState(false);
+  const [isGovernmentOpen, setIsGovernmentOpen] = useState(false);
+  const [isCharityOpen, setIsCharityOpen] = useState(false);
+  const [isLoyaltyOpen, setIsLoyaltyOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isEducationOpen, setIsEducationOpen] = useState(false);
 
   // Transform DB accounts to UI format
   const accounts: Account[] = (dbAccounts || []).map(acc => ({
@@ -228,7 +242,20 @@ const Index = () => {
       default:
         return (
           <>
-            <StoriesBanner />
+            <StoriesBanner 
+              onOpenCashback={() => setIsCashbackOpen(true)}
+              onOpenReferral={() => setIsReferralOpen(true)}
+              onOpenSBP={() => setIsSBPTransferOpen(true)}
+              onOpenLoyalty={() => setIsLoyaltyOpen(true)}
+              onOpenVirtualCards={() => setIsVirtualCardsOpen(true)}
+              onOpenDeposits={() => setIsDepositsOpen(true)}
+              onOpenInvestment={() => setIsInvestmentPortfolioOpen(true)}
+              onOpenInsurance={() => setIsInsuranceOpen(true)}
+              onOpenEducation={() => setIsEducationOpen(true)}
+              onOpenCalendar={() => setIsCalendarOpen(true)}
+              onOpenCharity={() => setIsCharityOpen(true)}
+              onOpenGovernment={() => setIsGovernmentOpen(true)}
+            />
             <AccountsList accounts={accounts} onAccountClick={handleAccountClick} onCardSettings={() => setShowCardManagement(true)} />
             <QuickActions onTopUpClick={() => setIsTopUpOpen(true)} onTransferClick={() => setIsInternalTransferOpen(true)} onHistoryClick={() => setActiveTab("payments")} onMoreClick={() => setIsMoreOpen(true)} />
 
@@ -373,6 +400,13 @@ const Index = () => {
       <MultiCurrencyModal isOpen={isMultiCurrencyOpen} onClose={() => setIsMultiCurrencyOpen(false)} />
       <TipsModal isOpen={isTipsOpen} onClose={() => setIsTipsOpen(false)} userName={userName} />
       <FamilyAccessModal isOpen={isFamilyAccessOpen} onClose={() => setIsFamilyAccessOpen(false)} />
+      <VirtualCardsModal isOpen={isVirtualCardsOpen} onClose={() => setIsVirtualCardsOpen(false)} />
+      <DepositsModal isOpen={isDepositsOpen} onClose={() => setIsDepositsOpen(false)} />
+      <GovernmentServicesModal isOpen={isGovernmentOpen} onClose={() => setIsGovernmentOpen(false)} onPayFine={(amount) => handlePayment(amount, "Госуслуги")} />
+      <CharityModal isOpen={isCharityOpen} onClose={() => setIsCharityOpen(false)} onDonate={(amount, org) => handlePayment(amount, org)} />
+      <LoyaltyProgramModal isOpen={isLoyaltyOpen} onClose={() => setIsLoyaltyOpen(false)} />
+      <FinancialCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
+      <FinancialEducationModal isOpen={isEducationOpen} onClose={() => setIsEducationOpen(false)} />
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
