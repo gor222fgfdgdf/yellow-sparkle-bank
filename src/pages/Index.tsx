@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, QrCode, Send, Bell, Diamond, DollarSign, CalendarCheck } from "lucide-react";
+import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, QrCode, Send, Bell, Diamond, DollarSign, CalendarCheck, FileText, Percent, Shield, Users, Scan, Globe, Coffee as TipsIcon } from "lucide-react";
 import AccountsList, { type Account } from "@/components/banking/AccountsList";
 import QuickActions from "@/components/banking/QuickActions";
 import StoriesBanner from "@/components/banking/StoriesBanner";
@@ -24,6 +24,17 @@ import CashbackModal from "@/components/banking/CashbackModal";
 import CurrencyExchangeModal from "@/components/banking/CurrencyExchangeModal";
 import SubscriptionsModal from "@/components/banking/SubscriptionsModal";
 import PinLockScreen from "@/components/banking/PinLockScreen";
+// New features - Step 1-10
+import StatementExportModal from "@/components/banking/StatementExportModal";
+import ThemeToggle from "@/components/banking/ThemeToggle";
+import LoansModal from "@/components/banking/LoansModal";
+import InsuranceModal from "@/components/banking/InsuranceModal";
+import InvestmentPortfolioModal from "@/components/banking/InvestmentPortfolioModal";
+import ReferralProgramModal from "@/components/banking/ReferralProgramModal";
+import BarcodeScannerModal from "@/components/banking/BarcodeScannerModal";
+import MultiCurrencyModal from "@/components/banking/MultiCurrencyModal";
+import TipsModal from "@/components/banking/TipsModal";
+import FamilyAccessModal from "@/components/banking/FamilyAccessModal";
 
 const initialAccounts: Account[] = [
   { id: "1", type: "card", name: "Tinkoff Black", balance: 3670797, cardNumber: "7823", icon: CreditCard, color: "bg-primary text-primary-foreground" },
@@ -165,7 +176,7 @@ const Index = () => {
   const [showCardManagement, setShowCardManagement] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   
-  // New modals state
+  // Existing modals state
   const [isBudgetsOpen, setIsBudgetsOpen] = useState(false);
   const [isSavingsGoalsOpen, setIsSavingsGoalsOpen] = useState(false);
   const [isQRCodeOpen, setIsQRCodeOpen] = useState(false);
@@ -176,6 +187,17 @@ const Index = () => {
   const [isSubscriptionsOpen, setIsSubscriptionsOpen] = useState(false);
   const [isLocked, setIsLocked] = useState(() => !!localStorage.getItem("banking_pin"));
   const [isSettingUpPin, setIsSettingUpPin] = useState(false);
+  
+  // New 10 features state
+  const [isStatementExportOpen, setIsStatementExportOpen] = useState(false);
+  const [isLoansOpen, setIsLoansOpen] = useState(false);
+  const [isInsuranceOpen, setIsInsuranceOpen] = useState(false);
+  const [isInvestmentPortfolioOpen, setIsInvestmentPortfolioOpen] = useState(false);
+  const [isReferralOpen, setIsReferralOpen] = useState(false);
+  const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
+  const [isMultiCurrencyOpen, setIsMultiCurrencyOpen] = useState(false);
+  const [isTipsOpen, setIsTipsOpen] = useState(false);
+  const [isFamilyAccessOpen, setIsFamilyAccessOpen] = useState(false);
 
   const mainAccountBalance = accounts.find(a => a.id === "1")?.balance || 0;
 
@@ -367,6 +389,73 @@ const Index = () => {
                 <span className="text-xs font-medium text-foreground">Подписки</span>
               </button>
             </div>
+
+            {/* New Features Grid - 10 new features */}
+            <div className="grid grid-cols-4 gap-3">
+              <button onClick={() => setIsStatementExportOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-slate-500/10 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-slate-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Выписка</span>
+              </button>
+              <button onClick={() => setIsLoansOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                  <Percent className="w-5 h-5 text-red-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Кредиты</span>
+              </button>
+              <button onClick={() => setIsInsuranceOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-emerald-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Страховки</span>
+              </button>
+              <button onClick={() => setIsInvestmentPortfolioOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-indigo-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Портфель</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-4 gap-3">
+              <button onClick={() => setIsReferralOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-violet-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Друзья</span>
+              </button>
+              <button onClick={() => setIsBarcodeScannerOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center">
+                  <Scan className="w-5 h-5 text-cyan-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Сканер</span>
+              </button>
+              <button onClick={() => setIsMultiCurrencyOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                  <Globe className="w-5 h-5 text-amber-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Валюты</span>
+              </button>
+              <button onClick={() => setIsTipsOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center">
+                  <Coffee className="w-5 h-5 text-rose-600" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Чаевые</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              <button onClick={() => setIsFamilyAccessOpen(true)} className="flex items-center gap-4 p-4 bg-card rounded-xl">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-primary" />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="font-medium text-foreground">Семейный доступ</p>
+                  <p className="text-sm text-muted-foreground">Карты для семьи с контролем расходов</p>
+                </div>
+              </button>
+            </div>
           </>
         );
     }
@@ -382,6 +471,7 @@ const Index = () => {
             <h1 className="text-xl font-bold text-foreground">Александр Петров</h1>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <button 
               onClick={() => setIsNotificationsOpen(true)}
               className="w-10 h-10 rounded-full bg-muted flex items-center justify-center relative"
@@ -460,6 +550,17 @@ const Index = () => {
       <CashbackModal isOpen={isCashbackOpen} onClose={() => setIsCashbackOpen(false)} onWithdraw={handleCashbackWithdraw} />
       <CurrencyExchangeModal isOpen={isCurrencyOpen} onClose={() => setIsCurrencyOpen(false)} balance={mainAccountBalance} onExchange={handleCurrencyExchange} />
       <SubscriptionsModal isOpen={isSubscriptionsOpen} onClose={() => setIsSubscriptionsOpen(false)} transactions={transactions} />
+
+      {/* 10 New Feature Modals */}
+      <StatementExportModal isOpen={isStatementExportOpen} onClose={() => setIsStatementExportOpen(false)} transactions={transactions} accounts={accounts} />
+      <LoansModal isOpen={isLoansOpen} onClose={() => setIsLoansOpen(false)} />
+      <InsuranceModal isOpen={isInsuranceOpen} onClose={() => setIsInsuranceOpen(false)} />
+      <InvestmentPortfolioModal isOpen={isInvestmentPortfolioOpen} onClose={() => setIsInvestmentPortfolioOpen(false)} portfolioValue={accounts.find(a => a.id === "3")?.balance || 0} />
+      <ReferralProgramModal isOpen={isReferralOpen} onClose={() => setIsReferralOpen(false)} />
+      <BarcodeScannerModal isOpen={isBarcodeScannerOpen} onClose={() => setIsBarcodeScannerOpen(false)} onPayment={handlePayment} />
+      <MultiCurrencyModal isOpen={isMultiCurrencyOpen} onClose={() => setIsMultiCurrencyOpen(false)} />
+      <TipsModal isOpen={isTipsOpen} onClose={() => setIsTipsOpen(false)} userName="Александр Петров" />
+      <FamilyAccessModal isOpen={isFamilyAccessOpen} onClose={() => setIsFamilyAccessOpen(false)} />
 
       {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />

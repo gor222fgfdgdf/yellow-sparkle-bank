@@ -168,7 +168,7 @@ const TipsModal = ({ isOpen, onClose, userName }: TipsModalProps) => {
                 <div className="bg-card rounded-2xl p-6 border border-border">
                   <div className="flex justify-center mb-4">
                     <div className="bg-white p-4 rounded-xl">
-                      <QRCode value={personalLink} size={180} />
+                      <QRCodeComponent value={personalLink} size={180} />
                     </div>
                   </div>
                   <p className="text-center text-muted-foreground text-sm mb-4">
@@ -302,38 +302,36 @@ const TipsModal = ({ isOpen, onClose, userName }: TipsModalProps) => {
   );
 };
 
-// Simple QR Code component using react-qr-code style (inline SVG)
-const QRCodeComponent = ({ value, size }: { value: string; size: number }) => {
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        background: "#fff",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <svg viewBox="0 0 100 100" width={size - 20} height={size - 20}>
-        <rect x="0" y="0" width="30" height="30" fill="#000" />
-        <rect x="70" y="0" width="30" height="30" fill="#000" />
-        <rect x="0" y="70" width="30" height="30" fill="#000" />
-        <rect x="5" y="5" width="20" height="20" fill="#fff" />
-        <rect x="75" y="5" width="20" height="20" fill="#fff" />
-        <rect x="5" y="75" width="20" height="20" fill="#fff" />
-        <rect x="10" y="10" width="10" height="10" fill="#000" />
-        <rect x="80" y="10" width="10" height="10" fill="#000" />
-        <rect x="10" y="80" width="10" height="10" fill="#000" />
-        <rect x="40" y="0" width="5" height="5" fill="#000" />
-        <rect x="50" y="5" width="5" height="5" fill="#000" />
-        <rect x="40" y="10" width="5" height="5" fill="#000" />
-        <rect x="35" y="35" width="30" height="30" fill="#000" />
-        <rect x="40" y="40" width="20" height="20" fill="#fff" />
-        <rect x="45" y="45" width="10" height="10" fill="#000" />
-      </svg>
-    </div>
-  );
-};
+// Simple QR Code component
+const QRCodeComponent = ({ value, size }: { value: string; size: number }) => (
+  <div
+    style={{
+      width: size,
+      height: size,
+      background: "#fff",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    <svg viewBox="0 0 100 100" width={size - 20} height={size - 20}>
+      <rect x="0" y="0" width="30" height="30" fill="#000" />
+      <rect x="70" y="0" width="30" height="30" fill="#000" />
+      <rect x="0" y="70" width="30" height="30" fill="#000" />
+      <rect x="5" y="5" width="20" height="20" fill="#fff" />
+      <rect x="75" y="5" width="20" height="20" fill="#fff" />
+      <rect x="5" y="75" width="20" height="20" fill="#fff" />
+      <rect x="10" y="10" width="10" height="10" fill="#000" />
+      <rect x="80" y="10" width="10" height="10" fill="#000" />
+      <rect x="10" y="80" width="10" height="10" fill="#000" />
+      <rect x="40" y="0" width="5" height="5" fill="#000" />
+      <rect x="50" y="5" width="5" height="5" fill="#000" />
+      <rect x="40" y="10" width="5" height="5" fill="#000" />
+      <rect x="35" y="35" width="30" height="30" fill="#000" />
+      <rect x="40" y="40" width="20" height="20" fill="#fff" />
+      <rect x="45" y="45" width="10" height="10" fill="#000" />
+    </svg>
+  </div>
+);
 
 export default TipsModal;
