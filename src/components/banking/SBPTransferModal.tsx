@@ -24,7 +24,7 @@ const banks = [
   { id: "sber", name: "Сбербанк", color: "bg-green-600" },
   { id: "vtb", name: "ВТБ", color: "bg-blue-600" },
   { id: "alpha", name: "Альфа-Банк", color: "bg-red-600" },
-  { id: "tinkoff", name: "Тинькофф", color: "bg-yellow-500" },
+  { id: "rshb", name: "Россельхозбанк", color: "bg-green-600" },
   { id: "raiff", name: "Райффайзен", color: "bg-yellow-600" },
   { id: "gazprom", name: "Газпромбанк", color: "bg-blue-800" },
   { id: "open", name: "Открытие", color: "bg-teal-600" },
