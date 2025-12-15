@@ -13,6 +13,7 @@ interface AccountDetailModalProps {
   onTransfer: () => void;
   onTopUp: () => void;
   onCardSettings?: () => void;
+  cardHolderName?: string;
 }
 
 const formatCurrency = (value: number) => {
@@ -35,7 +36,8 @@ const AccountDetailModal = ({
   transactions, 
   onTransfer, 
   onTopUp,
-  onCardSettings 
+  onCardSettings,
+  cardHolderName = "CARDHOLDER"
 }: AccountDetailModalProps) => {
   const [activeSection, setActiveSection] = useState<"main" | "history" | "details">("main");
 
@@ -73,7 +75,7 @@ const AccountDetailModal = ({
         <div className="flex justify-between items-end">
           <div>
             <p className="text-xs opacity-80">Владелец</p>
-            <p className="font-medium">ALEKSANDR PETROV</p>
+            <p className="font-medium">{cardHolderName}</p>
           </div>
           <div className="text-right">
             <p className="text-xs opacity-80">Срок</p>
