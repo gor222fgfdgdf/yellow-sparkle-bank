@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import UnionPayLogo from "./UnionPayLogo";
 
 interface CardManagementProps {
   onClose: () => void;
@@ -200,7 +201,7 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
           <div className="p-4 space-y-6">
             <div className="bg-gradient-to-br from-foreground to-neutral-700 rounded-2xl p-6 aspect-[1.6/1] relative overflow-hidden">
               <div className="absolute top-6 left-6">
-                <p className="text-card text-sm opacity-70">Тинькофф</p>
+                <p className="text-card text-sm opacity-70">Россельхозбанк</p>
               </div>
               <div className="absolute bottom-16 left-6">
                 <p className="text-card text-lg tracking-widest font-mono">•••• •••• •••• ••••</p>
@@ -213,7 +214,9 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
                 <p className="text-card/70 text-xs">СРОК</p>
                 <p className="text-card text-sm">12/28</p>
               </div>
-              <div className="absolute top-6 right-6 w-12 h-8 bg-primary rounded-md" />
+              <div className="absolute top-5 right-5">
+                <UnionPayLogo className="w-14 h-9" />
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -275,9 +278,9 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
 
         <div className="p-4 space-y-6">
           <div className={`relative transition-all ${isCardFrozen ? "opacity-60 grayscale" : ""}`}>
-            <div className="bg-gradient-to-br from-primary to-amber-400 rounded-2xl p-6 aspect-[1.6/1] relative overflow-hidden shadow-lg">
+            <div className="bg-gradient-to-br from-primary to-primary/70 rounded-2xl p-6 aspect-[1.6/1] relative overflow-hidden shadow-lg">
               <div className="absolute top-6 left-6">
-                <p className="text-primary-foreground text-sm font-medium">Тинькофф</p>
+                <p className="text-primary-foreground text-sm font-medium">Россельхозбанк</p>
               </div>
               <div className="absolute bottom-16 left-6">
                 <p className="text-primary-foreground text-lg tracking-widest font-mono">•••• •••• •••• 7823</p>
@@ -290,9 +293,8 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
                 <p className="text-primary-foreground/70 text-xs">СРОК</p>
                 <p className="text-primary-foreground text-sm font-medium">12/28</p>
               </div>
-              <div className="absolute top-6 right-6 w-12 h-12">
-                <div className="w-8 h-8 rounded-full bg-primary-foreground/30 absolute right-0" />
-                <div className="w-8 h-8 rounded-full bg-primary-foreground/30 absolute right-4" />
+              <div className="absolute top-5 right-5">
+                <UnionPayLogo className="w-14 h-9" />
               </div>
             </div>
             {isCardFrozen && (
