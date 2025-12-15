@@ -1,4 +1,4 @@
-import { X, Calendar, Tag, CreditCard, Clock, MapPin, Receipt, Copy, Share2, Flag, ChevronRight } from "lucide-react";
+import { X, Calendar, Tag, CreditCard, Clock, MapPin, Receipt, Copy, Share2, Flag, ChevronRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -16,6 +16,7 @@ interface TransactionDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   transaction: Transaction | null;
+  onRepeat?: (transaction: Transaction) => void;
 }
 
 const formatCurrency = (value: number) => {
@@ -88,10 +89,15 @@ const formatTime = () => {
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 };
 
-const TransactionDetailModal = ({ isOpen, onClose, transaction }: TransactionDetailModalProps) => {
+const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: TransactionDetailModalProps) => {
   if (!isOpen || !transaction) return null;
 
   const IconComponent = transaction.icon;
+  
+  const canRepeat = !transaction.isIncoming && 
+    !transaction.category.toLowerCase().includes("перевод") && 
+    !transaction.category.toLowerCase().includes("пополнение") &&
+    !transaction.category.toLowerCase().includes("зарплата");
   
   const handleCopyId = () => {
     navigator.clipboard.writeText(transaction.id);
@@ -111,6 +117,14 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction }: TransactionDet
 
   const handleReport = () => {
     toast.info("Заявка на оспаривание отправлена");
+  };
+
+  const handleRepeat = () => {
+    if (onRepeat) {
+      onRepeat(transaction);
+    }
+    onClose();
+    toast.success("Платёж создан на основе операции");
   };
 
   return (
@@ -229,6 +243,15 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction }: TransactionDet
 
         {/* Actions */}
         <div className="p-4 border-t border-border space-y-3">
+          {canRepeat && (
+            <Button
+              className="w-full"
+              onClick={handleRepeat}
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Повторить операцию
+            </Button>
+          )}
           <div className="flex gap-3">
             <Button
               variant="outline"

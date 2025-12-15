@@ -588,6 +588,21 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
         isOpen={!!selectedTransaction}
         onClose={() => setSelectedTransaction(null)}
         transaction={selectedTransaction}
+        onRepeat={(tx) => {
+          // Find matching category for the transaction
+          const matchingCategory = categories.find(cat => 
+            tx.category.toLowerCase().includes(cat.label.toLowerCase().split(" ")[0]) ||
+            cat.label.toLowerCase().includes(tx.category.toLowerCase().split(" ")[0])
+          );
+          if (matchingCategory && matchingCategory.label !== "Ещё") {
+            setSelectedCategory(matchingCategory);
+            setIsPaymentModalOpen(true);
+          } else {
+            // Default to first available category
+            setSelectedCategory(categories[0]);
+            setIsPaymentModalOpen(true);
+          }
+        }}
       />
     </div>
   );
