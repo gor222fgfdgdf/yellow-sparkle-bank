@@ -395,11 +395,6 @@ const Index = () => {
           </div>
         </div>
       </header>
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-semibold">АП</span>
-          </div>
-        </div>
-      </header>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
         {renderTabContent()}
