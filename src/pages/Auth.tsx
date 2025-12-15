@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Delete, Fingerprint, Eye, EyeOff, AlertCircle } from "lucide-react";
+import RSHBLogo from "@/components/banking/RSHBLogo";
 
 const DEMO_EMAIL = "egor.kotikov@demo.bank";
 const DEMO_PASSWORD = "demo123456";
@@ -152,9 +153,7 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
       {/* Logo */}
-      <div className="w-20 h-20 rounded-2xl bg-primary flex items-center justify-center mb-8">
-        <span className="text-2xl font-bold text-primary-foreground">РСХБ</span>
-      </div>
+      <RSHBLogo className="w-20 h-20 mb-8" />
 
       {/* Title */}
       <h1 className="text-xl font-bold text-foreground mb-2">
