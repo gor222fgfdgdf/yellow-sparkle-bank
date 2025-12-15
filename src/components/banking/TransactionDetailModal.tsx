@@ -23,17 +23,66 @@ const formatCurrency = (value: number) => {
 };
 
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("ru-RU", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  // Handle Russian date formats like "15 дек", "Сегодня", "Вчера"
+  if (dateString === "Сегодня") {
+    return new Date().toLocaleDateString("ru-RU", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+  if (dateString === "Вчера") {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return yesterday.toLocaleDateString("ru-RU", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+  
+  // Try parsing ISO date format first (YYYY-MM-DD)
+  const isoDate = new Date(dateString);
+  if (!isNaN(isoDate.getTime())) {
+    return isoDate.toLocaleDateString("ru-RU", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+  
+  // Handle Russian short format "15 дек"
+  const monthMap: Record<string, number> = {
+    "янв": 0, "фев": 1, "мар": 2, "апр": 3, "май": 4, "июн": 5,
+    "июл": 6, "авг": 7, "сен": 8, "окт": 9, "ноя": 10, "дек": 11,
+  };
+  
+  const parts = dateString.split(" ");
+  if (parts.length >= 2) {
+    const day = parseInt(parts[0]);
+    const monthStr = parts[1].toLowerCase().slice(0, 3);
+    const month = monthMap[monthStr];
+    
+    if (!isNaN(day) && month !== undefined) {
+      const year = new Date().getFullYear();
+      const date = new Date(year, month, day);
+      return date.toLocaleDateString("ru-RU", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
+  }
+  
+  // Fallback: return the original string
+  return dateString;
 };
 
-const formatTime = (dateString: string) => {
-  const date = new Date(dateString);
+const formatTime = () => {
   const hours = Math.floor(Math.random() * 12) + 8;
   const minutes = Math.floor(Math.random() * 60);
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
@@ -108,7 +157,7 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction }: TransactionDet
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Время</p>
-                <p className="font-medium text-foreground">{formatTime(transaction.date)}</p>
+                <p className="font-medium text-foreground">{formatTime()}</p>
               </div>
             </div>
 
@@ -159,8 +208,10 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction }: TransactionDet
             )}
           </div>
 
-          {/* Cashback info for expenses */}
-          {!transaction.isIncoming && (
+          {/* Cashback info for expenses (exclude internal transfers) */}
+          {!transaction.isIncoming && 
+           !transaction.category.toLowerCase().includes("перевод") && 
+           !transaction.category.toLowerCase().includes("пополнение") && (
             <div className="mx-4 mb-4 p-4 bg-primary/10 rounded-2xl">
               <div className="flex items-center justify-between">
                 <div>
