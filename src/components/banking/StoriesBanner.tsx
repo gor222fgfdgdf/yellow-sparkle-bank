@@ -38,7 +38,7 @@ const stories: Story[] = [
     subtitle: "Подключить", 
     gradient: "from-foreground to-neutral-600",
     content: {
-      heading: "Тинькофф Premium",
+      heading: "РСХБ Premium",
       description: "Получите эксклюзивные привилегии с премиальным обслуживанием.",
       cta: "Подключить за 990 ₽/мес",
       details: ["Повышенный кэшбэк до 10%", "Приоритетная поддержка", "Бесплатные переводы"],
