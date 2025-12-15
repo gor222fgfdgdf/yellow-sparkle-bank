@@ -9,6 +9,7 @@ import type { Transaction } from "./TransactionList";
 import AnalyticsSection from "./AnalyticsSection";
 import AutoPaymentsModal from "./AutoPaymentsModal";
 import PaymentTemplatesModal from "./PaymentTemplatesModal";
+import TransactionDetailModal from "./TransactionDetailModal";
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -159,6 +160,15 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<{
+    id: string;
+    name: string;
+    category: string;
+    amount: number;
+    date: string;
+    isIncoming: boolean;
+    icon: any;
+  } | null>(null);
   const { toast } = useToast();
   const categories = [
     { icon: Smartphone, label: "Мобильная связь", color: "bg-blue-500/10 text-blue-600" },
@@ -503,9 +513,18 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
               {txns.map((transaction) => {
                 const IconComponent = transaction.icon;
                 return (
-                  <div
+                  <button
                     key={transaction.id}
-                    className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+                    onClick={() => setSelectedTransaction({
+                      id: transaction.id,
+                      name: transaction.name,
+                      category: transaction.category,
+                      amount: transaction.amount,
+                      date: transaction.date,
+                      isIncoming: transaction.isIncoming,
+                      icon: transaction.icon,
+                    })}
+                    className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors text-left"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
@@ -519,7 +538,7 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
                     <span className={`font-semibold ${transaction.isIncoming ? "text-green-600" : "text-foreground"}`}>
                       {transaction.isIncoming ? "+" : "-"}{formatCurrency(transaction.amount)} ₽
                     </span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -563,6 +582,12 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
         isOpen={isTemplatesOpen}
         onClose={() => setIsTemplatesOpen(false)}
         onPayment={onPayment}
+      />
+
+      <TransactionDetailModal
+        isOpen={!!selectedTransaction}
+        onClose={() => setSelectedTransaction(null)}
+        transaction={selectedTransaction}
       />
     </div>
   );
