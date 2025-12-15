@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Account } from "./AccountsList";
 import type { Transaction } from "./TransactionList";
+import UnionPayLogo from "./UnionPayLogo";
 
 interface AccountDetailModalProps {
   isOpen: boolean;
@@ -69,7 +70,7 @@ const AccountDetailModal = ({
       <div className="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-5 text-primary-foreground">
         <div className="flex justify-between items-start mb-8">
           <p className="text-sm opacity-80">Дебетовая карта</p>
-          <span className="text-xl font-bold">UnionPay</span>
+          <UnionPayLogo className="w-14 h-9" />
         </div>
         <p className="text-lg tracking-widest mb-4">•••• •••• •••• {account.cardNumber}</p>
         <div className="flex justify-between items-end">
@@ -283,7 +284,7 @@ const AccountDetailModal = ({
               <p className="text-sm opacity-80">Кредитная карта</p>
               <p className="text-lg tracking-widest mt-1">•••• {account.cardNumber}</p>
             </div>
-            <span className="text-xl font-bold">UnionPay</span>
+            <UnionPayLogo className="w-14 h-9" />
           </div>
           <div className="mt-4">
             <div className="flex justify-between text-sm mb-2">
