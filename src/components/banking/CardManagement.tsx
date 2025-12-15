@@ -220,9 +220,9 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
               <p className="text-sm font-medium text-muted-foreground px-1">Выберите тип карты</p>
               
               {[
-                { name: "Tinkoff Black", desc: "Бесплатная доставка", price: "Бесплатно" },
-                { name: "Tinkoff Gold", desc: "Премиальные преимущества", price: "990 ₽/мес" },
-                { name: "Tinkoff Platinum", desc: "Эксклюзивные привилегии", price: "1990 ₽/мес" },
+                { name: "Union Pay", desc: "Бесплатная доставка", price: "Бесплатно" },
+                { name: "Union Pay Gold", desc: "Премиальные преимущества", price: "990 ₽/мес" },
+                { name: "Union Pay Platinum", desc: "Эксклюзивные привилегии", price: "1990 ₽/мес" },
               ].map((card, index) => (
                 <button
                   key={card.name}
@@ -409,7 +409,7 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
             </div>
             <div className="flex justify-between py-2 border-b border-border">
               <span className="text-muted-foreground">Тип карты</span>
-              <span className="text-foreground">Tinkoff Black</span>
+              <span className="text-foreground">Union Pay</span>
             </div>
             <div className="flex justify-between py-2">
               <span className="text-muted-foreground">Статус</span>

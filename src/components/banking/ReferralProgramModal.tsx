@@ -58,8 +58,8 @@ const ReferralProgramModal = ({ isOpen, onClose }: ReferralProgramModalProps) =>
   const shareLink = async () => {
     if (navigator.share) {
       await navigator.share({
-        title: "Присоединяйся к Тинькофф!",
-        text: "Открой карту Tinkoff Black и получи бонус 1500₽",
+        title: "Присоединяйся к Россельхозбанку!",
+        text: "Открой карту Union Pay и получи бонус 1500₽",
         url: referralLink,
       });
     } else {
@@ -145,7 +145,7 @@ const ReferralProgramModal = ({ isOpen, onClose }: ReferralProgramModalProps) =>
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Друг открывает карту</p>
-                  <p className="text-sm text-muted-foreground">По вашей ссылке оформляет Tinkoff Black</p>
+                  <p className="text-sm text-muted-foreground">По вашей ссылке оформляет Union Pay</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
