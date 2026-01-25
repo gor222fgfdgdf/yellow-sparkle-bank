@@ -87,7 +87,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   }, [transactions, period, selectedAccount, customStartDate, customEndDate]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("ru-RU", {
+    return new Date(dateString).toLocaleDateString("en-US", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric"
@@ -95,7 +95,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   };
 
   const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " ₽";
+    return amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " RUB";
   };
 
   const generatePDF = () => {
@@ -109,7 +109,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
-    doc.text("ВЫПИСКА ПО СЧЁТУ", 20, 22);
+    doc.text("ACCOUNT STATEMENT", 20, 22);
     
     // Account and period info
     doc.setTextColor(60, 60, 60);
@@ -117,24 +117,24 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setFont("helvetica", "normal");
     
     const accountName = selectedAccount === "all" 
-      ? "Все счета" 
-      : accounts.find(a => a.id === selectedAccount)?.name || "Неизвестный счёт";
+      ? "All Accounts" 
+      : accounts.find(a => a.id === selectedAccount)?.name || "Unknown Account";
     
-    doc.text(`Счёт: ${accountName}`, 20, 45);
-    doc.text(`Период: ${formatDate(start.toISOString())} — ${formatDate(end.toISOString())}`, 20, 52);
-    doc.text(`Дата формирования: ${formatDate(new Date().toISOString())}`, 20, 59);
+    doc.text(`Account: ${accountName}`, 20, 45);
+    doc.text(`Period: ${formatDate(start.toISOString())} - ${formatDate(end.toISOString())}`, 20, 52);
+    doc.text(`Generated: ${formatDate(new Date().toISOString())}`, 20, 59);
 
     // Transactions table
     const tableData = filteredTransactions.map(t => [
       formatDate(t.date),
       t.name,
       t.category,
-      (t.is_income ? "+" : "−") + formatCurrency(Math.abs(t.amount))
+      (t.is_income ? "+" : "-") + formatCurrency(Math.abs(t.amount))
     ]);
 
     autoTable(doc, {
       startY: 68,
-      head: [["Дата", "Операция", "Категория", "Сумма"]],
+      head: [["Date", "Transaction", "Category", "Amount"]],
       body: tableData,
       styles: { 
         fontSize: 9,
@@ -181,36 +181,36 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(60, 60, 60);
-    doc.text("ИТОГО ЗА ПЕРИОД:", 20, finalY + 18);
+    doc.text("PERIOD SUMMARY:", 20, finalY + 18);
     
     doc.setFont("helvetica", "normal");
     doc.setTextColor(34, 139, 34);
-    doc.text(`Поступления: +${formatCurrency(income)}`, 20, finalY + 28);
+    doc.text(`Income: +${formatCurrency(income)}`, 20, finalY + 28);
     
     doc.setTextColor(200, 50, 50);
-    doc.text(`Расходы: −${formatCurrency(expense)}`, 20, finalY + 36);
+    doc.text(`Expenses: -${formatCurrency(expense)}`, 20, finalY + 36);
     
     doc.setFont("helvetica", "bold");
     doc.setTextColor(balance >= 0 ? 34 : 200, balance >= 0 ? 139 : 50, balance >= 0 ? 34 : 50);
-    doc.text(`Баланс: ${balance >= 0 ? "+" : "−"}${formatCurrency(Math.abs(balance))}`, 20, finalY + 46);
+    doc.text(`Balance: ${balance >= 0 ? "+" : "-"}${formatCurrency(Math.abs(balance))}`, 20, finalY + 46);
     
     // Footer
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
     doc.setFont("helvetica", "normal");
-    doc.text(`Документ сформирован автоматически. Операций: ${filteredTransactions.length}`, 20, 285);
+    doc.text(`Document generated automatically. Transactions: ${filteredTransactions.length}`, 20, 285);
 
     return doc;
   };
 
   const generateCSV = () => {
     const { start, end } = getDateRange();
-    const headers = ["Дата", "Операция", "Категория", "Тип", "Сумма"];
+    const headers = ["Date", "Transaction", "Category", "Type", "Amount"];
     const rows = filteredTransactions.map(t => [
       formatDate(t.date),
       `"${t.name}"`,
       `"${t.category}"`,
-      t.is_income ? "Поступление" : "Расход",
+      t.is_income ? "Income" : "Expense",
       (t.is_income ? "" : "-") + Math.abs(t.amount).toFixed(2)
     ]);
     
@@ -219,10 +219,10 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     
     const summary = [
       [],
-      ["ИТОГО"],
-      ["Поступления", "", "", "", income.toFixed(2)],
-      ["Расходы", "", "", "", (-expense).toFixed(2)],
-      ["Баланс", "", "", "", (income - expense).toFixed(2)]
+      ["SUMMARY"],
+      ["Income", "", "", "", income.toFixed(2)],
+      ["Expenses", "", "", "", (-expense).toFixed(2)],
+      ["Balance", "", "", "", (income - expense).toFixed(2)]
     ];
     
     const csvContent = [headers, ...rows, ...summary].map(row => row.join(";")).join("\n");
@@ -246,26 +246,26 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     try {
       if (format === "pdf") {
         const doc = generatePDF();
-        doc.save(`выписка_${new Date().toISOString().split("T")[0]}.pdf`);
-        toast.success("PDF-выписка скачана");
+        doc.save(`statement_${new Date().toISOString().split("T")[0]}.pdf`);
+        toast.success("PDF statement downloaded");
       } else if (format === "csv") {
         const csv = generateCSV();
         const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `выписка_${new Date().toISOString().split("T")[0]}.csv`;
+        link.download = `statement_${new Date().toISOString().split("T")[0]}.csv`;
         link.click();
-        toast.success("CSV-выписка скачана");
+        toast.success("CSV statement downloaded");
       } else if (format === "excel") {
         const csv = generateCSV();
         const blob = new Blob(["\uFEFF" + csv], { type: "application/vnd.ms-excel;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `выписка_${new Date().toISOString().split("T")[0]}.xls`;
+        link.download = `statement_${new Date().toISOString().split("T")[0]}.xls`;
         link.click();
-        toast.success("Excel-выписка скачана");
+        toast.success("Excel statement downloaded");
       }
     } catch (error) {
       toast.error("Ошибка при экспорте");
