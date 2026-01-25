@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FileText, FileSpreadsheet, Mail, Download, Check } from "lucide-react";
+import { FileText, FileSpreadsheet, Mail, Download, Check, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -15,7 +15,8 @@ interface Transaction {
   category: string;
   amount: number;
   date: string;
-  isIncoming?: boolean;
+  is_income?: boolean;
+  account_id?: string;
 }
 
 interface Account {
@@ -37,84 +38,205 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   const [format, setFormat] = useState<string>("pdf");
   const [email, setEmail] = useState("");
   const [isExporting, setIsExporting] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState<string>("");
+  const [customEndDate, setCustomEndDate] = useState<string>("");
 
-  const filterTransactionsByPeriod = () => {
+  const getDateRange = (): { start: Date; end: Date } => {
     const now = new Date();
-    let daysBack = 30;
+    const end = new Date(now);
+    end.setHours(23, 59, 59, 999);
+    
+    let start = new Date(now);
     
     switch (period) {
-      case "week": daysBack = 7; break;
-      case "month": daysBack = 30; break;
-      case "quarter": daysBack = 90; break;
-      case "year": daysBack = 365; break;
+      case "week":
+        start.setDate(now.getDate() - 7);
+        break;
+      case "month":
+        start.setMonth(now.getMonth() - 1);
+        break;
+      case "quarter":
+        start.setMonth(now.getMonth() - 3);
+        break;
+      case "year":
+        start.setFullYear(now.getFullYear() - 1);
+        break;
+      case "custom":
+        if (customStartDate) start = new Date(customStartDate);
+        if (customEndDate) {
+          const customEnd = new Date(customEndDate);
+          customEnd.setHours(23, 59, 59, 999);
+          return { start, end: customEnd };
+        }
+        break;
     }
+    
+    start.setHours(0, 0, 0, 0);
+    return { start, end };
+  };
 
-    return transactions.slice(0, Math.min(transactions.length, daysBack * 3));
+  const filteredTransactions = useMemo(() => {
+    const { start, end } = getDateRange();
+    
+    return transactions.filter(t => {
+      const transactionDate = new Date(t.date);
+      const isInDateRange = transactionDate >= start && transactionDate <= end;
+      const isAccountMatch = selectedAccount === "all" || t.account_id === selectedAccount;
+      return isInDateRange && isAccountMatch;
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [transactions, period, selectedAccount, customStartDate, customEndDate]);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+  };
+
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " ₽";
   };
 
   const generatePDF = () => {
     const doc = new jsPDF();
-    const filtered = filterTransactionsByPeriod();
+    const { start, end } = getDateRange();
     
-    // Header
-    doc.setFontSize(20);
-    doc.text("Выписка по счёту", 20, 20);
+    // Header with bank branding
+    doc.setFillColor(255, 221, 45);
+    doc.rect(0, 0, 210, 35, "F");
     
-    doc.setFontSize(12);
-    doc.text(`Период: ${getPeriodLabel()}`, 20, 30);
-    doc.text(`Счёт: ${selectedAccount === "all" ? "Все счета" : accounts.find(a => a.id === selectedAccount)?.name}`, 20, 38);
-    doc.text(`Дата формирования: ${new Date().toLocaleDateString("ru-RU")}`, 20, 46);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text("ВЫПИСКА ПО СЧЁТУ", 20, 22);
+    
+    // Account and period info
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    
+    const accountName = selectedAccount === "all" 
+      ? "Все счета" 
+      : accounts.find(a => a.id === selectedAccount)?.name || "Неизвестный счёт";
+    
+    doc.text(`Счёт: ${accountName}`, 20, 45);
+    doc.text(`Период: ${formatDate(start.toISOString())} — ${formatDate(end.toISOString())}`, 20, 52);
+    doc.text(`Дата формирования: ${formatDate(new Date().toISOString())}`, 20, 59);
 
-    // Table
-    const tableData = filtered.map(t => [
-      t.date,
+    // Transactions table
+    const tableData = filteredTransactions.map(t => [
+      formatDate(t.date),
       t.name,
       t.category,
-      (t.isIncoming ? "+" : "-") + t.amount.toLocaleString("ru-RU") + " ₽"
+      (t.is_income ? "+" : "−") + formatCurrency(Math.abs(t.amount))
     ]);
 
     autoTable(doc, {
-      startY: 55,
+      startY: 68,
       head: [["Дата", "Операция", "Категория", "Сумма"]],
       body: tableData,
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [255, 221, 45] as [number, number, number], textColor: [0, 0, 0] as [number, number, number] },
+      styles: { 
+        fontSize: 9,
+        cellPadding: 4,
+        font: "helvetica"
+      },
+      headStyles: { 
+        fillColor: [255, 221, 45],
+        textColor: [0, 0, 0],
+        fontStyle: "bold",
+        halign: "left"
+      },
+      columnStyles: {
+        0: { cellWidth: 28 },
+        1: { cellWidth: 70 },
+        2: { cellWidth: 45 },
+        3: { cellWidth: 40, halign: "right" }
+      },
+      alternateRowStyles: {
+        fillColor: [250, 250, 250]
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 3 && data.section === "body") {
+          const text = data.cell.raw as string;
+          if (text.startsWith("+")) {
+            data.cell.styles.textColor = [34, 139, 34];
+          } else {
+            data.cell.styles.textColor = [200, 50, 50];
+          }
+        }
+      }
     });
 
-    // Summary
-    const income = filtered.filter(t => t.isIncoming).reduce((sum, t) => sum + t.amount, 0);
-    const expense = filtered.filter(t => !t.isIncoming).reduce((sum, t) => sum + t.amount, 0);
+    // Summary section
+    const income = filteredTransactions.filter(t => t.is_income).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const expense = filteredTransactions.filter(t => !t.is_income).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const balance = income - expense;
     
     const finalY = (doc as any).lastAutoTable?.finalY || 100;
-    doc.setFontSize(12);
-    doc.text(`Всего поступлений: +${income.toLocaleString("ru-RU")} ₽`, 20, finalY + 15);
-    doc.text(`Всего расходов: -${expense.toLocaleString("ru-RU")} ₽`, 20, finalY + 23);
-    doc.text(`Итого: ${(income - expense).toLocaleString("ru-RU")} ₽`, 20, finalY + 31);
+    
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, finalY + 8, 190, finalY + 8);
+    
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(60, 60, 60);
+    doc.text("ИТОГО ЗА ПЕРИОД:", 20, finalY + 18);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(34, 139, 34);
+    doc.text(`Поступления: +${formatCurrency(income)}`, 20, finalY + 28);
+    
+    doc.setTextColor(200, 50, 50);
+    doc.text(`Расходы: −${formatCurrency(expense)}`, 20, finalY + 36);
+    
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(balance >= 0 ? 34 : 200, balance >= 0 ? 139 : 50, balance >= 0 ? 34 : 50);
+    doc.text(`Баланс: ${balance >= 0 ? "+" : "−"}${formatCurrency(Math.abs(balance))}`, 20, finalY + 46);
+    
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Документ сформирован автоматически. Операций: ${filteredTransactions.length}`, 20, 285);
 
     return doc;
   };
 
   const generateCSV = () => {
-    const filtered = filterTransactionsByPeriod();
-    const headers = ["Дата", "Операция", "Категория", "Сумма"];
-    const rows = filtered.map(t => [
-      t.date,
-      t.name,
-      t.category,
-      (t.isIncoming ? "+" : "-") + t.amount
+    const { start, end } = getDateRange();
+    const headers = ["Дата", "Операция", "Категория", "Тип", "Сумма"];
+    const rows = filteredTransactions.map(t => [
+      formatDate(t.date),
+      `"${t.name}"`,
+      `"${t.category}"`,
+      t.is_income ? "Поступление" : "Расход",
+      (t.is_income ? "" : "-") + Math.abs(t.amount).toFixed(2)
     ]);
     
-    const csvContent = [headers, ...rows].map(row => row.join(";")).join("\n");
+    const income = filteredTransactions.filter(t => t.is_income).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const expense = filteredTransactions.filter(t => !t.is_income).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    
+    const summary = [
+      [],
+      ["ИТОГО"],
+      ["Поступления", "", "", "", income.toFixed(2)],
+      ["Расходы", "", "", "", (-expense).toFixed(2)],
+      ["Баланс", "", "", "", (income - expense).toFixed(2)]
+    ];
+    
+    const csvContent = [headers, ...rows, ...summary].map(row => row.join(";")).join("\n");
     return csvContent;
   };
 
   const getPeriodLabel = () => {
     switch (period) {
-      case "week": return "Неделя";
-      case "month": return "Месяц";
-      case "quarter": return "Квартал";
-      case "year": return "Год";
-      default: return "Месяц";
+      case "week": return "За неделю";
+      case "month": return "За месяц";
+      case "quarter": return "За квартал";
+      case "year": return "За год";
+      case "custom": return "Произвольный период";
+      default: return "За месяц";
     }
   };
 
@@ -199,13 +321,44 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="week">Неделя</SelectItem>
-                <SelectItem value="month">Месяц</SelectItem>
-                <SelectItem value="quarter">Квартал</SelectItem>
-                <SelectItem value="year">Год</SelectItem>
+                <SelectItem value="week">За неделю</SelectItem>
+                <SelectItem value="month">За месяц</SelectItem>
+                <SelectItem value="quarter">За квартал</SelectItem>
+                <SelectItem value="year">За год</SelectItem>
+                <SelectItem value="custom">Произвольный период</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {/* Custom Date Range */}
+          {period === "custom" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>С</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input 
+                    type="date" 
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>По</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input 
+                    type="date" 
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Format Selection */}
           <div className="space-y-3">
@@ -278,12 +431,28 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
           </div>
 
           {/* Preview */}
-          <div className="bg-muted rounded-xl p-4">
-            <p className="text-sm text-muted-foreground mb-2">Будет экспортировано</p>
+          <div className="bg-muted rounded-xl p-4 space-y-3">
+            <p className="text-sm text-muted-foreground">Будет экспортировано</p>
             <div className="flex items-center justify-between">
-              <span className="font-medium text-foreground">{filterTransactionsByPeriod().length} операций</span>
+              <span className="font-medium text-foreground">{filteredTransactions.length} операций</span>
               <Check className="w-5 h-5 text-success" />
             </div>
+            {filteredTransactions.length > 0 && (
+              <div className="text-sm text-muted-foreground space-y-1">
+                <div className="flex justify-between">
+                  <span>Поступления:</span>
+                  <span className="text-success font-medium">
+                    +{filteredTransactions.filter(t => t.is_income).reduce((sum, t) => sum + Math.abs(t.amount), 0).toLocaleString("ru-RU")} ₽
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Расходы:</span>
+                  <span className="text-destructive font-medium">
+                    −{filteredTransactions.filter(t => !t.is_income).reduce((sum, t) => sum + Math.abs(t.amount), 0).toLocaleString("ru-RU")} ₽
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </SheetContent>
