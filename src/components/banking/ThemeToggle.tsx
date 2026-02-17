@@ -13,7 +13,7 @@ type Theme = "light" | "dark" | "system";
 export const useTheme = () => {
   const [theme, setTheme] = useState<Theme>(() => {
     const stored = localStorage.getItem("banking_theme") as Theme;
-    return stored || "system";
+    return stored || "light";
   });
 
   useEffect(() => {
