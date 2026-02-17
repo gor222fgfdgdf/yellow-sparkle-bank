@@ -113,7 +113,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const { start, end } = getDateRange();
     const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
     const accountName = account?.name || "All Accounts";
-    const accountNumber = account?.card_number ? `40817810XXXXXX${account.card_number}` : "XXXXXXXXXXXXXXXXXXXX";
+    const accountNumber = account?.card_number || "XXXXXXXXXXXXXXXXXXXX";
     const ownerName = profile?.full_name || "Account Holder";
 
     const pageWidth = 210;

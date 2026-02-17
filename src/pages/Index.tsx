@@ -374,7 +374,7 @@ const Index = () => {
       <CashbackModal isOpen={isCashbackOpen} onClose={() => setIsCashbackOpen(false)} onWithdraw={handleCashbackWithdraw} />
       <CurrencyExchangeModal isOpen={isCurrencyOpen} onClose={() => setIsCurrencyOpen(false)} balance={mainAccountBalance} onExchange={handleCurrencyExchange} />
       <SubscriptionsModal isOpen={isSubscriptionsOpen} onClose={() => setIsSubscriptionsOpen(false)} transactions={transactions} />
-      <StatementExportModal isOpen={isStatementExportOpen} onClose={() => setIsStatementExportOpen(false)} transactions={transactions} accounts={accounts} />
+      <StatementExportModal isOpen={isStatementExportOpen} onClose={() => setIsStatementExportOpen(false)} transactions={(dbTransactions || []).map(tx => ({ id: tx.id, name: tx.name, category: tx.category, amount: Number(tx.amount), date: tx.date, is_income: tx.is_income || false, account_id: tx.account_id }))} accounts={(dbAccounts || []).map(acc => ({ id: acc.id, name: acc.name, balance: Number(acc.balance), card_number: acc.card_number, type: acc.type }))} />
       <LoansModal isOpen={isLoansOpen} onClose={() => setIsLoansOpen(false)} />
       <InsuranceModal isOpen={isInsuranceOpen} onClose={() => setIsInsuranceOpen(false)} />
       <InvestmentPortfolioModal isOpen={isInvestmentPortfolioOpen} onClose={() => setIsInvestmentPortfolioOpen(false)} portfolioValue={investmentAccount?.balance || 0} />
