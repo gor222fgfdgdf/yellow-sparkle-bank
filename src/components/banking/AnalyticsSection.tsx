@@ -49,24 +49,13 @@ const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const getMonthsAgo = (dateStr: string): number => {
-    if (dateStr === "Сегодня" || dateStr === "Вчера") return 0;
-    
-    const monthMap: Record<string, number> = {
-      "янв": 0, "фев": 1, "мар": 2, "апр": 3, "май": 4, "июн": 5,
-      "июл": 6, "авг": 7, "сен": 8, "окт": 9, "ноя": 10, "дек": 11,
-    };
-    
-    const parts = dateStr.split(" ");
-    if (parts.length < 2) return 0;
-    
-    const monthStr = parts[1].toLowerCase();
-    const transMonth = monthMap[monthStr] ?? 11;
-    const currentMonth = new Date().getMonth();
-    
-    let diff = currentMonth - transMonth;
-    if (diff < 0) diff += 12;
-    return diff;
+  const getMonthsAgo = (t: Transaction): number => {
+    const rawDate = t.rawDate;
+    if (!rawDate) return 0;
+    const txDate = new Date(rawDate);
+    const now = new Date();
+    const diff = (now.getFullYear() - txDate.getFullYear()) * 12 + (now.getMonth() - txDate.getMonth());
+    return diff < 0 ? 0 : diff;
   };
 
   const filteredTransactions = useMemo(() => {
@@ -75,7 +64,7 @@ const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
                       period === "2months" ? 2 : 3;
 
     return transactions.filter(t => {
-      const monthsAgo = getMonthsAgo(t.date);
+      const monthsAgo = getMonthsAgo(t);
       return monthsAgo <= maxMonths && !t.isIncoming;
     });
   }, [transactions, period]);
@@ -107,21 +96,21 @@ const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
                       period === "1month" ? 1 : 
                       period === "2months" ? 2 : 3;
     return transactions
-      .filter(t => getMonthsAgo(t.date) <= maxMonths && t.isIncoming)
+      .filter(t => getMonthsAgo(t) <= maxMonths && t.isIncoming)
       .reduce((sum, t) => sum + t.amount, 0);
   }, [transactions, period]);
 
   // Current month expenses
   const currentMonthExpenses = useMemo(() => {
     return transactions
-      .filter(t => getMonthsAgo(t.date) === 0 && !t.isIncoming)
+      .filter(t => getMonthsAgo(t) === 0 && !t.isIncoming)
       .reduce((sum, t) => sum + t.amount, 0);
   }, [transactions]);
 
   // Previous month expenses
   const prevMonthExpenses = useMemo(() => {
     return transactions
-      .filter(t => getMonthsAgo(t.date) === 1 && !t.isIncoming)
+      .filter(t => getMonthsAgo(t) === 1 && !t.isIncoming)
       .reduce((sum, t) => sum + t.amount, 0);
   }, [transactions]);
 
@@ -132,7 +121,7 @@ const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
 
     transactions.forEach(t => {
       if (t.isIncoming) return;
-      const monthsAgo = getMonthsAgo(t.date);
+      const monthsAgo = getMonthsAgo(t);
       if (monthsAgo === 0) {
         currentMonthCats[t.category] = (currentMonthCats[t.category] || 0) + t.amount;
       } else if (monthsAgo === 1) {
@@ -156,7 +145,7 @@ const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
     const totals: Record<string, number> = {};
     transactions.forEach(t => {
       if (t.isIncoming) return;
-      const monthsAgo = getMonthsAgo(t.date);
+      const monthsAgo = getMonthsAgo(t);
       if (monthsAgo === 0) {
         totals[t.category] = (totals[t.category] || 0) + t.amount;
       }
