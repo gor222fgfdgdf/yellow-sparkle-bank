@@ -1,4 +1,5 @@
 import { ChevronRight } from "lucide-react";
+import UnionPayLogo from "./UnionPayLogo";
 import type { Account } from "@/components/banking/AccountsList";
 
 interface HomeAccountsListProps {
@@ -13,17 +14,17 @@ const getCardBadge = (account: Account) => {
   const name = account.name.toLowerCase();
   if (name.includes("мир") || name.includes("mir")) {
     return (
-      <div className="bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-1 rounded-lg">
-        <span>**{account.cardNumber}</span>
-        <div className="text-[9px] font-bold mt-0.5">МИР</div>
+      <div className="bg-primary rounded-lg px-2.5 py-1.5 flex flex-col items-center min-w-[56px]">
+        <span className="text-primary-foreground text-[10px] font-bold">**{account.cardNumber}</span>
+        <span className="text-primary-foreground text-[11px] font-black tracking-wide">МИР</span>
       </div>
     );
   }
   if (name.includes("union") || name.includes("юнион")) {
     return (
-      <div className="bg-teal-600 text-primary-foreground text-[10px] font-bold px-2.5 py-1 rounded-lg">
-        <span>**{account.cardNumber}</span>
-        <div className="text-[9px] mt-0.5">UnionPay</div>
+      <div className="bg-teal-600 rounded-lg px-2.5 py-1.5 flex flex-col items-end min-w-[56px]">
+        <span className="text-[10px] font-bold" style={{ color: "white" }}>**{account.cardNumber}</span>
+        <UnionPayLogo className="w-10 h-5 mt-0.5" />
       </div>
     );
   }
