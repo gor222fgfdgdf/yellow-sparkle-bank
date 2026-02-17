@@ -1,11 +1,18 @@
 import { useState } from "react";
-import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, QrCode, Send, Bell, Diamond, DollarSign, CalendarCheck, FileText, Percent, Shield, Users, Scan, Globe, Coffee as TipsIcon } from "lucide-react";
+import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, QrCode, Send, Bell, Diamond, DollarSign, CalendarCheck, FileText, Percent, Shield, Users, Scan, Globe, Coffee as TipsIcon, Search, MessageCircle, Eye } from "lucide-react";
 import RSHBLogo from "@/components/banking/RSHBLogo";
 import AccountsList, { type Account } from "@/components/banking/AccountsList";
 import QuickActions from "@/components/banking/QuickActions";
 import StoriesBanner from "@/components/banking/StoriesBanner";
 import TransactionList, { type Transaction } from "@/components/banking/TransactionList";
 import TransferModal from "@/components/banking/TransferModal";
+import HomePromoBanner from "@/components/banking/HomePromoBanner";
+import HomeStoryCards from "@/components/banking/HomeStoryCards";
+import HomePromoBannerSlider from "@/components/banking/HomePromoBannerSlider";
+import HomeWidgetGrid from "@/components/banking/HomeWidgetGrid";
+import HomeAccountsList from "@/components/banking/HomeAccountsList";
+import HomeCurrencyRates from "@/components/banking/HomeCurrencyRates";
+import HomeSelfEmployedBanner from "@/components/banking/HomeSelfEmployedBanner";
 import BottomNav from "@/components/banking/BottomNav";
 import CardManagement from "@/components/banking/CardManagement";
 import TopUpModal from "@/components/banking/TopUpModal";
@@ -239,107 +246,43 @@ const Index = () => {
         return <SupportPage />;
       case "menu":
         return <MenuPage onOpenCardManagement={() => setShowCardManagement(true)} />;
+      case "history":
+        return (
+          <>
+            <AllTransactionsModal isOpen={true} onClose={() => setActiveTab("home")} transactions={transactions} />
+          </>
+        );
       default:
         return (
           <>
-            <StoriesBanner 
-              onOpenCashback={() => setIsCashbackOpen(true)}
-              onOpenReferral={() => setIsReferralOpen(true)}
-              onOpenSBP={() => setIsSBPTransferOpen(true)}
-              onOpenLoyalty={() => setIsLoyaltyOpen(true)}
-              onOpenVirtualCards={() => setIsVirtualCardsOpen(true)}
+            <HomePromoBanner onOpenVirtualCards={() => setIsVirtualCardsOpen(true)} />
+            <HomeStoryCards 
               onOpenDeposits={() => setIsDepositsOpen(true)}
               onOpenInvestment={() => setIsInvestmentPortfolioOpen(true)}
-              onOpenInsurance={() => setIsInsuranceOpen(true)}
-              onOpenEducation={() => setIsEducationOpen(true)}
-              onOpenCalendar={() => setIsCalendarOpen(true)}
-              onOpenCharity={() => setIsCharityOpen(true)}
-              onOpenGovernment={() => setIsGovernmentOpen(true)}
+              onOpenCurrency={() => setIsCurrencyOpen(true)}
+              onOpenLoyalty={() => setIsLoyaltyOpen(true)}
             />
-            <AccountsList accounts={accounts} onAccountClick={handleAccountClick} onCardSettings={() => setShowCardManagement(true)} />
-            <QuickActions onTopUpClick={() => setIsTopUpOpen(true)} onTransferClick={() => setIsInternalTransferOpen(true)} onHistoryClick={() => setActiveTab("payments")} onMoreClick={() => setIsMoreOpen(true)} />
-
-            <div className="grid grid-cols-4 gap-3">
-              <button onClick={() => setIsSBPTransferOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center"><Send className="w-5 h-5 text-blue-600" /></div>
-                <span className="text-xs font-medium text-foreground">СБП</span>
-              </button>
-              <button onClick={() => setIsQRCodeOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center"><QrCode className="w-5 h-5 text-purple-600" /></div>
-                <span className="text-xs font-medium text-foreground">QR-код</span>
-              </button>
-              <button onClick={() => setIsCashbackOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center"><Diamond className="w-5 h-5 text-yellow-600" /></div>
-                <span className="text-xs font-medium text-foreground">Кэшбэк</span>
-              </button>
-              <button onClick={() => setIsCurrencyOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center"><DollarSign className="w-5 h-5 text-green-600" /></div>
-                <span className="text-xs font-medium text-foreground">Валюта</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <button onClick={() => setIsBudgetsOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center"><PiggyBank className="w-5 h-5 text-orange-600" /></div>
-                <span className="text-xs font-medium text-foreground">Бюджеты</span>
-              </button>
-              <button onClick={() => setIsSavingsGoalsOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center"><Target className="w-5 h-5 text-teal-600" /></div>
-                <span className="text-xs font-medium text-foreground">Цели</span>
-              </button>
-              <button onClick={() => setIsSubscriptionsOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center"><CalendarCheck className="w-5 h-5 text-pink-600" /></div>
-                <span className="text-xs font-medium text-foreground">Подписки</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-4 gap-3">
-              <button onClick={() => setIsStatementExportOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-slate-500/10 flex items-center justify-center"><FileText className="w-5 h-5 text-slate-600" /></div>
-                <span className="text-xs font-medium text-foreground">Выписка</span>
-              </button>
-              <button onClick={() => setIsLoansOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center"><Percent className="w-5 h-5 text-red-600" /></div>
-                <span className="text-xs font-medium text-foreground">Кредиты</span>
-              </button>
-              <button onClick={() => setIsInsuranceOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center"><Shield className="w-5 h-5 text-emerald-600" /></div>
-                <span className="text-xs font-medium text-foreground">Страховки</span>
-              </button>
-              <button onClick={() => setIsInvestmentPortfolioOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center"><TrendingUp className="w-5 h-5 text-indigo-600" /></div>
-                <span className="text-xs font-medium text-foreground">Портфель</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-4 gap-3">
-              <button onClick={() => setIsReferralOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center"><Users className="w-5 h-5 text-violet-600" /></div>
-                <span className="text-xs font-medium text-foreground">Друзья</span>
-              </button>
-              <button onClick={() => setIsBarcodeScannerOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center"><Scan className="w-5 h-5 text-cyan-600" /></div>
-                <span className="text-xs font-medium text-foreground">Сканер</span>
-              </button>
-              <button onClick={() => setIsMultiCurrencyOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center"><Globe className="w-5 h-5 text-amber-600" /></div>
-                <span className="text-xs font-medium text-foreground">Валюты</span>
-              </button>
-              <button onClick={() => setIsTipsOpen(true)} className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center"><Coffee className="w-5 h-5 text-rose-600" /></div>
-                <span className="text-xs font-medium text-foreground">Чаевые</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3">
-              <button onClick={() => setIsFamilyAccessOpen(true)} className="flex items-center gap-4 p-4 bg-card rounded-xl">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center"><Users className="w-6 h-6 text-primary" /></div>
-                <div className="text-left flex-1">
-                  <p className="font-medium text-foreground">Семейный доступ</p>
-                  <p className="text-sm text-muted-foreground">Карты для семьи с контролем расходов</p>
-                </div>
-              </button>
-            </div>
+            <HomePromoBannerSlider />
+            <HomeWidgetGrid
+              totalBalance={accounts.reduce((s, a) => s + a.balance, 0)}
+              onQRCode={() => setIsQRCodeOpen(true)}
+              onReferral={() => setIsReferralOpen(true)}
+              onCashback={() => setIsCashbackOpen(true)}
+              onAnalytics={() => setIsBudgetsOpen(true)}
+            />
+            <HomeAccountsList
+              accounts={accounts}
+              onAccountClick={handleAccountClick}
+              onShowAll={() => setShowCardManagement(true)}
+            />
+            <Button 
+              onClick={() => setIsDepositsOpen(true)}
+              className="w-full h-12 rounded-2xl text-base font-semibold"
+            >
+              Оформить новый продукт
+            </Button>
+            <HomeCurrencyRates onOpenCurrency={() => setIsCurrencyOpen(true)} />
+            <HomeSelfEmployedBanner />
           </>
         );
     }
@@ -347,27 +290,22 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <RSHBLogo className="w-10 h-10" />
-            <div>
-              <p className="text-sm text-muted-foreground">Добрый день</p>
-              <h1 className="text-xl font-bold text-foreground">{userName}</h1>
-            </div>
-          </div>
+      <header className="sticky top-0 z-10 bg-primary">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          <button className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+            <Eye className="w-5 h-5 text-primary-foreground" />
+          </button>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <button onClick={() => setIsNotificationsOpen(true)} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center relative">
-              <Bell className="w-5 h-5 text-foreground" />
+            <button className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+              <Search className="w-5 h-5 text-primary-foreground" />
+            </button>
+            <button onClick={() => setIsNotificationsOpen(true)} className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center relative">
+              <Bell className="w-5 h-5 text-primary-foreground" />
               {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">{unreadCount}</span>}
             </button>
-            <button onClick={signOut} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center" title="Выйти">
-              <LogOut className="w-5 h-5 text-foreground" />
+            <button onClick={() => setActiveTab("support")} className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+              <MessageCircle className="w-5 h-5 text-primary-foreground" />
             </button>
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-semibold">{userInitials}</span>
-            </div>
           </div>
         </div>
       </header>
