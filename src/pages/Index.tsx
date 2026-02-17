@@ -50,6 +50,7 @@ import CharityModal from "@/components/banking/CharityModal";
 import LoyaltyProgramModal from "@/components/banking/LoyaltyProgramModal";
 import FinancialCalendarModal from "@/components/banking/FinancialCalendarModal";
 import FinancialEducationModal from "@/components/banking/FinancialEducationModal";
+import SvoePage from "@/components/banking/SvoePage";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccounts, useUpdateAccountBalance } from "@/hooks/useAccounts";
 import { useTransactions, useCreateTransaction } from "@/hooks/useTransactions";
@@ -249,6 +250,8 @@ const Index = () => {
         return <MenuPage onOpenCardManagement={() => setShowCardManagement(true)} />;
       case "history":
         return <HistoryPage transactions={transactions} onBack={() => setActiveTab("home")} />;
+      case "svoe":
+        return <SvoePage />;
       default:
         return (
           <>
