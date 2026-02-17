@@ -227,7 +227,7 @@ const AccountDetailModal = ({
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Привязана к счёту</p>
-              <p className="text-sm font-medium text-foreground">**{account.cardNumber}</p>
+              <p className="text-sm font-medium text-foreground">**{account.accountNumber?.slice(-4) || account.cardNumber}</p>
             </div>
           </div>
         </div>
