@@ -35,9 +35,14 @@ interface StatementExportModalProps {
   accounts: Account[];
 }
 
-const formatDateEn = (dateString: string) => {
+
+
+const formatDateRu = (dateString: string) => {
   const d = new Date(dateString);
-  return d.toLocaleDateString("en-US", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}.${mm}.${yyyy}`;
 };
 
 const formatAmount = (value: number) => {
@@ -125,7 +130,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
     doc.text(
-      `CARD ACCOUNT STATEMENT ${accountNumber} for period ${formatDateEn(start.toISOString())} - ${formatDateEn(end.toISOString())}`,
+      `CARD ACCOUNT STATEMENT ${accountNumber} for period ${formatDateRu(start.toISOString())} - ${formatDateRu(end.toISOString())}`,
       margin, y, { maxWidth: pageWidth - margin * 2 }
     );
     y += 10;
@@ -135,10 +140,10 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setTextColor(0, 0, 0);
 
     const infoLines = [
-      `Statement date: ${formatDateEn(new Date().toISOString())}`,
+      `Statement date: ${formatDateRu(new Date().toISOString())}`,
       `Account currency: Russian Ruble (RUB)`,
       `Account holder: ${ownerName}`,
-      `Opening balance date: ${formatDateEn(start.toISOString())}`,
+      `Opening balance date: ${formatDateRu(start.toISOString())}`,
       `Branch: Regional Branch`,
     ];
 
@@ -182,7 +187,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
         : `-${formatAmount(t.amount)}`;
 
       return [
-        formatDateEn(t.date),
+        formatDateRu(t.date),
         expenseVal,
         incomeVal,
         description,
@@ -254,7 +259,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
 
-    doc.text(`Closing balance date: ${formatDateEn(end.toISOString())}`, margin, footerY);
+    doc.text(`Closing balance date: ${formatDateRu(end.toISOString())}`, margin, footerY);
     footerY += 5;
     doc.text(`Closing balance in account currency: ${formatAmount(currentBalance)} RUB`, margin, footerY);
     footerY += 8;
@@ -275,7 +280,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   const generateCSV = () => {
     const headers = ["Date", "Debit", "Credit", "Description", "Category", "Currency"];
     const rows = filteredTransactions.map((t) => [
-      formatDateEn(t.date),
+      formatDateRu(t.date),
       !t.is_income ? formatAmount(t.amount) : "0.00",
       t.is_income ? formatAmount(t.amount) : "0.00",
       `"${t.name}"`,
