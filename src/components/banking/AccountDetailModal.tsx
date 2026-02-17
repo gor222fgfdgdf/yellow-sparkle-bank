@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, ChevronRight, ArrowUpRight, ArrowDownLeft, Settings, Copy, Share2, CreditCard, PiggyBank, TrendingUp, Wallet, Plus, Minus, ArrowRightLeft, Percent, Calendar, Clock, DollarSign, PieChart, BarChart3, TrendingDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, Settings, Eye, EyeOff, ChevronRight, QrCode, FileText, Link2, RefreshCw, Info, CreditCard, PiggyBank, TrendingUp, Wallet, Minus, Percent, Calendar, Clock, DollarSign, PieChart, BarChart3, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Account } from "./AccountsList";
@@ -18,6 +18,10 @@ interface AccountDetailModalProps {
 }
 
 const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2 }).format(value);
+};
+
+const formatCurrencyShort = (value: number) => {
   return new Intl.NumberFormat("ru-RU").format(value);
 };
 
@@ -40,214 +44,270 @@ const AccountDetailModal = ({
   onCardSettings,
   cardHolderName = "CARDHOLDER"
 }: AccountDetailModalProps) => {
-  const [activeSection, setActiveSection] = useState<"main" | "history" | "details">("main");
+  const [showCardNumber, setShowCardNumber] = useState(false);
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
 
   if (!isOpen) return null;
 
-  // Filter transactions for this account (simplified - in real app would use account ID)
-  const accountTransactions = transactions.slice(0, 10);
+  const accountTransactions = transactions.slice(0, showAllTransactions ? 20 : 5);
 
-  const getAccountIcon = () => {
-    switch (account.type) {
-      case "card": return CreditCard;
-      case "savings": return PiggyBank;
-      case "investment": return TrendingUp;
-      case "credit": return Wallet;
-      default: return CreditCard;
-    }
-  };
+  // Group transactions by date
+  const groupedTransactions: Record<string, Transaction[]> = {};
+  accountTransactions.forEach(tx => {
+    const key = tx.date;
+    if (!groupedTransactions[key]) groupedTransactions[key] = [];
+    groupedTransactions[key].push(tx);
+  });
 
-  const handleCopyNumber = () => {
-    const number = account.cardNumber || account.id;
-    navigator.clipboard.writeText(number);
-    toast.success("Номер скопирован");
-  };
+  const renderCardView = () => (
+    <>
+      {/* Balance + Card Name */}
+      <div className="text-center pt-2 pb-4">
+        <p className="text-3xl font-bold text-foreground">{formatCurrency(account.balance)} ₽</p>
+        <p className="text-sm text-muted-foreground mt-1">{account.name}</p>
+      </div>
 
-  const IconComponent = getAccountIcon();
-
-  const renderCardDetails = () => (
-    <div className="space-y-4">
-      <div className="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-5 text-primary-foreground">
-        <div className="flex justify-between items-start mb-8">
-          <p className="text-sm opacity-80">Дебетовая карта</p>
-          <UnionPayLogo className="w-14 h-9" />
-        </div>
-        <p className="text-lg tracking-widest mb-4">•••• •••• •••• {account.cardNumber}</p>
-        <div className="flex justify-between items-end">
-          <div>
-            <p className="text-xs opacity-80">Владелец</p>
-            <p className="font-medium">{cardHolderName}</p>
+      {/* Card Visual */}
+      <div className="mx-auto w-[280px] h-[170px] rounded-2xl bg-gradient-to-br from-primary to-primary/70 p-5 relative overflow-hidden">
+        {/* Decorative circles */}
+        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-primary-foreground/5" />
+        <div className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full bg-primary-foreground/5" />
+        
+        <div className="relative z-10 h-full flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <p className="text-primary-foreground font-bold text-lg tracking-wider">РСХБ</p>
+            <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-primary-foreground">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" fill="currentColor" opacity="0.5"/>
+                <path d="M15 8.5c0 1.38-1.12 2.5-2.5 2.5S10 9.88 10 8.5 11.12 6 12.5 6 15 7.12 15 8.5z" fill="currentColor"/>
+              </svg>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-xs opacity-80">Срок</p>
-            <p className="font-medium">12/27</p>
+          <div>
+            <p className="text-primary-foreground/80 text-sm">Дебетовая</p>
+            <div className="flex items-center justify-between mt-1">
+              <div className="flex items-center gap-2">
+                <span className="text-primary-foreground font-medium">**{account.cardNumber}</span>
+                <button onClick={() => setShowCardNumber(!showCardNumber)} className="opacity-70">
+                  {showCardNumber ? <EyeOff className="w-4 h-4 text-primary-foreground" /> : <Eye className="w-4 h-4 text-primary-foreground" />}
+                </button>
+              </div>
+              <UnionPayLogo className="w-12 h-8" />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <button 
-          onClick={() => { onClose(); onTransfer(); }}
-          className="bg-muted rounded-xl p-4 flex flex-col items-center gap-2"
-        >
-          <ArrowUpRight className="w-5 h-5 text-primary" />
-          <span className="text-xs font-medium text-foreground">Перевести</span>
+      {/* 3 Action Buttons */}
+      <div className="flex justify-center gap-8 py-5">
+        <button onClick={() => { onClose(); onTransfer(); }} className="flex flex-col items-center gap-2">
+          <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
+            <ArrowRight className="w-6 h-6 text-primary-foreground" />
+          </div>
+          <span className="text-xs font-medium text-foreground">Оплатить</span>
         </button>
-        <button 
-          onClick={() => { onClose(); onTopUp(); }}
-          className="bg-muted rounded-xl p-4 flex flex-col items-center gap-2"
-        >
-          <Plus className="w-5 h-5 text-success" />
+        <button onClick={() => { onClose(); onTopUp(); }} className="flex flex-col items-center gap-2">
+          <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
+            <Plus className="w-6 h-6 text-primary-foreground" />
+          </div>
           <span className="text-xs font-medium text-foreground">Пополнить</span>
         </button>
-        <button 
-          onClick={onCardSettings}
-          className="bg-muted rounded-xl p-4 flex flex-col items-center gap-2"
-        >
-          <Settings className="w-5 h-5 text-muted-foreground" />
-          <span className="text-xs font-medium text-foreground">Настройки</span>
+        <button onClick={onCardSettings} className="flex flex-col items-center gap-2">
+          <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
+            <Settings className="w-6 h-6 text-primary-foreground" />
+          </div>
+          <span className="text-xs font-medium text-foreground">Настроить</span>
         </button>
       </div>
 
-      <div className="bg-card rounded-xl divide-y divide-border">
-        <button 
-          onClick={handleCopyNumber}
-          className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <Copy className="w-5 h-5 text-muted-foreground" />
-            <span className="text-foreground">Реквизиты карты</span>
-          </div>
-          <ChevronRight className="w-5 h-5 text-muted-foreground" />
-        </button>
-        <button className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-          <div className="flex items-center gap-3">
-            <Share2 className="w-5 h-5 text-muted-foreground" />
-            <span className="text-foreground">Поделиться номером</span>
-          </div>
-          <ChevronRight className="w-5 h-5 text-muted-foreground" />
-        </button>
+      {/* Promo Banner */}
+      <div className="bg-gradient-to-r from-primary/90 to-primary/60 rounded-2xl p-4 flex items-center gap-3">
+        <div className="flex-1">
+          <p className="text-primary-foreground font-semibold text-sm">Путешествуйте с UnionPay</p>
+          <p className="text-primary-foreground/80 text-xs mt-1">Выгодный курс без скрытых комиссий</p>
+        </div>
+        <div className="w-16 h-16 rounded-xl bg-primary-foreground/10 flex items-center justify-center">
+          <span className="text-2xl">🏯</span>
+        </div>
       </div>
-    </div>
+
+      {/* Последние операции */}
+      <div className="bg-card rounded-2xl overflow-hidden mt-2">
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          <h2 className="text-lg font-bold text-foreground">Последние операции</h2>
+          <button className="text-sm font-medium text-primary">Ещё</button>
+        </div>
+
+        <div className="px-4 pb-2">
+          {Object.entries(groupedTransactions).map(([date, txs]) => (
+            <div key={date}>
+              <p className="text-xs text-muted-foreground py-2 font-medium">{date}</p>
+              {txs.map((tx) => {
+                const Icon = tx.icon;
+                return (
+                  <div key={tx.id} className="flex items-center gap-3 py-3">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground truncate text-sm">{tx.name}</p>
+                      <p className="text-xs text-muted-foreground">{tx.category}</p>
+                    </div>
+                    <p className={`font-semibold text-sm ${tx.isIncoming ? 'text-primary' : 'text-foreground'}`}>
+                      {tx.isIncoming ? '+' : '-'} {formatCurrencyShort(tx.amount)} ₽
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {!showAllTransactions && transactions.length > 5 && (
+          <button
+            onClick={() => setShowAllTransactions(true)}
+            className="w-full py-3 text-sm text-muted-foreground font-medium border-t border-border"
+          >
+            Показать больше
+          </button>
+        )}
+      </div>
+
+      {/* Услуги */}
+      <div className="bg-card rounded-2xl overflow-hidden mt-2">
+        <div className="px-4 pt-4 pb-3">
+          <h2 className="text-lg font-bold text-foreground">Услуги</h2>
+        </div>
+        <div className="px-4 pb-4 grid grid-cols-2 gap-3">
+          <button className="bg-muted/50 rounded-2xl p-4 h-[100px] flex flex-col justify-between text-left">
+            <p className="text-sm font-medium text-foreground leading-tight">Снять наличные<br/>по QR-коду</p>
+            <QrCode className="w-6 h-6 text-primary self-end" />
+          </button>
+          <button className="bg-muted/50 rounded-2xl p-4 h-[100px] flex flex-col justify-between text-left">
+            <p className="text-sm font-medium text-foreground leading-tight">Сформировать<br/>справку</p>
+            <FileText className="w-6 h-6 text-primary self-end" />
+          </button>
+          <button className="bg-muted/50 rounded-2xl p-4 h-[100px] flex flex-col justify-between text-left">
+            <p className="text-sm font-medium text-foreground leading-tight">Сформировать<br/>выписку</p>
+            <FileText className="w-6 h-6 text-primary self-end" />
+          </button>
+          <button className="bg-muted/50 rounded-2xl p-4 h-[100px] flex flex-col justify-between text-left">
+            <p className="text-sm font-medium text-foreground leading-tight">Ссылка<br/>для пополнения</p>
+            <Link2 className="w-6 h-6 text-primary self-end" />
+          </button>
+        </div>
+        <div className="px-4 pb-4">
+          <button className="w-full bg-muted/50 rounded-2xl p-4 h-[80px] flex items-center justify-between text-left">
+            <p className="text-sm font-medium text-foreground leading-tight">Подключить<br/>автопополнение</p>
+            <RefreshCw className="w-6 h-6 text-primary" />
+          </button>
+        </div>
+      </div>
+
+      {/* Детали карты */}
+      <div className="bg-card rounded-2xl overflow-hidden mt-2">
+        <div className="px-4 pt-4 pb-3">
+          <h2 className="text-lg font-bold text-foreground">Детали карты</h2>
+        </div>
+        <div className="divide-y divide-border">
+          <button className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-muted/30 transition-colors">
+            <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+              <Info className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <span className="text-sm text-foreground">О продукте</span>
+          </button>
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+              <CreditCard className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Привязана к счёту</p>
+              <p className="text-sm font-medium text-foreground">**{account.cardNumber}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 
-  const renderSavingsDetails = () => (
-    <div className="space-y-4">
-      <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-5 text-white">
-        <div className="flex justify-between items-start mb-4">
+  const renderSavingsView = () => (
+    <>
+      <div className="text-center pt-2 pb-4">
+        <p className="text-3xl font-bold text-foreground">{formatCurrency(account.balance)} ₽</p>
+        <p className="text-sm text-muted-foreground mt-1">{account.name}</p>
+      </div>
+
+      <div className="bg-gradient-to-br from-primary to-primary/70 rounded-2xl p-5">
+        <div className="flex items-center gap-2 bg-primary-foreground/20 rounded-lg px-3 py-2 w-fit">
+          <Percent className="w-4 h-4 text-primary-foreground" />
+          <span className="text-sm font-medium text-primary-foreground">{account.rate}% годовых</span>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-3">
           <div>
-            <p className="text-sm opacity-80">Накопительный счёт</p>
-            <p className="text-2xl font-bold mt-1">{formatCurrency(account.balance)} ₽</p>
+            <p className="text-xs text-primary-foreground/70">Открыт</p>
+            <p className="text-sm font-medium text-primary-foreground">15 марта 2024</p>
           </div>
-          <PiggyBank className="w-8 h-8 opacity-80" />
-        </div>
-        <div className="flex items-center gap-2 bg-white/20 rounded-lg px-3 py-2 w-fit">
-          <Percent className="w-4 h-4" />
-          <span className="text-sm font-medium">{account.rate}% годовых</span>
+          <div>
+            <p className="text-xs text-primary-foreground/70">Начислено %</p>
+            <p className="text-sm font-medium text-primary-foreground">+{formatCurrencyShort(Math.round(account.balance * (account.rate || 0) / 100 / 12 * 3))} ₽</p>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-card rounded-xl p-4">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <Calendar className="w-4 h-4" />
-            <span className="text-xs">Открыт</span>
+      <div className="flex justify-center gap-8 py-5">
+        <button onClick={() => { onClose(); onTopUp(); }} className="flex flex-col items-center gap-2">
+          <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
+            <Plus className="w-6 h-6 text-primary-foreground" />
           </div>
-          <p className="font-semibold text-foreground">15 марта 2024</p>
-        </div>
-        <div className="bg-card rounded-xl p-4">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <DollarSign className="w-4 h-4" />
-            <span className="text-xs">Начислено %</span>
-          </div>
-          <p className="font-semibold text-success">+{formatCurrency(Math.round(account.balance * (account.rate || 0) / 100 / 12 * 3))} ₽</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <button 
-          onClick={() => { onClose(); onTopUp(); }}
-          className="bg-success text-white rounded-xl p-4 flex items-center justify-center gap-2 font-medium"
-        >
-          <Plus className="w-5 h-5" />
-          Пополнить
+          <span className="text-xs font-medium text-foreground">Пополнить</span>
         </button>
-        <button 
-          onClick={() => { onClose(); onTransfer(); }}
-          className="bg-muted rounded-xl p-4 flex items-center justify-center gap-2 font-medium text-foreground"
-        >
-          <Minus className="w-5 h-5" />
-          Снять
+        <button onClick={() => { onClose(); onTransfer(); }} className="flex flex-col items-center gap-2">
+          <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
+            <Minus className="w-6 h-6 text-foreground" />
+          </div>
+          <span className="text-xs font-medium text-foreground">Снять</span>
         </button>
       </div>
 
-      <div className="bg-card rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Clock className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Условия</span>
-        </div>
-        <ul className="space-y-2 text-sm text-foreground">
+      <div className="bg-card rounded-2xl p-4">
+        <h4 className="font-medium text-foreground mb-2">Условия</h4>
+        <ul className="space-y-2 text-sm text-muted-foreground">
           <li>• Начисление % — ежедневно</li>
           <li>• Выплата % — ежемесячно</li>
           <li>• Снятие — без ограничений</li>
           <li>• Пополнение — без ограничений</li>
         </ul>
       </div>
-    </div>
+    </>
   );
 
-  const renderInvestmentDetails = () => {
+  const renderInvestmentView = () => {
     const totalValue = investmentPortfolio.reduce((sum, stock) => sum + stock.shares * stock.price, 0);
     const totalChange = investmentPortfolio.reduce((sum, stock) => sum + (stock.shares * stock.price * stock.change / 100), 0);
     const changePercent = (totalChange / totalValue) * 100;
 
     return (
-      <div className="space-y-4">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-5 text-white">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <p className="text-sm opacity-80">Брокерский счёт</p>
-              <p className="text-2xl font-bold mt-1">{formatCurrency(account.balance)} ₽</p>
-            </div>
-            <TrendingUp className="w-8 h-8 opacity-80" />
-          </div>
-          <div className={`flex items-center gap-2 ${changePercent >= 0 ? 'bg-green-400/30' : 'bg-red-400/30'} rounded-lg px-3 py-2 w-fit`}>
-            {changePercent >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-            <span className="text-sm font-medium">
-              {changePercent >= 0 ? '+' : ''}{formatCurrency(Math.round(totalChange))} ₽ ({changePercent.toFixed(2)}%)
-            </span>
-          </div>
+      <>
+        <div className="text-center pt-2 pb-4">
+          <p className="text-3xl font-bold text-foreground">{formatCurrency(account.balance)} ₽</p>
+          <p className="text-sm text-muted-foreground mt-1">{account.name}</p>
+          <p className={`text-sm mt-1 ${changePercent >= 0 ? 'text-primary' : 'text-destructive'}`}>
+            {changePercent >= 0 ? '+' : ''}{formatCurrencyShort(Math.round(totalChange))} ₽ ({changePercent.toFixed(2)}%)
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-card rounded-xl p-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <PieChart className="w-4 h-4" />
-              <span className="text-xs">Акций</span>
-            </div>
-            <p className="font-semibold text-foreground">{investmentPortfolio.length} позиций</p>
-          </div>
-          <div className="bg-card rounded-xl p-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <BarChart3 className="w-4 h-4" />
-              <span className="text-xs">Доходность</span>
-            </div>
-            <p className="font-semibold text-success">+18.5%</p>
-          </div>
-        </div>
-
-        <div className="bg-card rounded-xl p-4">
+        <div className="bg-card rounded-2xl p-4">
           <h3 className="font-semibold text-foreground mb-3">Портфель</h3>
           <div className="space-y-3">
             {investmentPortfolio.map((stock, index) => (
               <div key={index} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                 <div>
-                  <p className="font-medium text-foreground">{stock.name}</p>
-                  <p className="text-sm text-muted-foreground">{stock.ticker} • {stock.shares} шт.</p>
+                  <p className="font-medium text-foreground text-sm">{stock.name}</p>
+                  <p className="text-xs text-muted-foreground">{stock.ticker} • {stock.shares} шт.</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium text-foreground">{formatCurrency(stock.shares * stock.price)} ₽</p>
-                  <p className={`text-sm ${stock.change >= 0 ? 'text-success' : 'text-destructive'}`}>
+                  <p className="font-medium text-foreground text-sm">{formatCurrencyShort(stock.shares * stock.price)} ₽</p>
+                  <p className={`text-xs ${stock.change >= 0 ? 'text-primary' : 'text-destructive'}`}>
                     {stock.change >= 0 ? '+' : ''}{stock.change}%
                   </p>
                 </div>
@@ -256,185 +316,102 @@ const AccountDetailModal = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <button className="bg-primary text-primary-foreground rounded-xl p-4 flex items-center justify-center gap-2 font-medium">
-            <Plus className="w-5 h-5" />
+        <div className="flex gap-3">
+          <Button className="flex-1 h-12 rounded-2xl">
+            <Plus className="w-5 h-5 mr-2" />
             Купить
-          </button>
-          <button className="bg-muted rounded-xl p-4 flex items-center justify-center gap-2 font-medium text-foreground">
-            <Minus className="w-5 h-5" />
+          </Button>
+          <Button variant="secondary" className="flex-1 h-12 rounded-2xl">
+            <Minus className="w-5 h-5 mr-2" />
             Продать
-          </button>
+          </Button>
         </div>
-      </div>
+      </>
     );
   };
 
-  const renderCreditDetails = () => {
+  const renderCreditView = () => {
     const creditLimit = 100000;
     const usedCredit = Math.abs(account.balance);
     const availableCredit = creditLimit - usedCredit;
     const usagePercent = (usedCredit / creditLimit) * 100;
 
     return (
-      <div className="space-y-4">
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-5 text-white">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <p className="text-sm opacity-80">Кредитная карта</p>
-              <p className="text-lg tracking-widest mt-1">•••• {account.cardNumber}</p>
-            </div>
-            <UnionPayLogo className="w-14 h-9" />
+      <>
+        <div className="text-center pt-2 pb-4">
+          <p className="text-3xl font-bold text-foreground">{formatCurrency(account.balance)} ₽</p>
+          <p className="text-sm text-muted-foreground mt-1">{account.name}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-5">
+          <div className="flex justify-between items-start mb-3">
+            <p className="text-primary-foreground/80 text-sm">Кредитная карта</p>
+            <UnionPayLogo className="w-12 h-8" />
           </div>
+          <p className="text-primary-foreground font-medium">•••• {account.cardNumber}</p>
           <div className="mt-4">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="opacity-80">Использовано</span>
-              <span className="font-medium">{formatCurrency(usedCredit)} ₽</span>
+            <div className="flex justify-between text-sm mb-2 text-primary-foreground/80">
+              <span>Использовано</span>
+              <span className="font-medium text-primary-foreground">{formatCurrencyShort(usedCredit)} ₽</span>
             </div>
-            <div className="h-2 bg-white/30 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-white rounded-full transition-all"
-                style={{ width: `${usagePercent}%` }}
-              />
+            <div className="h-2 bg-primary-foreground/30 rounded-full overflow-hidden">
+              <div className="h-full bg-primary-foreground rounded-full" style={{ width: `${usagePercent}%` }} />
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-card rounded-xl p-4">
-            <p className="text-xs text-muted-foreground mb-1">Лимит</p>
-            <p className="font-semibold text-foreground">{formatCurrency(creditLimit)} ₽</p>
+        <div className="bg-card rounded-2xl p-4 space-y-3">
+          <div className="flex justify-between">
+            <span className="text-sm text-muted-foreground">Лимит</span>
+            <span className="font-semibold text-foreground">{formatCurrencyShort(creditLimit)} ₽</span>
           </div>
-          <div className="bg-card rounded-xl p-4">
-            <p className="text-xs text-muted-foreground mb-1">Доступно</p>
-            <p className="font-semibold text-success">{formatCurrency(availableCredit)} ₽</p>
+          <div className="flex justify-between">
+            <span className="text-sm text-muted-foreground">Доступно</span>
+            <span className="font-semibold text-primary">{formatCurrencyShort(availableCredit)} ₽</span>
           </div>
-        </div>
-
-        <div className="bg-card rounded-xl p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-muted-foreground">Задолженность</span>
-            <span className="font-semibold text-destructive">{formatCurrency(usedCredit)} ₽</span>
+          <div className="flex justify-between">
+            <span className="text-sm text-muted-foreground">Мин. платёж</span>
+            <span className="font-semibold text-foreground">{formatCurrencyShort(Math.round(usedCredit * 0.05))} ₽</span>
           </div>
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-muted-foreground">Минимальный платёж</span>
-            <span className="font-semibold text-foreground">{formatCurrency(Math.round(usedCredit * 0.05))} ₽</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Дата платежа</span>
+          <div className="flex justify-between">
+            <span className="text-sm text-muted-foreground">Дата платежа</span>
             <span className="font-semibold text-foreground">25 декабря</span>
           </div>
         </div>
 
-        <div className="bg-card rounded-xl p-4">
-          <h4 className="font-medium text-foreground mb-2">Грейс-период</h4>
-          <p className="text-sm text-muted-foreground">До 55 дней без процентов на покупки</p>
-          <div className="mt-3 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-primary" />
-            <span className="text-sm text-primary font-medium">Осталось 23 дня</span>
-          </div>
-        </div>
-
-        <Button 
-          onClick={() => { onClose(); onTransfer(); }}
-          className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium"
-        >
+        <Button onClick={() => { onClose(); onTransfer(); }} className="w-full h-12 rounded-2xl">
           Погасить задолженность
         </Button>
-      </div>
+      </>
     );
   };
 
-  const renderTransactionHistory = () => (
-    <div className="space-y-3">
-      {accountTransactions.map((transaction) => {
-        const Icon = transaction.icon;
-        return (
-          <div key={transaction.id} className="bg-card rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-              <Icon className="w-5 h-5 text-muted-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-foreground truncate">{transaction.name}</p>
-              <p className="text-sm text-muted-foreground">{transaction.date}</p>
-            </div>
-            <p className={`font-semibold ${transaction.isIncoming ? 'text-success' : 'text-foreground'}`}>
-              {transaction.isIncoming ? '+' : '-'}{formatCurrency(transaction.amount)} ₽
-            </p>
-          </div>
-        );
-      })}
-    </div>
-  );
-
   const renderContent = () => {
-    if (activeSection === "history") {
-      return renderTransactionHistory();
-    }
-
     switch (account.type) {
-      case "card": return renderCardDetails();
-      case "savings": return renderSavingsDetails();
-      case "investment": return renderInvestmentDetails();
-      case "credit": return renderCreditDetails();
-      default: return renderCardDetails();
+      case "card": return renderCardView();
+      case "savings": return renderSavingsView();
+      case "investment": return renderInvestmentView();
+      case "credit": return renderCreditView();
+      default: return renderCardView();
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div 
-        className="absolute inset-0 bg-foreground/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative bg-background w-full sm:max-w-md max-h-[90vh] rounded-t-3xl sm:rounded-2xl animate-in slide-in-from-bottom duration-300 overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl ${account.color} flex items-center justify-center`}>
-              <IconComponent className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="font-bold text-foreground">{account.name}</h2>
-              <p className={`text-lg font-semibold ${account.balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
-                {formatCurrency(account.balance)} ₽
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-muted rounded-full transition-colors"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
+    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+      {/* Sticky Header */}
+      <div className="flex items-center px-4 py-3 border-b border-border">
+        <button onClick={onClose} className="p-1">
+          <ArrowLeft className="w-6 h-6 text-foreground" />
+        </button>
+        <div className="flex-1 text-center">
+          <p className="font-bold text-foreground">{formatCurrency(account.balance)} ₽</p>
         </div>
+        <div className="w-6" /> {/* spacer */}
+      </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 p-4 border-b border-border">
-          <button
-            onClick={() => setActiveSection("main")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeSection === "main" 
-                ? "bg-primary text-primary-foreground" 
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            Главное
-          </button>
-          <button
-            onClick={() => setActiveSection("history")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeSection === "history" 
-                ? "bg-primary text-primary-foreground" 
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            История
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-lg mx-auto px-4 pb-8 space-y-4">
           {renderContent()}
         </div>
       </div>
