@@ -15,6 +15,7 @@ interface AccountDetailModalProps {
   onTopUp: () => void;
   onCardSettings?: () => void;
   cardHolderName?: string;
+  onOpenStatementExport?: () => void;
 }
 
 const formatCurrency = (value: number) => {
@@ -42,7 +43,8 @@ const AccountDetailModal = ({
   onTransfer, 
   onTopUp,
   onCardSettings,
-  cardHolderName = "CARDHOLDER"
+  cardHolderName = "CARDHOLDER",
+  onOpenStatementExport
 }: AccountDetailModalProps) => {
   const [showCardNumber, setShowCardNumber] = useState(false);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
@@ -187,7 +189,10 @@ const AccountDetailModal = ({
             <p className="text-sm font-medium text-foreground leading-tight">Сформировать<br/>справку</p>
             <FileText className="w-6 h-6 text-primary self-end" />
           </button>
-          <button className="bg-muted/50 rounded-2xl p-4 h-[100px] flex flex-col justify-between text-left">
+          <button 
+            onClick={() => { if (onOpenStatementExport) { onClose(); onOpenStatementExport(); } }}
+            className="bg-muted/50 rounded-2xl p-4 h-[100px] flex flex-col justify-between text-left"
+          >
             <p className="text-sm font-medium text-foreground leading-tight">Сформировать<br/>выписку</p>
             <FileText className="w-6 h-6 text-primary self-end" />
           </button>
