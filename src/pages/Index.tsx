@@ -287,6 +287,12 @@ const Index = () => {
               onOpenLoyalty={() => setIsLoyaltyOpen(true)}
             />
             <HomePromoBannerSlider />
+            <QuickActions
+              onTopUpClick={() => setIsTopUpOpen(true)}
+              onTransferClick={() => setIsInternalTransferOpen(true)}
+              onHistoryClick={() => setActiveTab("history")}
+              onMoreClick={() => setIsMoreOpen(true)}
+            />
             <HomeWidgetGrid
               totalBalance={accounts.reduce((s, a) => s + a.balance, 0)}
               onQRCode={() => setIsQRCodeOpen(true)}
@@ -339,7 +345,18 @@ const Index = () => {
       <TransferModal isOpen={isTransferOpen} onClose={() => setIsTransferOpen(false)} balance={mainAccountBalance} onTransfer={handleTransfer} />
       <InternalTransferModal isOpen={isInternalTransferOpen} onClose={() => setIsInternalTransferOpen(false)} accounts={accounts} onTransfer={handleInternalTransfer} />
       <TopUpModal isOpen={isTopUpOpen} onClose={() => setIsTopUpOpen(false)} onTopUp={handleTopUp} />
-      <MoreActionsSheet isOpen={isMoreOpen} onClose={() => setIsMoreOpen(false)} />
+      <MoreActionsSheet
+        isOpen={isMoreOpen}
+        onClose={() => setIsMoreOpen(false)}
+        onOpenSubscriptions={() => { setIsMoreOpen(false); setIsSubscriptionsOpen(true); }}
+        onOpenStatementExport={() => { setIsMoreOpen(false); setIsStatementExportOpen(true); }}
+        onOpenBudgets={() => { setIsMoreOpen(false); setIsBudgetsOpen(true); }}
+        onOpenSavingsGoals={() => { setIsMoreOpen(false); setIsSavingsGoalsOpen(true); }}
+        onOpenLoans={() => { setIsMoreOpen(false); setIsLoansOpen(true); }}
+        onOpenInsurance={() => { setIsMoreOpen(false); setIsInsuranceOpen(true); }}
+        onOpenCalendar={() => { setIsMoreOpen(false); setIsCalendarOpen(true); }}
+        onSetupPin={() => { setIsMoreOpen(false); setIsSettingUpPin(true); }}
+      />
       <AllTransactionsModal isOpen={isAllTransactionsOpen} onClose={() => setIsAllTransactionsOpen(false)} transactions={transactions} />
       {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} cardHolderName={cardHolderName} />}
       {selectedAccount && (

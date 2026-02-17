@@ -1,34 +1,20 @@
-import { useState, useEffect } from "react";
-import { X, Bell, CreditCard, Shield, Megaphone, Check, CheckCheck, Trash2, Filter } from "lucide-react";
+import { useState } from "react";
+import { X, Bell, CreditCard, Shield, Megaphone, CheckCheck, Trash2, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification } from "@/hooks/useNotifications";
 import type { LucideIcon } from "lucide-react";
-
-interface Notification {
-  id: string;
-  type: "transaction" | "security" | "promo" | "system";
-  title: string;
-  message: string;
-  date: string;
-  isRead: boolean;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
-}
 
 interface NotificationsCenterProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const STORAGE_KEY = "banking_notifications";
-
 const typeIcons: Record<string, { icon: LucideIcon; color: string }> = {
-  transaction: { icon: CreditCard, color: "bg-blue-500" },
-  security: { icon: Shield, color: "bg-red-500" },
-  promo: { icon: Megaphone, color: "bg-purple-500" },
-  system: { icon: Bell, color: "bg-gray-500" },
+  transaction: { icon: CreditCard, color: "bg-primary" },
+  security: { icon: Shield, color: "bg-destructive" },
+  promo: { icon: Megaphone, color: "bg-accent-foreground" },
+  system: { icon: Bell, color: "bg-muted-foreground" },
 };
 
 const typeLabels: Record<string, string> = {
@@ -38,119 +24,33 @@ const typeLabels: Record<string, string> = {
   system: "Система",
 };
 
-const getInitialNotifications = (): Notification[] => [
-  {
-    id: "1",
-    type: "transaction",
-    title: "Покупка в Пятёрочка",
-    message: "Списание 1 250 ₽ с карты *7823",
-    date: "Сегодня, 14:32",
-    isRead: false,
-  },
-  {
-    id: "2",
-    type: "transaction",
-    title: "Входящий перевод",
-    message: "Получен перевод 15 000 ₽ от Иван И.",
-    date: "Сегодня, 12:15",
-    isRead: false,
-  },
-  {
-    id: "3",
-    type: "security",
-    title: "Вход в приложение",
-    message: "Выполнен вход с нового устройства iPhone 15",
-    date: "Вчера, 19:45",
-    isRead: true,
-  },
-  {
-    id: "4",
-    type: "promo",
-    title: "Кэшбэк 10% на АЗС",
-    message: "Повышенный кэшбэк на все АЗС до конца месяца",
-    date: "Вчера, 10:00",
-    isRead: true,
-  },
-  {
-    id: "5",
-    type: "transaction",
-    title: "Автоплатёж выполнен",
-    message: "Оплата МТС на сумму 650 ₽",
-    date: "2 дня назад",
-    isRead: true,
-  },
-  {
-    id: "6",
-    type: "system",
-    title: "Обновление приложения",
-    message: "Доступна новая версия с улучшениями",
-    date: "3 дня назад",
-    isRead: true,
-  },
-  {
-    id: "7",
-    type: "security",
-    title: "Смена пароля",
-    message: "Пароль успешно изменён",
-    date: "5 дней назад",
-    isRead: true,
-  },
-  {
-    id: "8",
-    type: "promo",
-    title: "Кредит под 9.9%",
-    message: "Персональное предложение на кредит до 1 000 000 ₽",
-    date: "Неделю назад",
-    isRead: true,
-  },
-];
-
 const NotificationsCenter = ({ isOpen, onClose }: NotificationsCenterProps) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
+  
+  const { data: notifications = [] } = useNotifications();
+  const markRead = useMarkNotificationRead();
+  const markAllRead = useMarkAllNotificationsRead();
+  const deleteNotification = useDeleteNotification();
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      setNotifications(JSON.parse(saved));
-    } else {
-      setNotifications(getInitialNotifications());
-    }
-  }, []);
-
-  const saveNotifications = (updated: Notification[]) => {
-    setNotifications(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  };
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const filteredNotifications = filter
     ? notifications.filter(n => n.type === filter)
     : notifications;
 
-  const markAsRead = (id: string) => {
-    const updated = notifications.map(n =>
-      n.id === id ? { ...n, isRead: true } : n
-    );
-    saveNotifications(updated);
+  const handleMarkAsRead = (id: string) => {
+    markRead.mutate(id);
   };
 
-  const markAllAsRead = () => {
-    const updated = notifications.map(n => ({ ...n, isRead: true }));
-    saveNotifications(updated);
+  const handleMarkAllAsRead = () => {
+    markAllRead.mutate();
     toast({ title: "Готово", description: "Все уведомления прочитаны" });
   };
 
-  const deleteNotification = (id: string) => {
-    saveNotifications(notifications.filter(n => n.id !== id));
-  };
-
-  const clearAll = () => {
-    saveNotifications([]);
-    toast({ title: "Уведомления очищены" });
+  const handleDelete = (id: string) => {
+    deleteNotification.mutate(id);
   };
 
   if (!isOpen) return null;
@@ -174,28 +74,15 @@ const NotificationsCenter = ({ isOpen, onClose }: NotificationsCenterProps) => {
 
         {/* Actions */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className={showFilters ? "text-primary" : ""}
-            >
-              <Filter className="w-4 h-4 mr-1" />
-              Фильтры
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters)} className={showFilters ? "text-primary" : ""}>
+            <Filter className="w-4 h-4 mr-1" />
+            Фильтры
+          </Button>
           <div className="flex items-center gap-2">
             {unreadCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+              <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead}>
                 <CheckCheck className="w-4 h-4 mr-1" />
                 Прочитать все
-              </Button>
-            )}
-            {notifications.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearAll} className="text-destructive">
-                <Trash2 className="w-4 h-4 mr-1" />
-                Очистить
               </Button>
             )}
           </div>
@@ -207,9 +94,7 @@ const NotificationsCenter = ({ isOpen, onClose }: NotificationsCenterProps) => {
             <button
               onClick={() => setFilter(null)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                filter === null
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground"
+                filter === null ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               }`}
             >
               Все
@@ -219,9 +104,7 @@ const NotificationsCenter = ({ isOpen, onClose }: NotificationsCenterProps) => {
                 key={type}
                 onClick={() => setFilter(type)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                  filter === type
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
+                  filter === type ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                 }`}
               >
                 {label}
@@ -239,60 +122,42 @@ const NotificationsCenter = ({ isOpen, onClose }: NotificationsCenterProps) => {
             </div>
           ) : (
             filteredNotifications.map((notification) => {
-              const typeData = typeIcons[notification.type];
+              const typeData = typeIcons[notification.type] || typeIcons.system;
               const IconComponent = typeData.icon;
 
               return (
                 <div
                   key={notification.id}
-                  onClick={() => markAsRead(notification.id)}
-                  className={`p-4 rounded-xl transition-colors cursor-pointer ${
-                    notification.isRead ? "bg-muted/30" : "bg-muted/70"
+                  onClick={() => !notification.is_read && handleMarkAsRead(notification.id)}
+                  className={`p-4 rounded-xl transition-colors cursor-pointer group ${
+                    notification.is_read ? "bg-muted/30" : "bg-muted/70"
                   }`}
                 >
                   <div className="flex gap-3">
                     <div className={`w-10 h-10 rounded-full ${typeData.color} flex items-center justify-center flex-shrink-0`}>
-                      <IconComponent className="w-5 h-5 text-white" />
+                      <IconComponent className="w-5 h-5 text-primary-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className={`font-medium text-foreground ${!notification.isRead ? "font-semibold" : ""}`}>
+                          <p className={`font-medium text-foreground ${!notification.is_read ? "font-semibold" : ""}`}>
                             {notification.title}
                           </p>
-                          <p className="text-sm text-muted-foreground mt-0.5">
-                            {notification.message}
-                          </p>
+                          <p className="text-sm text-muted-foreground mt-0.5">{notification.message}</p>
                         </div>
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteNotification(notification.id);
-                          }}
+                          onClick={(e) => { e.stopPropagation(); handleDelete(notification.id); }}
                           className="p-1 hover:bg-background rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <X className="w-4 h-4 text-muted-foreground" />
                         </button>
                       </div>
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-muted-foreground">{notification.date}</span>
-                        {!notification.isRead && (
-                          <div className="w-2 h-2 rounded-full bg-primary" />
-                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(notification.created_at).toLocaleDateString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                        {!notification.is_read && <div className="w-2 h-2 rounded-full bg-primary" />}
                       </div>
-                      {notification.action && (
-                        <Button
-                          size="sm"
-                          variant="link"
-                          className="p-0 h-auto mt-2"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            notification.action?.onClick();
-                          }}
-                        >
-                          {notification.action.label}
-                        </Button>
-                      )}
                     </div>
                   </div>
                 </div>
