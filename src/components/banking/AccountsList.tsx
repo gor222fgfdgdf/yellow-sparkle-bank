@@ -7,6 +7,7 @@ export interface Account {
   name: string;
   balance: number;
   cardNumber?: string;
+  accountNumber?: string;
   rate?: number;
   icon: any;
   color: string;

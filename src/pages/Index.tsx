@@ -123,6 +123,7 @@ const Index = () => {
     name: acc.name,
     balance: Number(acc.balance),
     cardNumber: acc.card_number || undefined,
+    accountNumber: acc.account_number || undefined,
     rate: acc.rate ? Number(acc.rate) : undefined,
     icon: acc.type === "card" ? CreditCard : acc.type === "savings" ? PiggyBank : acc.type === "investment" ? TrendingUp : Wallet,
     color: acc.color,
