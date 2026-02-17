@@ -45,7 +45,7 @@ const HomeWidgetGrid = ({ totalBalance, onQRCode, onReferral, onCashback, onAnal
         <p className="text-xs text-muted-foreground">Всего средств</p>
         <p className="text-base font-bold text-foreground mt-1">{formatCurrency(totalBalance)} ₽</p>
         <div className="w-full h-1.5 bg-primary/20 rounded-full mt-2">
-          <div className="h-full bg-primary rounded-full" style={{ width: "65%" }} />
+          <div className="h-full bg-primary rounded-full" style={{ width: "100%" }} />
         </div>
       </button>
     </div>
