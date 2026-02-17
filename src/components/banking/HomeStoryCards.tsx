@@ -12,7 +12,7 @@ interface HomeStoryCardsProps {
 
 const HomeStoryCards = ({ onOpenDeposits, onOpenInvestment, onOpenCurrency, onOpenLoyalty }: HomeStoryCardsProps) => {
   const cards = [
-    { image: storyHotels, label: "Отели\nв горах\nот 1 500 ₽", onClick: onOpenDeposits, color: "from-blue-500/80" },
+    { image: storyHotels, label: "Отели\nв горах\nот 1 500 ₽", onClick: undefined, color: "from-blue-500/80" },
     { image: storyInvest, label: "Приглашаем\nв мир\nинвестиций", onClick: onOpenInvestment, color: "from-green-600/80" },
     { image: storyKwikpay, label: "KWIKPAY для\nзарубежных\nпереводов", onClick: onOpenCurrency, color: "from-emerald-500/80" },
     { image: storyWish, label: "Карта,\nисполняющая\nжелания", onClick: onOpenLoyalty, color: "from-amber-600/80" },
