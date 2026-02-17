@@ -9,6 +9,7 @@ import TransferModal from "./TransferModal";
 import CurrencyExchangeModal from "./CurrencyExchangeModal";
 import SBPTransferModal from "./SBPTransferModal";
 import BarcodeScannerModal from "./BarcodeScannerModal";
+import PaymentTemplatesModal from "./PaymentTemplatesModal";
 import type { Transaction } from "./TransactionList";
 import type { Account } from "./AccountsList";
 
@@ -155,6 +156,7 @@ const PaymentsPage = ({ onPayment, transactions, balance, accounts, userName, ca
   const [isCurrencyExchangeOpen, setIsCurrencyExchangeOpen] = useState(false);
   const [isSBPOpen, setIsSBPOpen] = useState(false);
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
@@ -297,18 +299,29 @@ const PaymentsPage = ({ onPayment, transactions, balance, accounts, userName, ca
         </div>
       </div>
 
-      {/* Автоплатежи */}
+      {/* Шаблоны и автоплатежи */}
       <div className="bg-card mx-0 mt-2 px-4 py-5">
-        <h2 className="text-lg font-bold text-foreground mb-4">Автоплатежи</h2>
-        <button
-          onClick={() => setIsAutoPaymentsOpen(true)}
-          className="bg-muted rounded-2xl p-4 w-40 flex flex-col items-start gap-2 hover:bg-muted/80 transition-colors"
-        >
-          <span className="text-sm font-medium text-foreground">Автоплатежи</span>
-          <div className="self-end mt-auto">
-            <Bell className="w-10 h-10 text-primary" />
-          </div>
-        </button>
+        <h2 className="text-lg font-bold text-foreground mb-4">Быстрые действия</h2>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setIsTemplatesOpen(true)}
+            className="flex-1 bg-muted rounded-2xl p-4 flex flex-col items-start gap-2 hover:bg-muted/80 transition-colors"
+          >
+            <span className="text-sm font-medium text-foreground">Шаблоны<br/>платежей</span>
+            <div className="self-end mt-auto">
+              <CreditCard className="w-8 h-8 text-primary" />
+            </div>
+          </button>
+          <button
+            onClick={() => setIsAutoPaymentsOpen(true)}
+            className="flex-1 bg-muted rounded-2xl p-4 flex flex-col items-start gap-2 hover:bg-muted/80 transition-colors"
+          >
+            <span className="text-sm font-medium text-foreground">Авто-<br/>платежи</span>
+            <div className="self-end mt-auto">
+              <Bell className="w-8 h-8 text-primary" />
+            </div>
+          </button>
+        </div>
       </div>
 
       {/* Полезная информация */}
@@ -385,6 +398,12 @@ const PaymentsPage = ({ onPayment, transactions, balance, accounts, userName, ca
       <BarcodeScannerModal
         isOpen={isBarcodeScannerOpen}
         onClose={() => setIsBarcodeScannerOpen(false)}
+        onPayment={onPayment}
+      />
+
+      <PaymentTemplatesModal
+        isOpen={isTemplatesOpen}
+        onClose={() => setIsTemplatesOpen(false)}
         onPayment={onPayment}
       />
     </div>
