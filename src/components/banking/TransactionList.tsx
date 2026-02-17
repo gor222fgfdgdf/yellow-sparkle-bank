@@ -7,8 +7,10 @@ export interface Transaction {
   category: string;
   amount: number;
   date: string;
+  rawDate: string; // ISO date string for filtering (YYYY-MM-DD)
   icon: LucideIcon;
   isIncoming?: boolean;
+  accountId?: string;
 }
 
 interface TransactionListProps {

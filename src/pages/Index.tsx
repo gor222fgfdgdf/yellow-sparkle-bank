@@ -141,8 +141,10 @@ const Index = () => {
       category: tx.category,
       amount: Math.abs(Number(tx.amount)),
       date: dateStr,
+      rawDate: tx.date,
       icon: iconMap[tx.icon] || CreditCard,
-      isIncoming: tx.is_income,
+      isIncoming: tx.is_income || false,
+      accountId: tx.account_id,
     };
   });
 
@@ -271,7 +273,7 @@ const Index = () => {
           />
         );
       case "history":
-        return <HistoryPage transactions={transactions} onBack={() => setActiveTab("home")} />;
+        return <HistoryPage transactions={transactions} accounts={accounts} />;
       case "svoe":
         return <SvoePage />;
       default:
