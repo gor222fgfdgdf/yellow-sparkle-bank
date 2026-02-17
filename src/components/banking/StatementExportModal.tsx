@@ -25,6 +25,7 @@ interface Account {
   name: string;
   balance: number;
   card_number?: string | null;
+  account_number?: string | null;
   type?: string;
 }
 
@@ -113,7 +114,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const { start, end } = getDateRange();
     const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
     const accountName = account?.name || "All Accounts";
-    const accountNumber = account?.card_number || "XXXXXXXXXXXXXXXXXXXX";
+    const accountNumber = account?.account_number || "XXXXXXXXXXXXXXXXXXXX";
     const ownerName = profile?.full_name || "Account Holder";
 
     const pageWidth = 210;
