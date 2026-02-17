@@ -8,7 +8,9 @@ import InternalTransferModal from "./InternalTransferModal";
 import TransferModal from "./TransferModal";
 import CurrencyExchangeModal from "./CurrencyExchangeModal";
 import SBPTransferModal from "./SBPTransferModal";
+import BarcodeScannerModal from "./BarcodeScannerModal";
 import type { Transaction } from "./TransactionList";
+import type { Account } from "./AccountsList";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -133,22 +135,32 @@ const PaymentModal = ({ isOpen, onClose, category, onPayment }: PaymentModalProp
 interface PaymentsPageProps {
   onPayment: (amount: number, provider: string) => void;
   transactions: Transaction[];
+  balance: number;
+  accounts: Account[];
+  userName: string;
+  cardNumber: string;
+  onTransfer: (amount: number, recipient: string) => void;
+  onInternalTransfer: (fromId: string, toId: string, amount: number) => void;
+  onSBPTransfer: (amount: number, recipient: string) => void;
+  onQRReceive: (amount: number, sender: string) => void;
 }
 
-const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
+const PaymentsPage = ({ onPayment, transactions, balance, accounts, userName, cardNumber, onTransfer, onInternalTransfer, onSBPTransfer, onQRReceive }: PaymentsPageProps) => {
   const [selectedCategory, setSelectedCategory] = useState<{ icon: LucideIcon; label: string; color: string } | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isAutoPaymentsOpen, setIsAutoPaymentsOpen] = useState(false);
   const [isQROpen, setIsQROpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [isInternalTransferOpen, setIsInternalTransferOpen] = useState(false);
   const [isCurrencyExchangeOpen, setIsCurrencyExchangeOpen] = useState(false);
   const [isSBPOpen, setIsSBPOpen] = useState(false);
+  const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
   const transferCards = [
     { icon: QrCode, label: "По QR-коду", action: () => setIsQROpen(true) },
-    { icon: ArrowLeftRight, label: "Между счетами", action: () => setIsSBPOpen(true) },
+    { icon: ArrowLeftRight, label: "Между счетами", action: () => setIsInternalTransferOpen(true) },
     { icon: Globe, label: "В другую страну", action: () => setIsCurrencyExchangeOpen(true) },
     { icon: CreditCard, label: "По номеру карты", action: () => setIsTransferOpen(true) },
     { icon: CircleDollarSign, label: "В валюту или металлы", action: () => setIsCurrencyExchangeOpen(true) },
@@ -183,7 +195,10 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
           >
             <Search className="w-6 h-6 text-foreground" />
           </button>
-          <button className="p-2 rounded-full hover:bg-muted transition-colors">
+          <button 
+            onClick={() => setIsBarcodeScannerOpen(true)}
+            className="p-2 rounded-full hover:bg-muted transition-colors"
+          >
             <ScanBarcode className="w-6 h-6 text-foreground" />
           </button>
         </div>
@@ -210,7 +225,7 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
       <div className="bg-card mx-0 px-4 py-5">
         <h2 className="text-lg font-bold text-foreground mb-3">Перевести по номеру телефона</h2>
         <button 
-          onClick={() => setIsTransferOpen(true)}
+          onClick={() => setIsSBPOpen(true)}
           className="w-full flex items-center justify-between p-4 bg-muted rounded-2xl"
         >
           <div className="flex items-center gap-3">
@@ -230,7 +245,10 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
 
       {/* На оплату */}
       <div className="bg-card mx-0 mt-2 px-4 py-4">
-        <button className="flex items-center gap-3 w-full">
+        <button 
+          onClick={() => setIsAutoPaymentsOpen(true)}
+          className="flex items-center gap-3 w-full"
+        >
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
             <Bell className="w-5 h-5 text-primary-foreground" />
           </div>
@@ -328,42 +346,47 @@ const PaymentsPage = ({ onPayment, transactions }: PaymentsPageProps) => {
         onExecutePayment={onPayment}
       />
 
-      {isQROpen && (
-        <QRCodeModal
-          isOpen={isQROpen}
-          onClose={() => setIsQROpen(false)}
-          userName="Клиент РСХБ"
-          cardNumber="**7694"
-          onReceive={() => {}}
-        />
-      )}
+      <QRCodeModal
+        isOpen={isQROpen}
+        onClose={() => setIsQROpen(false)}
+        userName={userName}
+        cardNumber={cardNumber}
+        onReceive={onQRReceive}
+      />
 
-      {isTransferOpen && (
-        <TransferModal
-          isOpen={isTransferOpen}
-          onClose={() => setIsTransferOpen(false)}
-          balance={30327.84}
-          onTransfer={(amount, recipient) => onPayment(amount, recipient)}
-        />
-      )}
+      <TransferModal
+        isOpen={isTransferOpen}
+        onClose={() => setIsTransferOpen(false)}
+        balance={balance}
+        onTransfer={onTransfer}
+      />
 
-      {isCurrencyExchangeOpen && (
-        <CurrencyExchangeModal
-          isOpen={isCurrencyExchangeOpen}
-          onClose={() => setIsCurrencyExchangeOpen(false)}
-          balance={30327.84}
-          onExchange={(amount, from, to) => onPayment(amount, `${from} → ${to}`)}
-        />
-      )}
+      <InternalTransferModal
+        isOpen={isInternalTransferOpen}
+        onClose={() => setIsInternalTransferOpen(false)}
+        accounts={accounts}
+        onTransfer={onInternalTransfer}
+      />
 
-      {isSBPOpen && (
-        <SBPTransferModal
-          isOpen={isSBPOpen}
-          onClose={() => setIsSBPOpen(false)}
-          balance={30327.84}
-          onTransfer={(amount, recipient) => onPayment(amount, recipient)}
-        />
-      )}
+      <CurrencyExchangeModal
+        isOpen={isCurrencyExchangeOpen}
+        onClose={() => setIsCurrencyExchangeOpen(false)}
+        balance={balance}
+        onExchange={(amount, from, to) => onPayment(amount, `${from} → ${to}`)}
+      />
+
+      <SBPTransferModal
+        isOpen={isSBPOpen}
+        onClose={() => setIsSBPOpen(false)}
+        balance={balance}
+        onTransfer={onSBPTransfer}
+      />
+
+      <BarcodeScannerModal
+        isOpen={isBarcodeScannerOpen}
+        onClose={() => setIsBarcodeScannerOpen(false)}
+        onPayment={onPayment}
+      />
     </div>
   );
 };

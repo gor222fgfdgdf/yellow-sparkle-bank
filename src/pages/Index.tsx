@@ -243,11 +243,33 @@ const Index = () => {
 
     switch (activeTab) {
       case "payments":
-        return <PaymentsPage onPayment={handlePayment} transactions={transactions} />;
+        return (
+          <PaymentsPage 
+            onPayment={handlePayment} 
+            transactions={transactions} 
+            balance={mainAccountBalance}
+            accounts={accounts}
+            userName={userName}
+            cardNumber={mainAccount?.cardNumber || "0000"}
+            onTransfer={handleTransfer}
+            onInternalTransfer={handleInternalTransfer}
+            onSBPTransfer={handleSBPTransfer}
+            onQRReceive={handleQRReceive}
+          />
+        );
       case "support":
         return <SupportPage />;
       case "menu":
-        return <MenuPage onOpenCardManagement={() => setShowCardManagement(true)} />;
+        return (
+          <MenuPage 
+            onOpenCardManagement={() => setShowCardManagement(true)}
+            userName={userName}
+            balance={mainAccountBalance}
+            portfolioValue={investmentAccount?.balance || 0}
+            cardNumber={mainAccount?.cardNumber || "0000"}
+            onSignOut={signOut}
+          />
+        );
       case "history":
         return <HistoryPage transactions={transactions} onBack={() => setActiveTab("home")} />;
       case "svoe":
