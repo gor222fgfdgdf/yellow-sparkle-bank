@@ -35,36 +35,13 @@ interface StatementExportModalProps {
   accounts: Account[];
 }
 
-// Load Cyrillic font (PT Sans from Google Fonts)
-let cachedFont: ArrayBuffer | null = null;
-const loadCyrillicFont = async (): Promise<ArrayBuffer> => {
-  if (cachedFont) return cachedFont;
-  const response = await fetch(
-    "https://fonts.gstatic.com/s/ptsans/v17/jizaRExUiTo99u79D0KEwA.ttf"
-  );
-  cachedFont = await response.arrayBuffer();
-  return cachedFont;
-};
-
-const addCyrillicFont = (doc: jsPDF, fontData: ArrayBuffer) => {
-  const binary = new Uint8Array(fontData);
-  let str = "";
-  for (let i = 0; i < binary.length; i++) {
-    str += String.fromCharCode(binary[i]);
-  }
-  const base64 = btoa(str);
-  doc.addFileToVFS("PTSans-Regular.ttf", base64);
-  doc.addFont("PTSans-Regular.ttf", "PTSans", "normal");
-  doc.setFont("PTSans");
-};
-
-const formatDateRu = (dateString: string) => {
+const formatDateEn = (dateString: string) => {
   const d = new Date(dateString);
-  return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return d.toLocaleDateString("en-US", { day: "2-digit", month: "2-digit", year: "numeric" });
 };
 
 const formatAmount = (value: number) => {
-  return new Intl.NumberFormat("ru-RU", {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Math.abs(value));
@@ -127,16 +104,12 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
   const generatePDF = async () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    
-    // Load and add Cyrillic font
-    const fontData = await loadCyrillicFont();
-    addCyrillicFont(doc, fontData);
 
     const { start, end } = getDateRange();
     const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
-    const accountName = account?.name || "Все счета";
+    const accountName = account?.name || "All Accounts";
     const accountNumber = account?.card_number ? `40817810XXXXXX${account.card_number}` : "XXXXXXXXXXXXXXXXXXXX";
-    const ownerName = profile?.full_name || "Клиент банка";
+    const ownerName = profile?.full_name || "Account Holder";
 
     const pageWidth = 210;
     const margin = 15;
@@ -144,14 +117,15 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     // Title
     doc.setFontSize(12);
-    doc.setFont("PTSans", "normal");
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text("ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ", margin, y);
+    doc.text("CARD ACCOUNT STATEMENT", margin, y);
     y += 8;
 
     doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
     doc.text(
-      `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber} за период с ${formatDateRu(start.toISOString())} по ${formatDateRu(end.toISOString())}`,
+      `CARD ACCOUNT STATEMENT ${accountNumber} for period ${formatDateEn(start.toISOString())} - ${formatDateEn(end.toISOString())}`,
       margin, y, { maxWidth: pageWidth - margin * 2 }
     );
     y += 10;
@@ -161,11 +135,11 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setTextColor(0, 0, 0);
 
     const infoLines = [
-      `Дата выписки: ${formatDateRu(new Date().toISOString())}`,
-      `Валюта счёта: Российский рубль`,
-      `Владелец счёта: ${ownerName}`,
-      `Дата входящего остатка: ${formatDateRu(start.toISOString())}`,
-      `Филиал/Отделение: Региональный филиал`,
+      `Statement date: ${formatDateEn(new Date().toISOString())}`,
+      `Account currency: Russian Ruble (RUB)`,
+      `Account holder: ${ownerName}`,
+      `Opening balance date: ${formatDateEn(start.toISOString())}`,
+      `Branch: Regional Branch`,
     ];
 
     for (const line of infoLines) {
@@ -173,44 +147,46 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       y += 5;
     }
 
-    // Calculate opening balance from account or estimate
+    // Calculate opening balance
     const income = filteredTransactions.filter((t) => t.is_income).reduce((s, t) => s + Math.abs(t.amount), 0);
     const expense = filteredTransactions.filter((t) => !t.is_income).reduce((s, t) => s + Math.abs(t.amount), 0);
     const currentBalance = account?.balance ?? 0;
     const openingBalance = currentBalance - income + expense;
 
-    doc.text(`Сумма входящего остатка в валюте счета на дату начала периода: ${formatAmount(openingBalance)}`, margin, y);
+    doc.text(`Opening balance in account currency: ${formatAmount(openingBalance)} RUB`, margin, y);
     y += 8;
 
     // Section title
     doc.setFontSize(10);
-    doc.text("ПОДТВЕРЖДЕННЫЕ ОПЕРАЦИИ", margin, y);
+    doc.setFont("helvetica", "bold");
+    doc.text("CONFIRMED TRANSACTIONS", margin, y);
+    doc.setFont("helvetica", "normal");
     y += 4;
 
     // Transactions table
     const tableHeaders = [
-      "Дата\nпроведения\nоперации",
-      "Расход\nпо счету",
-      "Приход\nпо счету",
-      "Содержание операции",
-      "Валюта\nоперации",
-      "Сумма в\nвалюте\nоперации",
+      "Transaction\nDate",
+      "Debit",
+      "Credit",
+      "Description",
+      "Currency",
+      "Amount in\nCurrency",
     ];
 
     const tableData = filteredTransactions.map((t) => {
-      const expenseVal = !t.is_income ? formatAmount(t.amount) : "0,00";
-      const incomeVal = t.is_income ? formatAmount(t.amount) : "0,00";
-      const description = `${t.is_income ? "Поступление" : "Оплата"}: ${t.name}\nКатегория: ${t.category}`;
+      const expenseVal = !t.is_income ? formatAmount(t.amount) : "0.00";
+      const incomeVal = t.is_income ? formatAmount(t.amount) : "0.00";
+      const description = `${t.is_income ? "Income" : "Payment"}: ${t.name}\nCategory: ${t.category}`;
       const amountInCurrency = t.is_income
         ? formatAmount(t.amount)
         : `-${formatAmount(t.amount)}`;
 
       return [
-        formatDateRu(t.date),
+        formatDateEn(t.date),
         expenseVal,
         incomeVal,
         description,
-        "Российский\nрубль",
+        "RUB",
         amountInCurrency,
       ];
     });
@@ -222,7 +198,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       styles: {
         fontSize: 7,
         cellPadding: 2,
-        font: "PTSans",
+        font: "helvetica",
         textColor: [0, 0, 0],
         lineColor: [0, 0, 0],
         lineWidth: 0.2,
@@ -251,13 +227,13 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
           // Color expenses red, income green
           if (data.column.index === 1) {
             const text = data.cell.raw as string;
-            if (text !== "0,00") {
+            if (text !== "0.00") {
               data.cell.styles.textColor = [180, 30, 30];
             }
           }
           if (data.column.index === 2) {
             const text = data.cell.raw as string;
-            if (text !== "0,00") {
+            if (text !== "0.00") {
               data.cell.styles.textColor = [30, 120, 30];
             }
           }
@@ -275,19 +251,21 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     }
 
     doc.setFontSize(9);
-    doc.setFont("PTSans", "normal");
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
 
-    doc.text(`Дата исходящего остатка: ${formatDateRu(end.toISOString())}`, margin, footerY);
+    doc.text(`Closing balance date: ${formatDateEn(end.toISOString())}`, margin, footerY);
     footerY += 5;
-    doc.text(`Исходящий остаток в валюте счета на дату окончания периода: ${formatAmount(currentBalance)}`, margin, footerY);
+    doc.text(`Closing balance in account currency: ${formatAmount(currentBalance)} RUB`, margin, footerY);
     footerY += 8;
 
     doc.setFontSize(10);
-    doc.text("ОПЕРАЦИИ, ОЖИДАЮЩИЕ ОБРАБОТКИ", margin, footerY);
+    doc.setFont("helvetica", "bold");
+    doc.text("PENDING TRANSACTIONS", margin, footerY);
+    doc.setFont("helvetica", "normal");
     footerY += 6;
     doc.setFontSize(9);
-    doc.text(`Сумма доступного остатка на дату формирования выписки с учетом неподтвержденных операций: ${formatAmount(currentBalance)}`, margin, footerY, {
+    doc.text(`Available balance as of statement date including pending transactions: ${formatAmount(currentBalance)} RUB`, margin, footerY, {
       maxWidth: pageWidth - margin * 2,
     });
 
@@ -295,11 +273,11 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   };
 
   const generateCSV = () => {
-    const headers = ["Дата", "Расход", "Приход", "Описание", "Категория", "Валюта"];
+    const headers = ["Date", "Debit", "Credit", "Description", "Category", "Currency"];
     const rows = filteredTransactions.map((t) => [
-      formatDateRu(t.date),
-      !t.is_income ? formatAmount(t.amount) : "0,00",
-      t.is_income ? formatAmount(t.amount) : "0,00",
+      formatDateEn(t.date),
+      !t.is_income ? formatAmount(t.amount) : "0.00",
+      t.is_income ? formatAmount(t.amount) : "0.00",
       `"${t.name}"`,
       `"${t.category}"`,
       "RUB",
@@ -310,10 +288,10 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     const summary = [
       [],
-      ["ИТОГО"],
-      ["Поступления", "", formatAmount(income), "", "", ""],
-      ["Расходы", formatAmount(expense), "", "", "", ""],
-      ["Баланс", "", "", formatAmount(income - expense), "", ""],
+      ["SUMMARY"],
+      ["Income", "", formatAmount(income), "", "", ""],
+      ["Expenses", formatAmount(expense), "", "", "", ""],
+      ["Balance", "", "", formatAmount(income - expense), "", ""],
     ];
 
     const csvContent = [headers, ...rows, ...summary].map((row) => row.join(";")).join("\n");
