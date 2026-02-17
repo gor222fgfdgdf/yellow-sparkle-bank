@@ -10,6 +10,7 @@ export interface Account {
   name: string;
   balance: number;
   card_number?: string | null;
+  account_number?: string | null;
   rate?: number | null;
   color: string;
   credit_limit?: number | null;
