@@ -23,6 +23,7 @@ import SupportPage from "@/components/banking/SupportPage";
 import MenuPage from "@/components/banking/MenuPage";
 import InternalTransferModal from "@/components/banking/InternalTransferModal";
 import AccountDetailModal from "@/components/banking/AccountDetailModal";
+import HistoryPage from "@/components/banking/HistoryPage";
 import BudgetsModal from "@/components/banking/BudgetsModal";
 import SavingsGoalsModal from "@/components/banking/SavingsGoalsModal";
 import QRCodeModal from "@/components/banking/QRCodeModal";
@@ -247,11 +248,7 @@ const Index = () => {
       case "menu":
         return <MenuPage onOpenCardManagement={() => setShowCardManagement(true)} />;
       case "history":
-        return (
-          <>
-            <AllTransactionsModal isOpen={true} onClose={() => setActiveTab("home")} transactions={transactions} />
-          </>
-        );
+        return <HistoryPage transactions={transactions} onBack={() => setActiveTab("home")} />;
       default:
         return (
           <>
