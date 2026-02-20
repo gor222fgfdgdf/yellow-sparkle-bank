@@ -16,6 +16,7 @@ export interface Account {
   credit_limit?: number | null;
   min_payment?: number | null;
   payment_due_date?: string | null;
+  opened_at?: string;
   created_at: string;
   updated_at: string;
 }

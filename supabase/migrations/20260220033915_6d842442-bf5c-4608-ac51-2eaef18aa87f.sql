@@ -1,0 +1,1 @@
+ALTER TABLE public.accounts ADD COLUMN opened_at date NOT NULL DEFAULT '2020-02-12';
