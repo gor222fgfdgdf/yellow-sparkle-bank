@@ -349,6 +349,9 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       const stmpDataUrl = await loadImageWithWhiteBg(stampImg);
       const stampSize = 40;
       const stampX = pageWidth / 2 - stampSize / 2;
+      // Draw white background behind stamp to prevent black artifact
+      doc.setFillColor(255, 255, 255);
+      doc.rect(stampX, footerY - 5, stampSize, stampSize, "F");
       doc.addImage(stmpDataUrl, "PNG", stampX, footerY - 5, stampSize, stampSize);
     } catch {}
 
