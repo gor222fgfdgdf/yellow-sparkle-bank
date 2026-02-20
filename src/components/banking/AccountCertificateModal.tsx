@@ -7,6 +7,9 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useProfile } from "@/hooks/useProfile";
 import { useAccounts } from "@/hooks/useAccounts";
+import stampImg from "@/assets/rshb-stamp.png";
+import signatureImg from "@/assets/rshb-signature.png";
+import headerImg from "@/assets/rshb-header.png";
 
 interface AccountCertificateModalProps {
   isOpen: boolean;
@@ -37,18 +40,36 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
   const { data: profile } = useProfile();
   const { data: accounts } = useAccounts();
 
-  const generateCertificatePDF = () => {
+  const loadImage = (src: string): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  };
+
+  const generateCertificatePDF = async () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const now = new Date();
     const pageWidth = 210;
     const margin = 20;
-    let y = 20;
+    let y = 12;
 
-    // Bank header
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.text('Joint Stock Company "Russian Agricultural Bank"', margin, y);
-    y += 5;
+    // Bank header image
+    try {
+      const hdrImg = await loadImage(headerImg);
+      doc.addImage(hdrImg, "PNG", margin, y, pageWidth - margin * 2, 14);
+      y += 18;
+    } catch {
+      // fallback text header
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text('Joint Stock Company "Russian Agricultural Bank"', margin, y);
+      y += 8;
+    }
+
+    // Address
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.text("Gagarinsky pereulok, building 3,", margin, y);
@@ -141,7 +162,7 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     const finalY = (doc as any).lastAutoTable?.finalY || y + 40;
     let footerY = finalY + 12;
 
-    if (footerY > 240) {
+    if (footerY > 220) {
       doc.addPage();
       footerY = 20;
     }
@@ -156,6 +177,13 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     doc.setFont("helvetica", "normal");
     doc.text("Deputy Director of Department", margin, footerY);
     doc.text("A. G. Osipenko", pageWidth - margin - 35, footerY);
+
+    // Signature image
+    try {
+      const sigImg = await loadImage(signatureImg);
+      doc.addImage(sigImg, "PNG", pageWidth / 2 - 15, footerY - 8, 30, 12);
+    } catch {}
+
     footerY += 6;
 
     // Signature line labels
@@ -167,33 +195,28 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     doc.setTextColor(0, 0, 0);
     footerY += 14;
 
-    // Stamp area
-    doc.setFontSize(7);
-    doc.setTextColor(80, 80, 80);
-
-    // Draw circular stamp
-    const stampX = pageWidth / 2;
-    const stampY = footerY + 5;
-    const stampR = 18;
-
-    doc.setDrawColor(40, 100, 60);
-    doc.setLineWidth(0.6);
-    doc.circle(stampX, stampY, stampR);
-    doc.circle(stampX, stampY, stampR - 2);
-
-    doc.setFontSize(6);
-    doc.setTextColor(40, 100, 60);
-    doc.setFont("helvetica", "bold");
-    doc.text("Russian Agricultural", stampX, stampY - 6, { align: "center" });
-    doc.text("Bank", stampX, stampY - 2, { align: "center" });
-    doc.text('JSC "Rosselhozbank"', stampX, stampY + 2, { align: "center" });
-    doc.text("MOSCOW", stampX, stampY + 6, { align: "center" });
+    // Stamp image from real PDF
+    try {
+      const stmpImg = await loadImage(stampImg);
+      const stampSize = 40;
+      const stampX = pageWidth / 2 - stampSize / 2;
+      doc.addImage(stmpImg, "PNG", stampX, footerY - 5, stampSize, stampSize);
+      footerY += stampSize + 2;
+    } catch {
+      // fallback: draw circles
+      const sX = pageWidth / 2;
+      const sY = footerY + 15;
+      doc.setDrawColor(40, 100, 60);
+      doc.setLineWidth(0.6);
+      doc.circle(sX, sY, 18);
+      doc.circle(sX, sY, 16);
+      footerY = sY + 20;
+    }
 
     // Date under stamp
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(0, 0, 0);
     doc.setFontSize(9);
-    doc.text(dateStr, stampX, stampY + stampR + 6, { align: "center" });
+    doc.text(dateStr, pageWidth / 2, footerY, { align: "center" });
 
     return doc;
   };
@@ -201,7 +224,7 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const doc = generateCertificatePDF();
+      const doc = await generateCertificatePDF();
       doc.save(`certificate_accounts_${new Date().toISOString().split("T")[0]}.pdf`);
       toast.success("Справка скачана в PDF");
     } catch (error) {
