@@ -49,6 +49,26 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     });
   };
 
+  const loadImageWithWhiteBg = (src: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d")!;
+        // Fill white background first
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Draw image on top
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = reject;
+      img.src = src;
+    });
+  };
+
   const generateCertificatePDF = async () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const now = new Date();
@@ -196,15 +216,12 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     doc.setTextColor(0, 0, 0);
     footerY += 14;
 
-    // Stamp image from real PDF with white background
+    // Stamp image with white background
     try {
-      const stmpImg = await loadImage(stampImg);
+      const stmpDataUrl = await loadImageWithWhiteBg(stampImg);
       const stampSize = 40;
       const stampX = pageWidth / 2 - stampSize / 2;
-      // Draw white rectangle behind stamp
-      doc.setFillColor(255, 255, 255);
-      doc.rect(stampX, footerY - 5, stampSize, stampSize, "F");
-      doc.addImage(stmpImg, "PNG", stampX, footerY - 5, stampSize, stampSize);
+      doc.addImage(stmpDataUrl, "PNG", stampX, footerY - 5, stampSize, stampSize);
       footerY += stampSize + 2;
     } catch {
       // fallback: draw circles
