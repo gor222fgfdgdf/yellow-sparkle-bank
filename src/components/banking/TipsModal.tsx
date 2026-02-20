@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import FullScreenModal from "./FullScreenModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Coffee, Copy, Share2, Check, Heart, ArrowUpRight, ArrowDownRight, Link2, ArrowLeft } from "lucide-react";
+import { Coffee, Copy, Share2, Check, Heart, ArrowUpRight, ArrowDownRight, Link2 } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -79,16 +79,8 @@ const TipsModal = ({ isOpen, onClose, userName }: TipsModalProps) => {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl">
-        <SheetHeader className="mb-4">
-          <SheetTitle className="text-xl flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={onClose}><ArrowLeft className="w-5 h-5" /></Button>
-            Чаевые и донаты
-          </SheetTitle>
-        </SheetHeader>
-
-        <div className="h-[calc(90vh-100px)] overflow-y-auto space-y-4">
+    <FullScreenModal isOpen={isOpen} onClose={onClose} title="Чаевые и донаты">
+      <div className="space-y-4">
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-success/10 rounded-xl p-4 text-center">
@@ -299,9 +291,8 @@ const TipsModal = ({ isOpen, onClose, userName }: TipsModalProps) => {
               </TabsContent>
             </Tabs>
           )}
-        </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </FullScreenModal>
   );
 };
 
