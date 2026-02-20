@@ -9,6 +9,7 @@ interface MoreActionsSheetProps {
   onClose: () => void;
   onOpenSubscriptions?: () => void;
   onOpenStatementExport?: () => void;
+  onOpenAccountCertificate?: () => void;
   onOpenBudgets?: () => void;
   onOpenSavingsGoals?: () => void;
   onOpenLoans?: () => void;
@@ -17,7 +18,7 @@ interface MoreActionsSheetProps {
   onSetupPin?: () => void;
 }
 
-const MoreActionsSheet = ({ isOpen, onClose, onOpenSubscriptions, onOpenStatementExport, onOpenBudgets, onOpenSavingsGoals, onOpenLoans, onOpenInsurance, onOpenCalendar, onSetupPin }: MoreActionsSheetProps) => {
+const MoreActionsSheet = ({ isOpen, onClose, onOpenSubscriptions, onOpenStatementExport, onOpenAccountCertificate, onOpenBudgets, onOpenSavingsGoals, onOpenLoans, onOpenInsurance, onOpenCalendar, onSetupPin }: MoreActionsSheetProps) => {
   const { toast } = useToast();
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [notificationSettings, setNotificationSettings] = useState({
@@ -174,6 +175,7 @@ const MoreActionsSheet = ({ isOpen, onClose, onOpenSubscriptions, onOpenStatemen
 
   const actions = [
     { icon: FileText, label: "Выписки", description: "Скачать выписки по счёту", onClick: () => onOpenStatementExport ? (onClose(), onOpenStatementExport()) : setActiveSection("statements") },
+    { icon: FileText, label: "Справка о счетах", description: "Справка об открытых/закрытых счетах", onClick: () => onOpenAccountCertificate && (onClose(), onOpenAccountCertificate()) },
     { icon: Repeat, label: "Подписки", description: "Управление подписками", onClick: () => onOpenSubscriptions && (onClose(), onOpenSubscriptions()) },
     { icon: Calculator, label: "Бюджеты", description: "Планирование расходов", onClick: () => onOpenBudgets && (onClose(), onOpenBudgets()) },
     { icon: PiggyBank, label: "Цели", description: "Копилки и цели накоплений", onClick: () => onOpenSavingsGoals && (onClose(), onOpenSavingsGoals()) },
