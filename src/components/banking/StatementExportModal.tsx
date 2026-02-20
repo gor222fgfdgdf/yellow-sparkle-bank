@@ -36,6 +36,36 @@ interface StatementExportModalProps {
   accounts: Account[];
 }
 
+const categoryTranslations: Record<string, string> = {
+  "Продукты": "Groceries",
+  "Транспорт": "Transport",
+  "Развлечения": "Entertainment",
+  "Кафе и рестораны": "Cafes & Restaurants",
+  "Здоровье": "Health",
+  "Одежда": "Clothing",
+  "Связь": "Communication",
+  "ЖКХ": "Utilities",
+  "Образование": "Education",
+  "Переводы": "Transfers",
+  "Зарплата": "Salary",
+  "Подарки": "Gifts",
+  "Путешествия": "Travel",
+  "Красота": "Beauty",
+  "Дом": "Home",
+  "Спорт": "Sport",
+  "Подписки": "Subscriptions",
+  "Прочее": "Other",
+  "Супермаркеты": "Supermarkets",
+  "Такси": "Taxi",
+  "Аптеки": "Pharmacy",
+  "Фастфуд": "Fast Food",
+  "Маркетплейсы": "Marketplaces",
+  "Электроника": "Electronics",
+  "Топливо": "Fuel",
+  "Инвестиции": "Investments",
+};
+
+const translateCategory = (cat: string) => categoryTranslations[cat] || cat;
 
 
 const formatDateRu = (dateString: string) => {
@@ -182,7 +212,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const tableData = filteredTransactions.map((t) => {
       const expenseVal = !t.is_income ? formatAmount(t.amount) : "0.00";
       const incomeVal = t.is_income ? formatAmount(t.amount) : "0.00";
-      const description = `${t.is_income ? "Income" : "Payment"}: ${t.name}\nCategory: ${t.category}`;
+      const description = `${t.is_income ? "Income" : "Payment"}: ${t.name}\nCategory: ${translateCategory(t.category)}`;
       const amountInCurrency = t.is_income
         ? formatAmount(t.amount)
         : `-${formatAmount(t.amount)}`;
