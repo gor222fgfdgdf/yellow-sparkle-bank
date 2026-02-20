@@ -98,7 +98,7 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     const tableData = (accounts || []).map((acc) => [
       acc.account_number || "N/A",
       "1400",
-      formatDateRu(new Date(acc.created_at)),
+      formatDateRu(new Date(acc.opened_at || acc.created_at)),
       "",
       "RUR",
       formatAmount(Number(acc.balance)),

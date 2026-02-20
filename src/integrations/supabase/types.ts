@@ -25,6 +25,7 @@ export type Database = {
           id: string
           min_payment: number | null
           name: string
+          opened_at: string
           payment_due_date: string | null
           rate: number | null
           type: string
@@ -41,6 +42,7 @@ export type Database = {
           id?: string
           min_payment?: number | null
           name: string
+          opened_at?: string
           payment_due_date?: string | null
           rate?: number | null
           type: string
@@ -57,6 +59,7 @@ export type Database = {
           id?: string
           min_payment?: number | null
           name?: string
+          opened_at?: string
           payment_due_date?: string | null
           rate?: number | null
           type?: string
