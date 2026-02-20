@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Coffee, Copy, Share2, Check, Heart, ArrowUpRight, ArrowDownRight, Link2 } from "lucide-react";
+import { Coffee, Copy, Share2, Check, Heart, ArrowUpRight, ArrowDownRight, Link2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -82,7 +82,10 @@ const TipsModal = ({ isOpen, onClose, userName }: TipsModalProps) => {
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl">
         <SheetHeader className="mb-4">
-          <SheetTitle className="text-xl">Чаевые и донаты</SheetTitle>
+          <SheetTitle className="text-xl flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={onClose}><ArrowLeft className="w-5 h-5" /></Button>
+            Чаевые и донаты
+          </SheetTitle>
         </SheetHeader>
 
         <div className="h-[calc(90vh-100px)] overflow-y-auto space-y-4">

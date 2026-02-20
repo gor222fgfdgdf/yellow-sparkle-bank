@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Car, Plane, Heart, Home, ChevronRight, Check, Calendar, FileText } from "lucide-react";
+import { Shield, Car, Plane, Heart, Home, ChevronRight, Check, Calendar, FileText, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 interface InsuranceProduct {
@@ -118,7 +118,10 @@ const InsuranceModal = ({ isOpen, onClose }: InsuranceModalProps) => {
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl">
         <SheetHeader className="mb-4">
-          <SheetTitle className="text-xl">Страхование</SheetTitle>
+          <SheetTitle className="text-xl flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={onClose}><ArrowLeft className="w-5 h-5" /></Button>
+            Страхование
+          </SheetTitle>
         </SheetHeader>
 
         <Tabs defaultValue="catalog" className="h-[calc(90vh-100px)]">

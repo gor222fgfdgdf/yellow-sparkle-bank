@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Search, 
   Star, StarOff, Bell, BellOff, ChevronRight, Info, Calendar,
-  Briefcase, BarChart3, Newspaper, AlertCircle, Clock, RefreshCw
+  Briefcase, BarChart3, Newspaper, AlertCircle, Clock, RefreshCw, ArrowLeft
 } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, PieChart as RechartsPie, Pie, Cell, AreaChart, Area } from "recharts";
@@ -223,7 +223,12 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
       <SheetContent side="bottom" className="h-[95vh] rounded-t-3xl">
         <SheetHeader className="mb-4">
           <SheetTitle className="text-xl flex items-center justify-between">
-            <span>Инвестиции</span>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={onClose}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <span>Инвестиции</span>
+            </div>
             <div className="flex gap-2">
               <Button variant="ghost" size="icon" onClick={() => toast.info("Данные обновлены")}>
                 <RefreshCw className="w-4 h-4" />

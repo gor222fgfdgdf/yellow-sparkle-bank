@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { CreditCard, Calculator, Calendar, Check, Clock, ChevronRight, Percent } from "lucide-react";
+import { CreditCard, Calculator, Calendar, Check, Clock, ChevronRight, Percent, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 interface LoanOffer {
@@ -100,7 +100,10 @@ const LoansModal = ({ isOpen, onClose }: LoansModalProps) => {
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl">
         <SheetHeader className="mb-4">
-          <SheetTitle className="text-xl">Кредиты и рассрочка</SheetTitle>
+          <SheetTitle className="text-xl flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={onClose}><ArrowLeft className="w-5 h-5" /></Button>
+            Кредиты и рассрочка
+          </SheetTitle>
         </SheetHeader>
 
         <Tabs defaultValue="offers" className="h-[calc(90vh-100px)]">

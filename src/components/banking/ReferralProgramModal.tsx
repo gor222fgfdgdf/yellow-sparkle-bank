@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Gift, Copy, Share2, Check, UserPlus, Wallet, Clock } from "lucide-react";
+import { Users, Gift, Copy, Share2, Check, UserPlus, Wallet, Clock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 interface Referral {
@@ -82,7 +82,10 @@ const ReferralProgramModal = ({ isOpen, onClose }: ReferralProgramModalProps) =>
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl">
         <SheetHeader className="mb-4">
-          <SheetTitle className="text-xl">Пригласи друзей</SheetTitle>
+          <SheetTitle className="text-xl flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={onClose}><ArrowLeft className="w-5 h-5" /></Button>
+            Пригласи друзей
+          </SheetTitle>
         </SheetHeader>
 
         <div className="h-[calc(90vh-100px)] overflow-y-auto space-y-4">

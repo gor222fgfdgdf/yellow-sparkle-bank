@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UserPlus, CreditCard, Eye, Lock, ShoppingBag, Gamepad2, Coffee, Settings, ChevronRight, Check } from "lucide-react";
+import { Users, UserPlus, CreditCard, Eye, Lock, ShoppingBag, Gamepad2, Coffee, Settings, ChevronRight, Check, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 interface FamilyMember {
@@ -149,7 +149,10 @@ const FamilyAccessModal = ({ isOpen, onClose }: FamilyAccessModalProps) => {
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl">
         <SheetHeader className="mb-4">
-          <SheetTitle className="text-xl">Семейный доступ</SheetTitle>
+          <SheetTitle className="text-xl flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={onClose}><ArrowLeft className="w-5 h-5" /></Button>
+            Семейный доступ
+          </SheetTitle>
         </SheetHeader>
 
         <div className="h-[calc(90vh-100px)] overflow-y-auto space-y-4">

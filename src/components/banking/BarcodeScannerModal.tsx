@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Scan, Camera, FileText, Check, Clock, Zap, Droplets, Flame, Home } from "lucide-react";
+import { Scan, Camera, FileText, Check, Clock, Zap, Droplets, Flame, Home, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 interface ScannedBill {
@@ -110,7 +110,10 @@ const BarcodeScannerModal = ({ isOpen, onClose, onPayment }: BarcodeScannerModal
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl">
         <SheetHeader className="mb-4">
-          <SheetTitle className="text-xl">Оплата по штрихкоду</SheetTitle>
+          <SheetTitle className="text-xl flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={onClose}><ArrowLeft className="w-5 h-5" /></Button>
+            Оплата по штрихкоду
+          </SheetTitle>
         </SheetHeader>
 
         <Tabs defaultValue="scan" className="h-[calc(90vh-100px)]">
