@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import FullScreenModal from "./FullScreenModal";
 import { Button } from "@/components/ui/button";
-import { Download, FileText, ArrowLeft } from "lucide-react";
+import { Download, FileText } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -258,16 +258,8 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
   const accountCount = accounts?.filter((a) => a.account_number).length || 0;
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="bottom" className="h-[60vh] rounded-t-3xl">
-        <SheetHeader className="mb-6">
-          <SheetTitle className="text-xl flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={onClose}><ArrowLeft className="w-5 h-5" /></Button>
-            Справка о счетах
-          </SheetTitle>
-        </SheetHeader>
-
-        <div className="space-y-6 overflow-y-auto max-h-[calc(60vh-120px)]">
+    <FullScreenModal isOpen={isOpen} onClose={onClose} title="Справка о счетах">
+      <div className="space-y-6">
           <div className="bg-muted/50 rounded-2xl p-5">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -300,9 +292,8 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
             <Download className="w-5 h-5 mr-2" />
             {isExporting ? "Формирование..." : "Скачать справку"}
           </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </FullScreenModal>
   );
 };
 

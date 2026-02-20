@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import FullScreenModal from "./FullScreenModal";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FileText, FileSpreadsheet, Mail, Download, Check, Calendar, ArrowLeft } from "lucide-react";
+import { FileText, FileSpreadsheet, Mail, Download, Check, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -430,16 +430,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   const expenses = filteredTransactions.filter((t) => !t.is_income).reduce((s, t) => s + Math.abs(t.amount), 0);
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl">
-        <SheetHeader className="mb-6">
-          <SheetTitle className="text-xl flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={onClose}><ArrowLeft className="w-5 h-5" /></Button>
-            Выписка по счёту
-          </SheetTitle>
-        </SheetHeader>
-
-        <div className="space-y-6 overflow-y-auto max-h-[calc(85vh-120px)]">
+    <FullScreenModal isOpen={isOpen} onClose={onClose} title="Выписка по счёту">
+      <div className="space-y-6">
           {/* Account Selection */}
           <div className="space-y-2">
             <Label>Счёт</Label>
@@ -581,9 +573,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
               </div>
             )}
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </FullScreenModal>
   );
 };
 
