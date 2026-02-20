@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useProfile } from "@/hooks/useProfile";
+import stampImg from "@/assets/rshb-stamp.png";
+import signatureImg from "@/assets/rshb-signature.png";
 
 interface Transaction {
   id: string;
@@ -137,6 +139,24 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions, period, selectedAccount, customStartDate, customEndDate]);
+
+  const loadImageWithWhiteBg = (src: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = reject;
+      img.src = src;
+    });
+  };
 
   const generatePDF = async () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
@@ -304,6 +324,33 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.text(`Available balance as of statement date including pending transactions: ${formatAmount(currentBalance)} RUB`, margin, footerY, {
       maxWidth: pageWidth - margin * 2,
     });
+    footerY += 14;
+
+    // Signature and stamp
+    if (footerY > 240) {
+      doc.addPage();
+      footerY = 20;
+    }
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("Authorized signature:", margin, footerY);
+    doc.text("A. G. Osipenko", margin + 50, footerY);
+
+    try {
+      const sigImg = await loadImageWithWhiteBg(signatureImg);
+      doc.addImage(sigImg, "PNG", margin + 35, footerY - 8, 30, 12);
+    } catch {}
+
+    footerY += 14;
+    doc.setTextColor(0, 0, 0);
+
+    try {
+      const stmpDataUrl = await loadImageWithWhiteBg(stampImg);
+      const stampSize = 40;
+      const stampX = pageWidth / 2 - stampSize / 2;
+      doc.addImage(stmpDataUrl, "PNG", stampX, footerY - 5, stampSize, stampSize);
+    } catch {}
 
     return doc;
   };
