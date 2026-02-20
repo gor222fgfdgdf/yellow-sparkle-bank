@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -261,7 +261,10 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="bottom" className="h-[60vh] rounded-t-3xl">
         <SheetHeader className="mb-6">
-          <SheetTitle className="text-xl">Справка о счетах</SheetTitle>
+          <SheetTitle className="text-xl flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={onClose}><ArrowLeft className="w-5 h-5" /></Button>
+            Справка о счетах
+          </SheetTitle>
         </SheetHeader>
 
         <div className="space-y-6 overflow-y-auto max-h-[calc(60vh-120px)]">
