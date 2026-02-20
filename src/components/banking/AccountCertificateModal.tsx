@@ -116,8 +116,9 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
       "Balance",
     ];
 
-    const tableData = (accounts || []).map((acc) => [
-      acc.account_number || "N/A",
+    const filteredAccounts = (accounts || []).filter((acc) => acc.account_number);
+    const tableData = filteredAccounts.map((acc) => [
+      acc.account_number,
       "1400",
       formatDateRu(new Date(acc.opened_at || acc.created_at)),
       "",
@@ -195,11 +196,14 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     doc.setTextColor(0, 0, 0);
     footerY += 14;
 
-    // Stamp image from real PDF
+    // Stamp image from real PDF with white background
     try {
       const stmpImg = await loadImage(stampImg);
       const stampSize = 40;
       const stampX = pageWidth / 2 - stampSize / 2;
+      // Draw white rectangle behind stamp
+      doc.setFillColor(255, 255, 255);
+      doc.rect(stampX, footerY - 5, stampSize, stampSize, "F");
       doc.addImage(stmpImg, "PNG", stampX, footerY - 5, stampSize, stampSize);
       footerY += stampSize + 2;
     } catch {
@@ -234,7 +238,7 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     setIsExporting(false);
   };
 
-  const accountCount = accounts?.length || 0;
+  const accountCount = accounts?.filter((a) => a.account_number).length || 0;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
