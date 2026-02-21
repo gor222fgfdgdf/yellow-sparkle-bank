@@ -178,6 +178,24 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     return hash.substring(0, 6).toUpperCase();
   };
 
+  const generateTerminalId = (id: string) => {
+    const seed = parseInt(id.replace(/-/g, "").substring(4, 12), 16);
+    return String(seed % 90000000 + 10000000);
+  };
+
+  const generateMCC = (id: string) => {
+    return String((parseInt(id.substring(0, 4), 16) % 9000) + 1000);
+  };
+
+  const buildDescription = (t: Transaction, authCode: string) => {
+    const termId = generateTerminalId(t.id);
+    const mcc = generateMCC(t.id);
+    if (t.is_income) {
+      return `${t.name}\nAuth: ${authCode} | Terminal: ${termId}`;
+    }
+    return `${t.name}\nAuth: ${authCode} | MCC: ${mcc} | Terminal: ${termId}`;
+  };
+
   const generatePDF = async () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
@@ -268,10 +286,13 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     y += 4;
 
     // Calculate opening balance & running balance
-    const income = filteredTransactions.filter((t) => t.is_income).reduce((s, t) => s + Math.abs(t.amount), 0);
-    const expense = filteredTransactions.filter((t) => !t.is_income).reduce((s, t) => s + Math.abs(t.amount), 0);
-    const currentBalance = account?.balance ?? 0;
-    const openingBalance = currentBalance - income + expense;
+    const sortedAsc = filteredTransactions.slice().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const income = sortedAsc.filter((t) => t.is_income).reduce((s, t) => s + Math.abs(t.amount), 0);
+    const expense = sortedAsc.filter((t) => !t.is_income).reduce((s, t) => s + Math.abs(t.amount), 0);
+    // When a specific account is selected, derive opening from its current balance
+    // When "all" is selected, sum all account balances as closing
+    const closingBalance = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
+    const openingBalance = closingBalance - income + expense;
 
     // Balance summary box
     doc.setFillColor(245, 247, 245);
@@ -279,7 +300,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
     doc.text(`Opening balance: ${formatAmount(openingBalance)} RUB`, margin + 4, y + 5);
-    doc.text(`Closing balance: ${formatAmount(currentBalance)} RUB`, margin + 4, y + 9.5);
+    doc.text(`Closing balance: ${formatAmount(closingBalance)} RUB`, margin + 4, y + 9.5);
     doc.text(`Total debit: ${formatAmount(expense)} RUB`, pageWidth / 2 + 10, y + 5);
     doc.text(`Total credit: ${formatAmount(income)} RUB`, pageWidth / 2 + 10, y + 9.5);
     y += 16;
@@ -319,9 +340,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
         const ref = generateTransactionRef(t.id, t.date);
         const authCode = generateAuthCode(t.id);
 
-        const description = t.is_income
-          ? `${t.name}\nAuth: ${authCode}`
-          : `${t.name}\nAuth: ${authCode} | MCC: ${(parseInt(t.id.substring(0, 4), 16) % 9000 + 1000)}`;
+        const description = buildDescription(t, authCode);
 
         return [
           String(i + 1),
@@ -471,8 +490,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
     const income = filteredTransactions.filter((t) => t.is_income).reduce((sum, t) => sum + Math.abs(t.amount), 0);
     const expense = filteredTransactions.filter((t) => !t.is_income).reduce((sum, t) => sum + Math.abs(t.amount), 0);
-    const currentBalance = account?.balance ?? 0;
-    let runBal = currentBalance - income + expense;
+    const closingBal = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
+    let runBal = closingBal - income + expense;
 
     const sorted = filteredTransactions.slice().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     const rows = sorted.map((t, i) => {
