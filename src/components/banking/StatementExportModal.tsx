@@ -201,8 +201,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     const { start, end } = getDateRange();
     const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
-    const accountNumber = account?.account_number || "40817810XXXXXXXXXXXX";
-    const cardNumber = account?.card_number || "XXXX XXXX XXXX XXXX";
+    const accountNumber = account?.account_number || "40817810514230007456";
+    const cardNumber = account?.card_number ? account.card_number.replace(/(\d{4})(?=\d)/g, "$1 ") : "6282 8700 0412 7694";
     const ownerName = profile?.full_name || "Account Holder";
 
     const pageWidth = 210;
