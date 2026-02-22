@@ -191,57 +191,50 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const nameLower = t.name.toLowerCase();
     const cat = t.category;
     
-    // ATM withdrawals
-    if (nameLower.includes('atm') || nameLower.includes('банкомат') || cat === 'Снятие наличных') 
-      return 'Выдача наличных';
+    if (nameLower.includes('atm') || cat === 'Снятие наличных') 
+      return 'ATM Cash Withdrawal';
     
-    // Transfers
-    if (cat === 'Переводы' || nameLower.includes('перевод')) {
+    if (cat === 'Переводы' || nameLower.includes('перевод') || nameLower.includes('transfer')) {
       if (t.is_income) {
-        if (nameLower.includes('сбп') || nameLower.includes('sbp')) return 'Перевод СБП';
-        return 'Перевод на карту';
+        if (nameLower.includes('сбп') || nameLower.includes('sbp')) return 'SBP Incoming Transfer';
+        return 'Incoming Card Transfer';
       }
-      if (nameLower.includes('сбп') || nameLower.includes('sbp')) return 'Перевод СБП';
-      return 'Перевод с карты';
+      if (nameLower.includes('сбп') || nameLower.includes('sbp')) return 'SBP Outgoing Transfer';
+      return 'Outgoing Card Transfer';
     }
     
-    // Salary
     if (cat === 'Зарплата' || nameLower.includes('salary') || nameLower.includes('зарплат'))
-      return 'Зачисление заработной платы';
+      return 'Salary Credit';
     
-    // QR payments
-    if (nameLower.includes('qr')) return 'Оплата по QR-коду СБП';
-    
-    // Restaurants & cafes
-    if (cat === 'Кафе и рестораны' || cat === 'Фастфуд') return 'Оплата по QR-коду СБП';
-    
-    // Supermarkets / stores
+    if (nameLower.includes('qr')) return 'QR Code Payment (SBP)';
+    if (cat === 'Кафе и рестораны' || cat === 'Фастфуд') return 'QR Code Payment (SBP)';
     if (cat === 'Супермаркеты' || cat === 'Продукты' || cat === 'Маркетплейсы' || cat === 'Электроника' || cat === 'Одежда')
-      return 'Оплата в магазине';
+      return 'Store Purchase';
+    if (cat === 'Подписки' || cat === 'Связь' || cat === 'ЖКХ') return 'Service Payment';
+    if (nameLower.includes('комиссия') || nameLower.includes('commission')) return 'Commission Fee';
+    if (cat === 'Все для дома' || cat === 'Дом') return 'Store Purchase';
+    if (cat === 'Развлечения') return 'QR Code Payment (SBP)';
+    if (cat === 'Транспорт' || cat === 'Такси') return 'Service Payment';
+    if (nameLower.includes('возврат') || nameLower.includes('loyalty') || nameLower.includes('лояльност')) return 'Loyalty Refund';
+    if (t.is_income) return 'Incoming Card Transfer';
+    return 'Purchase';
+  };
+
+  const transliterateName = (name: string): string => {
+    // If name is already Latin, return as-is
+    if (/^[a-zA-Z0-9\s.,\-*@&()\/!#$%^+=:;'"]+$/.test(name)) return name;
     
-    // Subscriptions / services
-    if (cat === 'Подписки' || cat === 'Связь' || cat === 'ЖКХ') return 'Оплата услуг';
-    
-    // Commission
-    if (nameLower.includes('комиссия')) return 'Прочие операции';
-    
-    // Home goods
-    if (cat === 'Все для дома' || cat === 'Дом') return 'Все для дома';
-    
-    // Entertainment
-    if (cat === 'Развлечения') return 'Оплата по QR-коду СБП';
-    
-    // Transport
-    if (cat === 'Транспорт' || cat === 'Такси') return 'Оплата услуг';
-    
-    // Loyalty/cashback
-    if (nameLower.includes('возврат') || nameLower.includes('лояльност')) return 'Прочие операции';
-    
-    // Income fallback
-    if (t.is_income) return 'Перевод на карту';
-    
-    // Default
-    return 'Прочие расходы';
+    const map: Record<string, string> = {
+      'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i',
+      'й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t',
+      'у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ъ':'','ы':'y',
+      'ь':'','э':'e','ю':'yu','я':'ya',
+      'А':'A','Б':'B','В':'V','Г':'G','Д':'D','Е':'E','Ё':'Yo','Ж':'Zh','З':'Z','И':'I',
+      'Й':'Y','К':'K','Л':'L','М':'M','Н':'N','О':'O','П':'P','Р':'R','С':'S','Т':'T',
+      'У':'U','Ф':'F','Х':'Kh','Ц':'Ts','Ч':'Ch','Ш':'Sh','Щ':'Shch','Ъ':'','Ы':'Y',
+      'Ь':'','Э':'E','Ю':'Yu','Я':'Ya',
+    };
+    return name.split('').map(c => map[c] ?? c).join('');
   };
 
   const buildDescription = (t: Transaction, authCode: string, cardNum: string, accountNum: string) => {
@@ -249,13 +242,14 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const lastCard = cardNum.replace(/\s/g, '').slice(-4);
     const lastAcc = accountNum.slice(-4);
     
-    // Determine if operation is via card or account
     const isCardOp = !t.name.toLowerCase().includes('счет') && !t.name.toLowerCase().includes('сбп');
     const opSuffix = isCardOp 
-      ? `Операция по карте ****${lastCard}` 
-      : `Операция по счету ****${lastAcc}`;
+      ? `Card ****${lastCard}` 
+      : `Account ****${lastAcc}`;
     
-    return `${opType}\n${t.name}. ${opSuffix}`;
+    const safeName = transliterateName(t.name);
+    
+    return `${opType}\n${safeName}. ${opSuffix}`;
   };
 
   const generatePDF = async () => {
