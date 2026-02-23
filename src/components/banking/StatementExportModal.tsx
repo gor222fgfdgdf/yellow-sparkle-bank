@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FileText, FileSpreadsheet, Mail, Download, Check, Calendar } from "lucide-react";
+import { FileText, FileSpreadsheet, Mail, Download, Check, Calendar, Globe } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -38,37 +38,61 @@ interface StatementExportModalProps {
   accounts: Account[];
 }
 
-const categoryTranslations: Record<string, string> = {
-  "Продукты": "Groceries",
-  "Транспорт": "Transport",
-  "Развлечения": "Entertainment",
-  "Кафе и рестораны": "Cafes & Restaurants",
-  "Здоровье": "Health",
-  "Одежда": "Clothing",
-  "Связь": "Communication",
-  "ЖКХ": "Utilities",
-  "Образование": "Education",
-  "Переводы": "Transfers",
-  "Зарплата": "Salary",
-  "Подарки": "Gifts",
-  "Путешествия": "Travel",
-  "Красота": "Beauty",
-  "Дом": "Home",
-  "Спорт": "Sport",
-  "Подписки": "Subscriptions",
-  "Прочее": "Other",
-  "Супермаркеты": "Supermarkets",
-  "Такси": "Taxi",
-  "Аптеки": "Pharmacy",
-  "Фастфуд": "Fast Food",
-  "Маркетплейсы": "Marketplaces",
-  "Электроника": "Electronics",
-  "Топливо": "Fuel",
-  "Инвестиции": "Investments",
+type Lang = "en" | "ru";
+
+const i18n: Record<string, Record<Lang, string>> = {
+  bankName: { en: "JSC Rosselkhozbank", ru: "АО «Россельхозбанк»" },
+  license: { en: "License No. 3349 dated 12.08.2015", ru: "Лицензия №3349 от 12.08.2015" },
+  address: { en: "119034, Moscow, Gagarinsky per., 3", ru: "119034, г. Москва, Гагаринский пер., д. 3" },
+  bic: { en: "BIC 044525111 | INN 7725114488", ru: "БИК 044525111 | ИНН 7725114488" },
+  title: { en: "STATEMENT OF CARD ACCOUNT", ru: "ВЫПИСКА ПО КАРТОЧНОМУ СЧЁТУ" },
+  statementDate: { en: "Statement date:", ru: "Дата выписки:" },
+  accountHolder: { en: "Account holder:", ru: "Владелец счёта:" },
+  accountNumber: { en: "Account number:", ru: "Номер счёта:" },
+  cardNumber: { en: "Card number:", ru: "Номер карты:" },
+  currency: { en: "Account currency:", ru: "Валюта счёта:" },
+  currencyVal: { en: "Russian Ruble (RUB)", ru: "Российский рубль (RUB)" },
+  branch: { en: "Branch:", ru: "Отделение:" },
+  branchVal: { en: "Moscow Regional Branch No. 3349/0101", ru: "Московский региональный филиал №3349/0101" },
+  period: { en: "Statement period:", ru: "Период выписки:" },
+  opening: { en: "Opening balance:", ru: "Остаток на начало:" },
+  closing: { en: "Closing balance:", ru: "Остаток на конец:" },
+  totalDebit: { en: "Total debit:", ru: "Итого списания:" },
+  totalCredit: { en: "Total credit:", ru: "Итого зачисления:" },
+  transactions: { en: "TRANSACTIONS", ru: "ОПЕРАЦИИ" },
+  no: { en: "No.", ru: "№" },
+  dateTime: { en: "Date / Time", ru: "Дата / Время" },
+  reference: { en: "Reference", ru: "Референс" },
+  description: { en: "Description", ru: "Описание" },
+  debit: { en: "Debit\n(RUB)", ru: "Списание\n(RUB)" },
+  credit: { en: "Credit\n(RUB)", ru: "Зачисление\n(RUB)" },
+  balance: { en: "Balance\n(RUB)", ru: "Остаток\n(RUB)" },
+  total: { en: "TOTAL", ru: "ИТОГО" },
+  footerCount: { en: "transaction(s) for the period", ru: "операций за период" },
+  footerGenerated: { en: "Statement generated electronically on", ru: "Выписка сформирована электронно" },
+  footerValid: { en: "and is valid without signature.", ru: "и действительна без подписи." },
+  authRep: { en: "Authorized representative:", ru: "Уполномоченный представитель:" },
+  authName: { en: "A. G. Osipenko", ru: "А. Г. Осипенко" },
+  forPeriodFrom: { en: "for period from", ru: "за период с" },
+  to: { en: "to", ru: "по" },
+  noLabel: { en: "No.", ru: "№" },
+  stmtContains: { en: "This statement contains", ru: "Выписка содержит" },
 };
 
-const translateCategory = (cat: string) => categoryTranslations[cat] || cat;
-
+const opTypesRu: Record<string, string> = {
+  "ATM Cash Withdrawal": "Выдача наличных в банкомате",
+  "SBP Incoming Transfer": "Входящий перевод СБП",
+  "Incoming Card Transfer": "Входящий перевод по карте",
+  "SBP Outgoing Transfer": "Исходящий перевод СБП",
+  "Outgoing Card Transfer": "Исходящий перевод по карте",
+  "Salary Credit": "Зачисление заработной платы",
+  "QR Code Payment (SBP)": "Оплата по QR-коду (СБП)",
+  "Store Purchase": "Покупка в магазине",
+  "Service Payment": "Оплата услуг",
+  "Commission Fee": "Комиссия",
+  "Loyalty Refund": "Возврат по программе лояльности",
+  "Purchase": "Покупка",
+};
 
 const formatDateRu = (dateString: string) => {
   const d = new Date(dateString);
@@ -93,6 +117,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   const [isExporting, setIsExporting] = useState(false);
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
+  const [lang, setLang] = useState<Lang>("en");
   const { data: profile } = useProfile();
 
   const getDateRange = (): { start: Date; end: Date } => {
@@ -165,9 +190,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   };
 
   const generateTransactionTime = (id: string, index: number) => {
-    // Generate deterministic time from transaction id
     const seed = parseInt(id.replace(/-/g, "").substring(0, 8), 16);
-    const hours = (seed + index * 3) % 14 + 8; // 08:00-21:59
+    const hours = (seed + index * 3) % 14 + 8;
     const minutes = (seed + index * 7) % 60;
     const seconds = (seed + index * 13) % 60;
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
@@ -221,7 +245,6 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   };
 
   const transliterateName = (name: string): string => {
-    // If name is already Latin, return as-is
     if (/^[a-zA-Z0-9\s.,\-*@&()\/!#$%^+=:;'"]+$/.test(name)) return name;
     
     const map: Record<string, string> = {
@@ -238,28 +261,67 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   };
 
   const buildDescription = (t: Transaction, authCode: string, cardNum: string, accountNum: string) => {
-    const opType = getOperationType(t);
+    const opTypeEn = getOperationType(t);
+    const opType = lang === "ru" ? (opTypesRu[opTypeEn] || opTypeEn) : opTypeEn;
     const lastCard = cardNum.replace(/\s/g, '').slice(-4);
     const lastAcc = accountNum.slice(-4);
     
     const isCardOp = !t.name.toLowerCase().includes('счет') && !t.name.toLowerCase().includes('сбп');
-    const opSuffix = isCardOp 
-      ? `Card ****${lastCard}` 
-      : `Account ****${lastAcc}`;
+    const opSuffix = lang === "ru"
+      ? (isCardOp ? `Карта ****${lastCard}` : `Счёт ****${lastAcc}`)
+      : (isCardOp ? `Card ****${lastCard}` : `Account ****${lastAcc}`);
     
-    const safeName = transliterateName(t.name);
+    const safeName = lang === "ru" ? t.name : transliterateName(t.name);
     
     return `${opType}\n${safeName}. ${opSuffix}`;
   };
 
+  const loadFont = async (doc: jsPDF) => {
+    if (lang !== "ru") return;
+    
+    try {
+      const [regularResp, boldResp] = await Promise.all([
+        fetch("/fonts/Roboto-Regular.ttf"),
+        fetch("/fonts/Roboto-Bold.ttf"),
+      ]);
+      
+      const [regularBuf, boldBuf] = await Promise.all([
+        regularResp.arrayBuffer(),
+        boldResp.arrayBuffer(),
+      ]);
+      
+      const toBase64 = (buf: ArrayBuffer) => {
+        const bytes = new Uint8Array(buf);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+      };
+      
+      doc.addFileToVFS("Roboto-Regular.ttf", toBase64(regularBuf));
+      doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+      
+      doc.addFileToVFS("Roboto-Bold.ttf", toBase64(boldBuf));
+      doc.addFont("Roboto-Bold.ttf", "Roboto", "bold");
+    } catch (e) {
+      console.error("Failed to load Roboto font:", e);
+    }
+  };
+
+  const t = (key: string) => i18n[key]?.[lang] || key;
+  const fontName = lang === "ru" ? "Roboto" : "helvetica";
+
   const generatePDF = async () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    
+    await loadFont(doc);
 
     const { start, end } = getDateRange();
     const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
     const accountNumber = account?.account_number || "40817810514230007456";
     const cardNumber = account?.card_number ? account.card_number.replace(/(\d{4})(?=\d)/g, "$1 ") : "6282 8700 0412 7694";
-    const ownerName = profile?.full_name || "Account Holder";
+    const ownerName = profile?.full_name || (lang === "ru" ? "Владелец счёта" : "Account Holder");
 
     const pageWidth = 210;
     const margin = 14;
@@ -273,14 +335,9 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     // Bank details on right side
     doc.setFontSize(7);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(fontName, "normal");
     doc.setTextColor(100, 100, 100);
-    const bankInfo = [
-      "JSC Rosselkhozbank",
-      "License No. 3349 dated 12.08.2015",
-      "119034, Moscow, Gagarinsky per., 3",
-      "BIC 044525111 | INN 7725114488",
-    ];
+    const bankInfo = [t("bankName"), t("license"), t("address"), t("bic")];
     bankInfo.forEach((line, i) => {
       doc.text(line, pageWidth - margin, y + 3 + i * 3.5, { align: "right" });
     });
@@ -294,30 +351,30 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     // Title
     doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(fontName, "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text("STATEMENT OF CARD ACCOUNT", pageWidth / 2, y, { align: "center" });
+    doc.text(t("title"), pageWidth / 2, y, { align: "center" });
     y += 5;
     doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(fontName, "normal");
     doc.text(
-      `No. ${accountNumber} for period from ${formatDateRu(start.toISOString())} to ${formatDateRu(end.toISOString())}`,
+      `${t("noLabel")} ${accountNumber} ${t("forPeriodFrom")} ${formatDateRu(start.toISOString())} ${t("to")} ${formatDateRu(end.toISOString())}`,
       pageWidth / 2, y, { align: "center" }
     );
     y += 8;
 
-    // Info table (two-column layout)
+    // Info table
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
 
     const infoData: [string, string][] = [
-      ["Statement date:", formatDateRu(new Date().toISOString())],
-      ["Account holder:", ownerName],
-      ["Account number:", accountNumber],
-      ["Card number:", cardNumber],
-      ["Account currency:", "Russian Ruble (RUB)"],
-      ["Branch:", "Moscow Regional Branch No. 3349/0101"],
-      ["Statement period:", `${formatDateRu(start.toISOString())} — ${formatDateRu(end.toISOString())}`],
+      [t("statementDate"), formatDateRu(new Date().toISOString())],
+      [t("accountHolder"), ownerName],
+      [t("accountNumber"), accountNumber],
+      [t("cardNumber"), cardNumber],
+      [t("currency"), t("currencyVal")],
+      [t("branch"), t("branchVal")],
+      [t("period"), `${formatDateRu(start.toISOString())} — ${formatDateRu(end.toISOString())}`],
     ];
 
     autoTable(doc, {
@@ -326,7 +383,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       styles: {
         fontSize: 8,
         cellPadding: 1.5,
-        font: "helvetica",
+        font: fontName,
         textColor: [0, 0, 0],
         lineWidth: 0,
       },
@@ -341,12 +398,10 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     y = (doc as any).lastAutoTable?.finalY || y + 30;
     y += 4;
 
-    // Calculate opening balance & running balance
+    // Calculate balances
     const sortedAsc = filteredTransactions.slice().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    const income = sortedAsc.filter((t) => t.is_income).reduce((s, t) => s + Math.abs(t.amount), 0);
-    const expense = sortedAsc.filter((t) => !t.is_income).reduce((s, t) => s + Math.abs(t.amount), 0);
-    // When a specific account is selected, derive opening from its current balance
-    // When "all" is selected, sum all account balances as closing
+    const income = sortedAsc.filter((tx) => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
+    const expense = sortedAsc.filter((tx) => !tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
     const closingBalance = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
     const openingBalance = closingBalance - income + expense;
 
@@ -354,53 +409,53 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setFillColor(245, 247, 245);
     doc.roundedRect(margin, y, pageWidth - margin * 2, 12, 1, 1, "F");
     doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.text(`Opening balance: ${formatAmount(openingBalance)} RUB`, margin + 4, y + 5);
-    doc.text(`Closing balance: ${formatAmount(closingBalance)} RUB`, margin + 4, y + 9.5);
-    doc.text(`Total debit: ${formatAmount(expense)} RUB`, pageWidth / 2 + 10, y + 5);
-    doc.text(`Total credit: ${formatAmount(income)} RUB`, pageWidth / 2 + 10, y + 9.5);
+    doc.setFont(fontName, "bold");
+    doc.text(`${t("opening")} ${formatAmount(openingBalance)} RUB`, margin + 4, y + 5);
+    doc.text(`${t("closing")} ${formatAmount(closingBalance)} RUB`, margin + 4, y + 9.5);
+    doc.text(`${t("totalDebit")} ${formatAmount(expense)} RUB`, pageWidth / 2 + 10, y + 5);
+    doc.text(`${t("totalCredit")} ${formatAmount(income)} RUB`, pageWidth / 2 + 10, y + 9.5);
     y += 16;
 
     // Section title
     doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(fontName, "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text("TRANSACTIONS", margin, y);
+    doc.text(t("transactions"), margin, y);
     y += 4;
 
-    // Transactions table — professional columns
+    // Table headers
     const tableHeaders = [
-      "No.",
-      "Date / Time",
-      "Reference",
-      "Description",
-      "Debit\n(RUB)",
-      "Credit\n(RUB)",
-      "Balance\n(RUB)",
+      t("no"),
+      t("dateTime"),
+      t("reference"),
+      t("description"),
+      t("debit"),
+      t("credit"),
+      t("balance"),
     ];
 
     let runningBalance = openingBalance;
     const tableData = filteredTransactions
       .slice()
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .map((t, i) => {
-        if (t.is_income) {
-          runningBalance += Math.abs(t.amount);
+      .map((tx, i) => {
+        if (tx.is_income) {
+          runningBalance += Math.abs(tx.amount);
         } else {
-          runningBalance -= Math.abs(t.amount);
+          runningBalance -= Math.abs(tx.amount);
         }
 
-        const debit = !t.is_income ? formatAmount(t.amount) : "";
-        const credit = t.is_income ? formatAmount(t.amount) : "";
-        const time = generateTransactionTime(t.id, i);
-        const ref = generateTransactionRef(t.id, t.date);
-        const authCode = generateAuthCode(t.id);
+        const debit = !tx.is_income ? formatAmount(tx.amount) : "";
+        const credit = tx.is_income ? formatAmount(tx.amount) : "";
+        const time = generateTransactionTime(tx.id, i);
+        const ref = generateTransactionRef(tx.id, tx.date);
+        const authCode = generateAuthCode(tx.id);
 
-        const description = buildDescription(t, authCode, cardNumber, accountNumber);
+        const description = buildDescription(tx, authCode, cardNumber, accountNumber);
 
         return [
           String(i + 1),
-          `${formatDateRu(t.date)}\n${time}`,
+          `${formatDateRu(tx.date)}\n${time}`,
           ref,
           description,
           debit,
@@ -410,15 +465,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       });
 
     // Add totals row
-    tableData.push([
-      "",
-      "",
-      "",
-      "TOTAL",
-      formatAmount(expense),
-      formatAmount(income),
-      formatAmount(runningBalance),
-    ]);
+    tableData.push(["", "", "", t("total"), formatAmount(expense), formatAmount(income), formatAmount(runningBalance)]);
 
     autoTable(doc, {
       startY: y,
@@ -427,7 +474,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       styles: {
         fontSize: 6.5,
         cellPadding: 1.8,
-        font: "helvetica",
+        font: fontName,
         textColor: [0, 0, 0],
         lineColor: [180, 180, 180],
         lineWidth: 0.15,
@@ -458,15 +505,12 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       },
       didParseCell: (data) => {
         if (data.section === "body") {
-          // Debit in red
           if (data.column.index === 4 && data.cell.raw && data.cell.raw !== "") {
             data.cell.styles.textColor = [180, 30, 30];
           }
-          // Credit in green
           if (data.column.index === 5 && data.cell.raw && data.cell.raw !== "") {
             data.cell.styles.textColor = [0, 120, 50];
           }
-          // Totals row bold
           const isLast = data.row.index === tableData.length - 1;
           if (isLast) {
             data.cell.styles.fontStyle = "bold";
@@ -486,17 +530,16 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       footerY = 20;
     }
 
-    // Closing info
     doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(fontName, "normal");
     doc.setTextColor(80, 80, 80);
     doc.text(
-      `This statement contains ${filteredTransactions.length} transaction(s) for the period ${formatDateRu(start.toISOString())} — ${formatDateRu(end.toISOString())}.`,
+      `${t("stmtContains")} ${filteredTransactions.length} ${t("footerCount")} ${formatDateRu(start.toISOString())} — ${formatDateRu(end.toISOString())}.`,
       margin, footerY
     );
     footerY += 4;
     doc.text(
-      `Statement generated electronically on ${formatDateRu(new Date().toISOString())} and is valid without signature.`,
+      `${t("footerGenerated")} ${formatDateRu(new Date().toISOString())} ${t("footerValid")}`,
       margin, footerY
     );
     footerY += 10;
@@ -507,18 +550,17 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.line(margin, footerY, pageWidth - margin, footerY);
     footerY += 8;
 
-    // Signature block
     if (footerY > 240) {
       doc.addPage();
       footerY = 20;
     }
 
     doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(fontName, "normal");
     doc.setTextColor(0, 0, 0);
-    doc.text("Authorized representative:", margin, footerY);
+    doc.text(t("authRep"), margin, footerY);
     doc.text("_________________________", margin + 45, footerY);
-    doc.text("A. G. Osipenko", margin + 100, footerY);
+    doc.text(t("authName"), margin + 100, footerY);
 
     try {
       const sigImg = await loadImageWithWhiteBg(signatureImg);
@@ -527,7 +569,6 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     footerY += 15;
 
-    // Stamp
     try {
       const stmpDataUrl = await loadImageWithWhiteBg(stampImg);
       const stampSize = 38;
@@ -544,22 +585,22 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const headers = ["No.", "Date", "Time", "Reference", "Description", "Debit", "Credit", "Balance", "Currency"];
     
     const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
-    const income = filteredTransactions.filter((t) => t.is_income).reduce((sum, t) => sum + Math.abs(t.amount), 0);
-    const expense = filteredTransactions.filter((t) => !t.is_income).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const incomeTotal = filteredTransactions.filter((tx) => tx.is_income).reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+    const expenseTotal = filteredTransactions.filter((tx) => !tx.is_income).reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
     const closingBal = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
-    let runBal = closingBal - income + expense;
+    let runBal = closingBal - incomeTotal + expenseTotal;
 
     const sorted = filteredTransactions.slice().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    const rows = sorted.map((t, i) => {
-      if (t.is_income) runBal += Math.abs(t.amount); else runBal -= Math.abs(t.amount);
+    const rows = sorted.map((tx, i) => {
+      if (tx.is_income) runBal += Math.abs(tx.amount); else runBal -= Math.abs(tx.amount);
       return [
         String(i + 1),
-        formatDateRu(t.date),
-        generateTransactionTime(t.id, i),
-        generateTransactionRef(t.id, t.date),
-        `"${t.name}"`,
-        !t.is_income ? formatAmount(t.amount) : "",
-        t.is_income ? formatAmount(t.amount) : "",
+        formatDateRu(tx.date),
+        generateTransactionTime(tx.id, i),
+        generateTransactionRef(tx.id, tx.date),
+        `"${tx.name}"`,
+        !tx.is_income ? formatAmount(tx.amount) : "",
+        tx.is_income ? formatAmount(tx.amount) : "",
         formatAmount(runBal),
         "RUB",
       ];
@@ -567,7 +608,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     const summary = [
       [],
-      ["", "", "", "", "TOTAL", formatAmount(expense), formatAmount(income), formatAmount(runBal), ""],
+      ["", "", "", "", "TOTAL", formatAmount(expenseTotal), formatAmount(incomeTotal), formatAmount(runBal), ""],
     ];
 
     const csvContent = [headers, ...rows, ...summary].map((row) => row.join(";")).join("\n");
@@ -619,12 +660,40 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     setEmail("");
   };
 
-  const income = filteredTransactions.filter((t) => t.is_income).reduce((s, t) => s + Math.abs(t.amount), 0);
-  const expenses = filteredTransactions.filter((t) => !t.is_income).reduce((s, t) => s + Math.abs(t.amount), 0);
+  const incomeSum = filteredTransactions.filter((tx) => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
+  const expensesSum = filteredTransactions.filter((tx) => !tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
 
   return (
     <FullScreenModal isOpen={isOpen} onClose={onClose} title="Выписка по счёту">
       <div className="space-y-6">
+          {/* Language Selection */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              Язык выписки
+            </Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setLang("ru")}
+                className={`p-3 rounded-xl border-2 transition-all text-center ${
+                  lang === "ru" ? "border-primary bg-primary/10" : "border-border bg-card"
+                }`}
+              >
+                <p className="text-lg mb-1">🇷🇺</p>
+                <p className={`text-sm font-medium ${lang === "ru" ? "text-primary" : "text-foreground"}`}>Русский</p>
+              </button>
+              <button
+                onClick={() => setLang("en")}
+                className={`p-3 rounded-xl border-2 transition-all text-center ${
+                  lang === "en" ? "border-primary bg-primary/10" : "border-border bg-card"
+                }`}
+              >
+                <p className="text-lg mb-1">🇬🇧</p>
+                <p className={`text-sm font-medium ${lang === "en" ? "text-primary" : "text-foreground"}`}>English</p>
+              </button>
+            </div>
+          </div>
+
           {/* Account Selection */}
           <div className="space-y-2">
             <Label>Счёт</Label>
@@ -757,11 +826,11 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
               <div className="text-sm text-muted-foreground space-y-1">
                 <div className="flex justify-between">
                   <span>Поступления:</span>
-                  <span className="text-success font-medium">+{income.toLocaleString("ru-RU")} ₽</span>
+                  <span className="text-success font-medium">+{incomeSum.toLocaleString("ru-RU")} ₽</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Расходы:</span>
-                  <span className="text-destructive font-medium">−{expenses.toLocaleString("ru-RU")} ₽</span>
+                  <span className="text-destructive font-medium">−{expensesSum.toLocaleString("ru-RU")} ₽</span>
                 </div>
               </div>
             )}
