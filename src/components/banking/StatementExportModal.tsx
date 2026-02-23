@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FileText, FileSpreadsheet, Mail, Download, Check, Calendar, Globe } from "lucide-react";
+import { FileText, Download, Check, Calendar, Globe } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -112,8 +112,7 @@ const formatAmount = (value: number) => {
 const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: StatementExportModalProps) => {
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [period, setPeriod] = useState<string>("month");
-  const [format, setFormat] = useState<string>("pdf");
-  const [email, setEmail] = useState("");
+  const format = "pdf";
   const [isExporting, setIsExporting] = useState(false);
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
@@ -618,46 +617,14 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      if (format === "pdf") {
-        const doc = await generatePDF();
-        doc.save(`vypiska_${new Date().toISOString().split("T")[0]}.pdf`);
-        toast.success("Выписка скачана в PDF");
-      } else if (format === "csv") {
-        const csv = generateCSV();
-        const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `vypiska_${new Date().toISOString().split("T")[0]}.csv`;
-        link.click();
-        toast.success("Выписка скачана в CSV");
-      } else if (format === "excel") {
-        const csv = generateCSV();
-        const blob = new Blob(["\uFEFF" + csv], { type: "application/vnd.ms-excel;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `vypiska_${new Date().toISOString().split("T")[0]}.xls`;
-        link.click();
-        toast.success("Выписка скачана в Excel");
-      }
+      const doc = await generatePDF();
+      doc.save(`vypiska_${new Date().toISOString().split("T")[0]}.pdf`);
+      toast.success("Выписка скачана в PDF");
     } catch (error) {
       console.error("Export error:", error);
       toast.error("Ошибка при экспорте");
     }
     setIsExporting(false);
-  };
-
-  const handleSendEmail = async () => {
-    if (!email) {
-      toast.error("Введите email");
-      return;
-    }
-    setIsExporting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    toast.success(`Выписка отправлена на ${email}`);
-    setIsExporting(false);
-    setEmail("");
   };
 
   const incomeSum = filteredTransactions.filter((tx) => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
@@ -759,61 +726,11 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
             </div>
           )}
 
-          {/* Format Selection */}
-          <div className="space-y-3">
-            <Label>Формат</Label>
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                onClick={() => setFormat("pdf")}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  format === "pdf" ? "border-primary bg-primary/10" : "border-border bg-card"
-                }`}
-              >
-                <FileText className={`w-8 h-8 mx-auto mb-2 ${format === "pdf" ? "text-primary" : "text-muted-foreground"}`} />
-                <p className="text-sm font-medium text-foreground">PDF</p>
-              </button>
-              <button
-                onClick={() => setFormat("csv")}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  format === "csv" ? "border-primary bg-primary/10" : "border-border bg-card"
-                }`}
-              >
-                <FileSpreadsheet className={`w-8 h-8 mx-auto mb-2 ${format === "csv" ? "text-primary" : "text-muted-foreground"}`} />
-                <p className="text-sm font-medium text-foreground">CSV</p>
-              </button>
-              <button
-                onClick={() => setFormat("excel")}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  format === "excel" ? "border-primary bg-primary/10" : "border-border bg-card"
-                }`}
-              >
-                <FileSpreadsheet className={`w-8 h-8 mx-auto mb-2 ${format === "excel" ? "text-primary" : "text-muted-foreground"}`} />
-                <p className="text-sm font-medium text-foreground">Excel</p>
-              </button>
-            </div>
-          </div>
-
           {/* Download Button */}
           <Button onClick={handleExport} className="w-full" disabled={isExporting}>
             <Download className="w-4 h-4 mr-2" />
-            {isExporting ? "Экспорт..." : "Скачать выписку"}
+            {isExporting ? "Экспорт..." : "Скачать выписку в PDF"}
           </Button>
-
-          {/* Email Section */}
-          <div className="border-t border-border pt-6 space-y-4">
-            <Label>Отправить на email</Label>
-            <div className="flex gap-2">
-              <Input
-                type="email"
-                placeholder="example@mail.ru"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <Button variant="outline" onClick={handleSendEmail} disabled={isExporting}>
-                <Mail className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
 
           {/* Preview */}
           <div className="bg-muted rounded-xl p-4 space-y-3">
