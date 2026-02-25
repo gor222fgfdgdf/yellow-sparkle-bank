@@ -621,44 +621,46 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       const doc = await generatePDF();
       const filename = `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
       
-      // Always try native share first (works in Capacitor WebView where <a download> is ignored)
       const isNativeApp = Capacitor.isNativePlatform() || navigator.userAgent.includes("CapacitorApp");
       console.log("[PDF] isNativeApp:", isNativeApp, "UA:", navigator.userAgent);
 
+      // Generate blob
+      const blob = doc.output("blob");
+
       if (isNativeApp) {
+        // On iOS WebView: convert to base64 data URL and open in new tab
+        // iOS will show native PDF viewer with Share button
         try {
-          const { Filesystem, Directory } = await import("@capacitor/filesystem");
-          const { Share } = await import("@capacitor/share");
-          
-          const base64 = doc.output("datauristring").split(",")[1];
-          
-          const writeResult = await Filesystem.writeFile({
-            path: filename,
-            data: base64,
-            directory: Directory.Cache,
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
           });
           
-          console.log("[PDF] File written to:", writeResult.uri);
+          // Open PDF data URL in new window — iOS shows native PDF viewer with share
+          const newWindow = window.open("", "_blank");
+          if (newWindow) {
+            newWindow.document.write(
+              `<html><head><title>${filename}</title><meta name="viewport" content="width=device-width,initial-scale=1"></head>` +
+              `<body style="margin:0"><embed src="${dataUrl}" type="application/pdf" width="100%" height="100%" style="position:fixed;top:0;left:0;width:100%;height:100%"></body></html>`
+            );
+            newWindow.document.close();
+          } else {
+            // If popup blocked, try direct navigation
+            window.location.href = dataUrl;
+          }
           
-          await Share.share({
-            title: filename,
-            url: writeResult.uri,
-            dialogTitle: "Сохранить выписку",
-          });
-          
-          toast.success("Выписка готова");
+          toast.success("Выписка открыта");
           setIsExporting(false);
           return;
         } catch (e: any) {
-          console.log("[PDF] Native share error:", e?.message, e);
+          console.log("[PDF] iOS open error:", e?.message, e);
         }
       }
 
-      // Fallback for web: open PDF as blob URL in new tab
-      const blob = doc.output("blob");
+      // Desktop web: use download link
       const blobUrl = URL.createObjectURL(blob);
-      
-      // Try download link first (works in desktop browsers)
       const link = document.createElement("a");
       link.href = blobUrl;
       link.download = filename;
