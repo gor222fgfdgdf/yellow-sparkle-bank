@@ -15,7 +15,7 @@ const FullScreenModal = ({ isOpen, onClose, title, children, headerRight }: Full
   return (
     <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
       <div className="max-w-lg mx-auto min-h-screen">
-        <header className="sticky top-0 z-10 bg-background border-b border-border">
+        <header className="bg-background border-b border-border">
           <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-3">
               <button onClick={onClose} className="p-2 rounded-full hover:bg-muted transition-colors">

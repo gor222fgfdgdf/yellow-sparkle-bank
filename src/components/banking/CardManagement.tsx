@@ -58,7 +58,7 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
     return (
       <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
         <div className="max-w-lg mx-auto min-h-screen">
-          <header className="sticky top-0 z-10 bg-background border-b border-border">
+          <header className="bg-background border-b border-border">
             <div className="px-4 py-4 flex items-center gap-4">
               <button
                 onClick={() => setShowLimits(false)}
@@ -186,7 +186,7 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
     return (
       <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
         <div className="max-w-lg mx-auto min-h-screen">
-          <header className="sticky top-0 z-10 bg-background border-b border-border">
+          <header className="bg-background border-b border-border">
             <div className="px-4 py-4 flex items-center gap-4">
               <button
                 onClick={() => setShowOrderCard(false)}
@@ -264,7 +264,7 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
   return (
     <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
       <div className="max-w-lg mx-auto min-h-screen pb-24">
-        <header className="sticky top-0 z-10 bg-background border-b border-border">
+        <header className="bg-background border-b border-border">
           <div className="px-4 py-4 flex items-center gap-4">
             <button
               onClick={onClose}

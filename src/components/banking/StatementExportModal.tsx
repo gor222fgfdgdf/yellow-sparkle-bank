@@ -618,7 +618,18 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     setIsExporting(true);
     try {
       const doc = await generatePDF();
-      doc.save(`vypiska_${new Date().toISOString().split("T")[0]}.pdf`);
+      const filename = `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
+      const blob = doc.output("blob");
+      const url = URL.createObjectURL(blob);
+      // iOS WebView doesn't support <a download>, so open in new tab
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
       toast.success("Выписка скачана в PDF");
     } catch (error) {
       console.error("Export error:", error);
