@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Fingerprint, AlertCircle, ScanFace } from "lucide-react";
+import { Loader2, AlertCircle, ScanFace, LogIn } from "lucide-react";
 import RSHBLogo from "@/components/banking/RSHBLogo";
 import { Capacitor } from "@capacitor/core";
 
@@ -17,6 +17,7 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [biometryFailed, setBiometryFailed] = useState(false);
+  const loginAttempted = useRef(false);
 
   useEffect(() => {
     if (user) {
@@ -29,32 +30,36 @@ const Auth = () => {
     setIsLoading(true);
     setError("");
 
-    let { error } = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
+    try {
+      let { error } = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
 
-    if (error?.message?.includes("Invalid login credentials")) {
-      const signUpResult = await signUp(DEMO_EMAIL, DEMO_PASSWORD, "EGOR KOTIKOV");
-      if (signUpResult.error) {
-        const retryResult = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
-        error = retryResult.error;
-      } else {
-        error = null;
+      if (error?.message?.includes("Invalid login credentials")) {
+        const signUpResult = await signUp(DEMO_EMAIL, DEMO_PASSWORD, "EGOR KOTIKOV");
+        if (signUpResult.error) {
+          const retryResult = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
+          error = retryResult.error;
+        } else {
+          error = null;
+        }
       }
-    }
 
-    setIsLoading(false);
-
-    if (error) {
-      setError("Не удалось войти в систему");
-      toast({
-        title: "Ошибка входа",
-        description: "Не удалось войти в систему",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Добро пожаловать!",
-        description: "EGOR KOTIKOV",
-      });
+      if (error) {
+        setError("Не удалось войти в систему");
+        toast({
+          title: "Ошибка входа",
+          description: "Не удалось войти в систему",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Добро пожаловать!",
+          description: "EGOR KOTIKOV",
+        });
+      }
+    } catch (e) {
+      setError("Ошибка соединения с сервером");
+    } finally {
+      setIsLoading(false);
     }
   }, [isLoading, signIn, signUp, toast]);
 
@@ -64,33 +69,47 @@ const Auth = () => {
     if (isNative) {
       try {
         const { BiometricAuth } = await import("@aparajita/capacitor-biometric-auth");
-        const result = await BiometricAuth.checkBiometry();
         
-        if (result.isAvailable) {
-          await BiometricAuth.authenticate({
-            reason: "Войдите в Россельхозбанк",
-            cancelTitle: "Отмена",
-          });
-          // Auth succeeded
+        // Add timeout for biometric check
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("timeout")), 5000)
+        );
+        
+        const result = await Promise.race([
+          BiometricAuth.checkBiometry(),
+          timeoutPromise,
+        ]) as any;
+        
+        if (result?.isAvailable) {
+          await Promise.race([
+            BiometricAuth.authenticate({
+              reason: "Войдите в Россельхозбанк",
+              cancelTitle: "Отмена",
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 10000)),
+          ]);
           await handleLogin();
         } else {
-          // No biometry available on device, auto-login
           await handleLogin();
         }
       } catch (e: any) {
-        // User cancelled or biometry failed
+        console.log("Biometric error:", e);
         setBiometryFailed(true);
-        setError("Биометрическая аутентификация отменена");
+        if (e?.message === "timeout") {
+          setError("Face ID недоступен, войдите вручную");
+        } else {
+          setError("Face ID отменён");
+        }
       }
     } else {
-      // Web: just login directly (simulating Face ID)
       await handleLogin();
     }
   }, [handleLogin]);
 
-  // Auto-trigger biometric on mount
+  // Auto-trigger biometric on mount (once)
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !user && !loginAttempted.current) {
+      loginAttempted.current = true;
       attemptBiometric();
     }
   }, [authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -105,10 +124,8 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
-      {/* Logo */}
       <RSHBLogo className="w-20 h-20 mb-8" />
 
-      {/* Title */}
       <h1 className="text-xl font-bold text-foreground mb-2">
         {isLoading ? "Вход..." : "Россельхозбанк"}
       </h1>
@@ -122,15 +139,24 @@ const Auth = () => {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-6">
-          {/* Face ID icon */}
+          {/* Face ID button */}
           <button
             onClick={attemptBiometric}
-            className="flex flex-col items-center gap-3 text-primary"
+            className="flex flex-col items-center gap-3 text-primary active:opacity-70 touch-manipulation"
           >
             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
               <ScanFace className="w-12 h-12" />
             </div>
             <span className="text-sm font-medium">Войти с Face ID</span>
+          </button>
+
+          {/* Direct login button - always visible */}
+          <button
+            onClick={handleLogin}
+            className="flex items-center gap-2 text-primary text-sm font-medium py-3 px-6 rounded-full bg-primary/10 active:opacity-70 touch-manipulation"
+          >
+            <LogIn className="w-4 h-4" />
+            <span>Войти без Face ID</span>
           </button>
 
           {/* Error */}
@@ -139,20 +165,6 @@ const Auth = () => {
               <AlertCircle className="w-4 h-4" />
               <p className="text-sm">{error}</p>
             </div>
-          )}
-
-          {/* Retry button if failed */}
-          {biometryFailed && (
-            <button
-              onClick={() => {
-                setBiometryFailed(false);
-                setError("");
-                attemptBiometric();
-              }}
-              className="text-sm text-primary underline"
-            >
-              Попробовать снова
-            </button>
           )}
         </div>
       )}
