@@ -205,13 +205,96 @@ const DevPdfTestPage = ({ isOpen, onClose }: DevPdfTestPageProps) => {
     }
   };
 
+  // Method 10: navigator.share() with File object (Web Share API)
+  const method10 = async () => {
+    addLog("M10: navigator.share() with File");
+    try {
+      if (!navigator.share) {
+        addLog("M10: navigator.share NOT available");
+        return;
+      }
+      if (!navigator.canShare) {
+        addLog("M10: navigator.canShare NOT available");
+      }
+      const doc = makePdf();
+      const blob = doc.output("blob");
+      const file = new File([blob], "test_m10.pdf", { type: "application/pdf" });
+      
+      const shareData = { files: [file], title: "Test PDF" };
+      if (navigator.canShare && !navigator.canShare(shareData)) {
+        addLog("M10: canShare returned false, trying without files...");
+        // fallback: share URL
+        return;
+      }
+      
+      await navigator.share(shareData);
+      addLog("M10: share completed!");
+    } catch (e: any) {
+      addLog(`M10 ERROR: ${e?.message}`);
+    }
+  };
+
+  // Method 11: navigator.share() with blob URL (not file)
+  const method11 = async () => {
+    addLog("M11: navigator.share() with url (blob)");
+    try {
+      if (!navigator.share) {
+        addLog("M11: navigator.share NOT available");
+        return;
+      }
+      const doc = makePdf();
+      const blob = doc.output("blob");
+      const url = URL.createObjectURL(blob);
+      await navigator.share({ title: "Test PDF", url });
+      addLog("M11: share completed!");
+    } catch (e: any) {
+      addLog(`M11 ERROR: ${e?.message}`);
+    }
+  };
+
+  // Method 12: <a> with data URI + download attr
+  const method12 = () => {
+    addLog("M12: <a download> with dataURI");
+    try {
+      const doc = makePdf();
+      const dataUri = doc.output("datauristring");
+      const link = document.createElement("a");
+      link.href = dataUri;
+      link.download = "test_m12.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      addLog("M12: click done");
+    } catch (e: any) {
+      addLog(`M12 ERROR: ${e?.message}`);
+    }
+  };
+
+  // Method 13: inline embed in current page
+  const [inlinePdf, setInlinePdf] = useState<string | null>(null);
+  const method13 = () => {
+    addLog("M13: inline embed in current page");
+    try {
+      const doc = makePdf();
+      const dataUri = doc.output("datauristring");
+      setInlinePdf(dataUri);
+      addLog("M13: embedded in page");
+    } catch (e: any) {
+      addLog(`M13 ERROR: ${e?.message}`);
+    }
+  };
+
   const isNative = Capacitor.isNativePlatform();
   const hasCapUA = navigator.userAgent.includes("CapacitorApp");
+  const hasWebShare = typeof navigator.share === "function";
+  const hasCanShare = typeof navigator.canShare === "function";
 
   return (
     <FullScreenModal isOpen={isOpen} onClose={onClose} title="🛠 Dev: PDF Test">
       <div className="space-y-4">
         <div className="bg-muted/50 rounded-xl p-3 text-xs font-mono space-y-1">
+          <p>navigator.share: <strong>{String(hasWebShare)}</strong></p>
+          <p>navigator.canShare: <strong>{String(hasCanShare)}</strong></p>
           <p>isNativePlatform: <strong>{String(isNative)}</strong></p>
           <p>UA has CapacitorApp: <strong>{String(hasCapUA)}</strong></p>
           <p className="break-all">UA: {navigator.userAgent}</p>
@@ -280,7 +363,45 @@ const DevPdfTestPage = ({ isOpen, onClose }: DevPdfTestPageProps) => {
               <p className="text-xs text-muted-foreground">Object тег в новом окне</p>
             </div>
           </Button>
+
+          <Button variant="outline" onClick={method10} className="justify-start text-left h-auto py-3 border-primary">
+            <div>
+              <p className="font-semibold">⭐ M10: navigator.share(File)</p>
+              <p className="text-xs text-muted-foreground">Web Share API с PDF файлом</p>
+            </div>
+          </Button>
+
+          <Button variant="outline" onClick={method11} className="justify-start text-left h-auto py-3 border-primary">
+            <div>
+              <p className="font-semibold">⭐ M11: navigator.share(url)</p>
+              <p className="text-xs text-muted-foreground">Web Share API с blob URL</p>
+            </div>
+          </Button>
+
+          <Button variant="outline" onClick={method12} className="justify-start text-left h-auto py-3">
+            <div>
+              <p className="font-semibold">M12: &lt;a download&gt; dataURI</p>
+              <p className="text-xs text-muted-foreground">Ссылка с data URI</p>
+            </div>
+          </Button>
+
+          <Button variant="outline" onClick={method13} className="justify-start text-left h-auto py-3">
+            <div>
+              <p className="font-semibold">M13: inline embed</p>
+              <p className="text-xs text-muted-foreground">Встроить PDF прямо в страницу</p>
+            </div>
+          </Button>
         </div>
+
+        {inlinePdf && (
+          <div className="rounded-xl overflow-hidden border border-border">
+            <div className="flex items-center justify-between p-2 bg-muted">
+              <p className="text-xs font-semibold">Встроенный PDF (M13):</p>
+              <Button variant="ghost" size="sm" onClick={() => setInlinePdf(null)}>Закрыть</Button>
+            </div>
+            <embed src={inlinePdf} type="application/pdf" width="100%" height="400" />
+          </div>
+        )}
 
         {log.length > 0 && (
           <div className="bg-muted rounded-xl p-3">
