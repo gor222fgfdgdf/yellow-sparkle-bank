@@ -5,9 +5,9 @@ const config: CapacitorConfig = {
   appName: 'yellow-sparkle-bank',
   webDir: 'dist',
   server: {
-    url: 'https://c2d2ddb7-eee0-4d3c-8c51-1d25a45053ec.lovableproject.com?forceHideBadge=true',
+    url: 'https://yellow-sparkle-bank.lovable.app?forceHideBadge=true',
     cleartext: true,
-    allowNavigation: ['*.lovableproject.com'],
+    allowNavigation: ['*.lovable.app'],
     appendUserAgent: 'CapacitorApp',
   },
   loggingBehavior: 'debug' as any,
