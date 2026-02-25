@@ -407,7 +407,7 @@ const AccountDetailModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+    <div className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden">
       {/* Sticky Header */}
       <div className="flex items-center px-4 py-3 border-b border-border">
         <button onClick={onClose} className="p-1">
