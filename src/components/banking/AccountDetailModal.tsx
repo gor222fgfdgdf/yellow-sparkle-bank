@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Plus, Settings, Eye, EyeOff, ChevronRight, QrCode, FileText, Link2, RefreshCw, Info, CreditCard, PiggyBank, TrendingUp, Wallet, Minus, Percent, Calendar, Clock, DollarSign, PieChart, BarChart3, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -50,6 +50,17 @@ const AccountDetailModal = ({
 }: AccountDetailModalProps) => {
   const [showCardNumber, setShowCardNumber] = useState(false);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
