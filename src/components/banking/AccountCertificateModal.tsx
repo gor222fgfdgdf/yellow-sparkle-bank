@@ -250,35 +250,37 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
       const filename = `certificate_accounts_${new Date().toISOString().split("T")[0]}.pdf`;
 
       const isNativeApp = Capacitor.isNativePlatform() || navigator.userAgent.includes("CapacitorApp");
-      
+      const blob = doc.output("blob");
+
       if (isNativeApp) {
         try {
-          const { Filesystem, Directory } = await import("@capacitor/filesystem");
-          const { Share } = await import("@capacitor/share");
-          
-          const base64 = doc.output("datauristring").split(",")[1];
-          const writeResult = await Filesystem.writeFile({
-            path: filename,
-            data: base64,
-            directory: Directory.Cache,
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
           });
           
-          await Share.share({
-            title: filename,
-            url: writeResult.uri,
-            dialogTitle: "Сохранить справку",
-          });
+          const newWindow = window.open("", "_blank");
+          if (newWindow) {
+            newWindow.document.write(
+              `<html><head><title>${filename}</title><meta name="viewport" content="width=device-width,initial-scale=1"></head>` +
+              `<body style="margin:0"><embed src="${dataUrl}" type="application/pdf" width="100%" height="100%" style="position:fixed;top:0;left:0;width:100%;height:100%"></body></html>`
+            );
+            newWindow.document.close();
+          } else {
+            window.location.href = dataUrl;
+          }
           
-          toast.success("Справка готова");
+          toast.success("Справка открыта");
           setIsExporting(false);
           return;
         } catch (e: any) {
-          console.log("[PDF] Native share error:", e?.message, e);
+          console.log("[PDF] iOS open error:", e?.message, e);
         }
       }
 
-      // Fallback for web
-      const blob = doc.output("blob");
+      // Desktop web fallback
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
