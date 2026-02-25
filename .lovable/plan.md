@@ -1,52 +1,37 @@
 
 
-# Исправление черного экрана на iOS в Capacitor
+# Исправление редиректа на логин Lovable в iOS-приложении
 
 ## Проблема
 
-При запуске нативного iOS-приложения через Capacitor отображается черный экран. Логи Xcode показывают:
-- `JS Eval error A JavaScript exception occurred` -- JavaScript не может выполниться в WKWebView
-- `Could not create a sandbox extension` -- iOS не может создать расширение песочницы для приложения
-- `UIScene lifecycle will soon be required` -- предупреждение о необходимости перехода на UIScene (не критично)
+Capacitor загружает preview URL (`https://c2d2ddb7-...lovableproject.com`), который требует авторизации в аккаунте Lovable. В нативном WKWebView пользователь не авторизован в Lovable, поэтому происходит редирект на страницу входа Lovable.
 
-Основная причина: приложение загружается через `server.url` с удаленного сервера, и WKWebView на iOS блокирует выполнение JS из-за отсутствия настроек навигации и возможных проблем с CORS/CSP.
+## Решение
 
-## Что будет сделано
+Заменить preview URL на опубликованный (published) URL приложения в `capacitor.config.ts`.
 
-### 1. Добавить `allowNavigation` в `capacitor.config.ts`
+### Изменения в `capacitor.config.ts`
 
-Разрешить WKWebView загружать контент с домена Lovable:
-
+Заменить:
 ```text
-server: {
-  url: 'https://c2d2ddb7-eee0-4d3c-8c51-1d25a45053ec.lovableproject.com?forceHideBadge=true',
-  cleartext: true,
-  allowNavigation: ['*.lovableproject.com']
-}
+url: 'https://c2d2ddb7-eee0-4d3c-8c51-1d25a45053ec.lovableproject.com?forceHideBadge=true'
 ```
 
-### 2. Добавить `appendUserAgent` для корректной идентификации
-
-Помогает серверу правильно отдавать контент для Capacitor WebView:
-
+На:
 ```text
-server: {
-  ...
-  appendUserAgent: 'CapacitorApp'
-}
+url: 'https://yellow-sparkle-bank.lovable.app?forceHideBadge=true'
 ```
 
-### 3. Включить `loggingBehavior` для отладки
-
-Для диагностики добавить логирование в конфиг:
-
+Также обновить `allowNavigation`:
 ```text
-loggingBehavior: 'debug'
+allowNavigation: ['*.lovable.app']
 ```
 
-## После применения изменений
+## Важно
 
-На вашей стороне нужно выполнить:
+Перед этим убедитесь, что приложение **опубликовано** (нажмите кнопку "Publish" в Lovable). Публичный URL доступен без авторизации.
+
+## После применения
 
 ```text
 git pull
@@ -54,11 +39,7 @@ npx cap sync ios
 npx cap run ios
 ```
 
-## Технические детали
+## Техническая справка
 
-Единственный файл изменения -- `capacitor.config.ts`. Итоговый конфиг будет содержать `allowNavigation` для домена Lovable, что позволит WKWebView корректно загружать и исполнять JavaScript с удаленного сервера.
-
-Предупреждение `UIScene lifecycle` -- это информационное сообщение от Apple, оно не вызывает черный экран и не требует действий на данный момент.
-
-Ошибка `sandbox extension` связана с тем, что iOS пытается создать расширение для локального бандла, но приложение загружает контент удаленно -- это нормальное поведение при использовании `server.url`.
+Единственный файл изменения -- `capacitor.config.ts`. Preview URL предназначен для разработки в браузере, где вы авторизованы в Lovable. Published URL -- публичный и работает в любом контексте, включая нативный WebView.
 
