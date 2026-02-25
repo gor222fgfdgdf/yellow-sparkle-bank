@@ -8,7 +8,7 @@ import { FileText, Download, Check, Calendar, Globe } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Capacitor } from "@capacitor/core";
+
 import { useProfile } from "@/hooks/useProfile";
 import stampImg from "@/assets/rshb-stamp.png";
 import signatureImg from "@/assets/rshb-signature.png";
@@ -621,30 +621,24 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       const doc = await generatePDF();
       const filename = `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
       
-      const isNativeApp = Capacitor.isNativePlatform() || navigator.userAgent.includes("CapacitorApp");
-      console.log("[PDF] isNativeApp:", isNativeApp, "UA:", navigator.userAgent);
-
-      // Generate blob
       const blob = doc.output("blob");
 
-      if (isNativeApp) {
-        try {
-          const file = new File([blob], filename, { type: "application/pdf" });
-          const shareData = { files: [file], title: filename };
-          if (navigator.canShare && navigator.canShare(shareData)) {
-            await navigator.share(shareData);
-            toast.success("Выписка отправлена");
-            setIsExporting(false);
-            return;
-          }
-        } catch (e: any) {
-          if (e?.name !== "AbortError") {
-            console.log("[PDF] share error:", e?.message);
-          } else {
-            setIsExporting(false);
-            return;
-          }
+      // Try Web Share API first (works on iOS native app)
+      try {
+        const file = new File([blob], filename, { type: "application/pdf" });
+        const shareData = { files: [file], title: filename };
+        if (navigator.canShare && navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+          toast.success("Выписка отправлена");
+          setIsExporting(false);
+          return;
         }
+      } catch (e: any) {
+        if (e?.name === "AbortError") {
+          setIsExporting(false);
+          return;
+        }
+        console.log("[PDF] share fallback:", e?.message);
       }
 
       // Desktop web: use download link
