@@ -341,7 +341,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="bg-primary -mt-[env(safe-area-inset-top)] pt-[env(safe-area-inset-top)]">
+      <header className="bg-primary">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <button className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
             <Eye className="w-5 h-5 text-primary-foreground" />
