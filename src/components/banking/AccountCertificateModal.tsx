@@ -1,7 +1,7 @@
 import { useState } from "react";
 import FullScreenModal from "./FullScreenModal";
 import { Button } from "@/components/ui/button";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -243,48 +243,55 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     return doc;
   };
 
+  const [readyBlob, setReadyBlob] = useState<Blob | null>(null);
+  const [readyFilename, setReadyFilename] = useState("");
+
   const handleExport = async () => {
     setIsExporting(true);
+    setReadyBlob(null);
     try {
       const doc = await generateCertificatePDF();
       const filename = `certificate_accounts_${new Date().toISOString().split("T")[0]}.pdf`;
-
       const blob = doc.output("blob");
 
-      // Try Web Share API first (works on iOS native app)
-      try {
-        const file = new File([blob], filename, { type: "application/pdf" });
-        const shareData = { files: [file], title: filename };
-        if (navigator.canShare && navigator.canShare(shareData)) {
-          await navigator.share(shareData);
-          toast.success("Справка отправлена");
-          setIsExporting(false);
-          return;
-        }
-      } catch (e: any) {
-        if (e?.name === "AbortError") {
-          setIsExporting(false);
-          return;
-        }
-        console.log("[PDF] share fallback:", e?.message);
+      const file = new File([blob], filename, { type: "application/pdf" });
+      const shareData = { files: [file], title: filename };
+      if (navigator.canShare && navigator.canShare(shareData)) {
+        setReadyBlob(blob);
+        setReadyFilename(filename);
+        toast.success("Справка готова — нажмите «Поделиться»");
+      } else {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        toast.success("Справка скачана в PDF");
       }
-
-      // Desktop web fallback
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      link.target = "_blank";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-      toast.success("Справка скачана в PDF");
     } catch (error) {
       console.error("Export error:", error);
       toast.error("Ошибка при формировании справки");
     }
     setIsExporting(false);
+  };
+
+  const handleShare = async () => {
+    if (!readyBlob) return;
+    try {
+      const file = new File([readyBlob], readyFilename, { type: "application/pdf" });
+      await navigator.share({ files: [file], title: readyFilename });
+      toast.success("Справка отправлена");
+      setReadyBlob(null);
+    } catch (e: any) {
+      if (e?.name !== "AbortError") {
+        console.log("[PDF] share error:", e?.message);
+        toast.error("Ошибка при отправке");
+      }
+    }
   };
 
   const accountCount = accounts?.filter((a) => a.account_number).length || 0;
@@ -322,8 +329,15 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
 
           <Button onClick={handleExport} className="w-full h-12" disabled={isExporting}>
             <Download className="w-5 h-5 mr-2" />
-            {isExporting ? "Формирование..." : "Скачать справку"}
+            {isExporting ? "Формирование..." : "Сформировать справку"}
           </Button>
+
+          {readyBlob && (
+            <Button onClick={handleShare} className="w-full h-12" variant="default">
+              <Share2 className="w-5 h-5 mr-2" />
+              Поделиться PDF
+            </Button>
+          )}
       </div>
     </FullScreenModal>
   );

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FileText, Download, Check, Calendar, Globe } from "lucide-react";
+import { FileText, Download, Check, Calendar, Globe, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -615,49 +615,58 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     return csvContent;
   };
 
+  const [readyBlob, setReadyBlob] = useState<Blob | null>(null);
+  const [readyFilename, setReadyFilename] = useState("");
+
   const handleExport = async () => {
     setIsExporting(true);
+    setReadyBlob(null);
     try {
       const doc = await generatePDF();
       const filename = `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
-      
       const blob = doc.output("blob");
 
-      // Try Web Share API first (works on iOS native app)
-      try {
-        const file = new File([blob], filename, { type: "application/pdf" });
-        const shareData = { files: [file], title: filename };
-        if (navigator.canShare && navigator.canShare(shareData)) {
-          await navigator.share(shareData);
-          toast.success("Выписка отправлена");
-          setIsExporting(false);
-          return;
-        }
-      } catch (e: any) {
-        if (e?.name === "AbortError") {
-          setIsExporting(false);
-          return;
-        }
-        console.log("[PDF] share fallback:", e?.message);
+      // Check if Web Share API supports file sharing
+      const file = new File([blob], filename, { type: "application/pdf" });
+      const shareData = { files: [file], title: filename };
+      if (navigator.canShare && navigator.canShare(shareData)) {
+        // Store blob for second tap (iOS requires user gesture)
+        setReadyBlob(blob);
+        setReadyFilename(filename);
+        toast.success("Выписка готова — нажмите «Поделиться»");
+      } else {
+        // Desktop: download directly
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = filename;
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        toast.success("Выписка скачана в PDF");
       }
-
-      // Desktop web: use download link
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = filename;
-      link.target = "_blank";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-      
-      toast.success("Выписка скачана в PDF");
     } catch (error) {
       console.error("Export error:", error);
       toast.error("Ошибка при экспорте");
     }
     setIsExporting(false);
+  };
+
+  const handleShare = async () => {
+    if (!readyBlob) return;
+    try {
+      const file = new File([readyBlob], readyFilename, { type: "application/pdf" });
+      await navigator.share({ files: [file], title: readyFilename });
+      toast.success("Выписка отправлена");
+      setReadyBlob(null);
+    } catch (e: any) {
+      if (e?.name !== "AbortError") {
+        console.log("[PDF] share error:", e?.message);
+        toast.error("Ошибка при отправке");
+      }
+    }
   };
 
   const incomeSum = filteredTransactions.filter((tx) => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
@@ -762,8 +771,15 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
           {/* Download Button */}
           <Button onClick={handleExport} className="w-full" disabled={isExporting}>
             <Download className="w-4 h-4 mr-2" />
-            {isExporting ? "Экспорт..." : "Скачать выписку в PDF"}
+            {isExporting ? "Экспорт..." : "Сформировать выписку"}
           </Button>
+
+          {readyBlob && (
+            <Button onClick={handleShare} className="w-full" variant="default">
+              <Share2 className="w-4 h-4 mr-2" />
+              Поделиться PDF
+            </Button>
+          )}
 
           {/* Preview */}
           <div className="bg-muted rounded-xl p-4 space-y-3">
