@@ -409,7 +409,7 @@ const AccountDetailModal = ({
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="bg-background flex items-center px-4 py-3 border-b border-border">
+      <div className="bg-background flex items-center px-4 py-3 border-b border-border" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)' }}>
         <button onClick={onClose} className="p-1">
           <ArrowLeft className="w-6 h-6 text-foreground" />
         </button>
