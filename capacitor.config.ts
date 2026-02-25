@@ -7,7 +7,10 @@ const config: CapacitorConfig = {
   server: {
     url: 'https://c2d2ddb7-eee0-4d3c-8c51-1d25a45053ec.lovableproject.com?forceHideBadge=true',
     cleartext: true,
+    allowNavigation: ['*.lovableproject.com'],
+    appendUserAgent: 'CapacitorApp',
   },
+  loggingBehavior: 'debug' as any,
 };
 
 export default config;
