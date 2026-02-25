@@ -105,17 +105,21 @@ const Auth = () => {
         }
       } catch (e: any) {
         console.log("[Auth] Biometric error:", e?.message, e);
-        setBiometryFailed(true);
-        if (e?.message === "timeout") {
-          setError("Face ID недоступен, войдите вручную");
-        } else {
+        // If user explicitly cancelled Face ID — show buttons, don't auto-login
+        const isCancelled = e?.code === "biometryNotAvailable" || 
+          e?.message?.toLowerCase().includes("cancel");
+        if (isCancelled) {
+          setBiometryFailed(true);
           setError("Face ID отменён");
+          return;
         }
+        // All other errors (timeout, plugin missing, etc.) — fallback to auto-login
+        console.log("[Auth] Biometric failed, falling back to auto-login");
       }
-    } else {
-      console.log("[Auth] Not native, direct login");
-      await handleLogin();
     }
+    
+    // Fallback: auto-login (web, biometry unavailable, or biometry error)
+    await handleLogin();
   }, [handleLogin]);
 
   // Auto-trigger biometric on mount (once)
