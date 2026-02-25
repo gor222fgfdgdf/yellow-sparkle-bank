@@ -292,7 +292,7 @@ const Index = () => {
               onOpenCurrency={() => setIsCurrencyOpen(true)}
               onOpenLoyalty={() => setIsLoyaltyOpen(true)}
             />
-            <HomePromoBannerSlider />
+            
             <HomeWidgetGrid
               totalBalance={accounts.reduce((s, a) => s + a.balance, 0)}
               onQRCode={() => setIsQRCodeOpen(true)}
