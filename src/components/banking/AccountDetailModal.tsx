@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft, ArrowRight, Plus, Settings, Eye, EyeOff, ChevronRight, QrCode, FileText, Link2, RefreshCw, Info, CreditCard, PiggyBank, TrendingUp, Wallet, Minus, Percent, Calendar, Clock, DollarSign, PieChart, BarChart3, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -50,17 +50,6 @@ const AccountDetailModal = ({
 }: AccountDetailModalProps) => {
   const [showCardNumber, setShowCardNumber] = useState(false);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -418,9 +407,9 @@ const AccountDetailModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden">
-      {/* Sticky Header */}
-      <div className="flex items-center px-4 py-3 border-b border-border">
+    <div className="min-h-screen bg-background pb-24">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-background flex items-center px-4 py-3 border-b border-border">
         <button onClick={onClose} className="p-1">
           <ArrowLeft className="w-6 h-6 text-foreground" />
         </button>
@@ -430,11 +419,9 @@ const AccountDetailModal = ({
         <div className="w-6" /> {/* spacer */}
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-lg mx-auto px-4 pb-8 space-y-4">
-          {renderContent()}
-        </div>
+      {/* Content */}
+      <div className="max-w-lg mx-auto px-4 pb-8 space-y-4">
+        {renderContent()}
       </div>
     </div>
   );
