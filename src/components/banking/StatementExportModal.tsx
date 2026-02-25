@@ -8,6 +8,7 @@ import { FileText, Download, Check, Calendar, Globe } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { Capacitor } from "@capacitor/core";
 import { useProfile } from "@/hooks/useProfile";
 import stampImg from "@/assets/rshb-stamp.png";
 import signatureImg from "@/assets/rshb-signature.png";
@@ -619,17 +620,47 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     try {
       const doc = await generatePDF();
       const filename = `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
-      const blob = doc.output("blob");
-      const url = URL.createObjectURL(blob);
-      // iOS WebView doesn't support <a download>, so open in new tab
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      link.target = "_blank";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      
+      if (Capacitor.isNativePlatform()) {
+        // Native iOS/Android: use data URI to trigger system share/save
+        const dataUri = doc.output("datauristring");
+        const newWindow = window.open(dataUri, "_blank");
+        if (!newWindow) {
+          // Fallback: create an iframe to display the PDF
+          const iframe = document.createElement("iframe");
+          iframe.style.position = "fixed";
+          iframe.style.top = "0";
+          iframe.style.left = "0";
+          iframe.style.width = "100%";
+          iframe.style.height = "100%";
+          iframe.style.zIndex = "99999";
+          iframe.style.background = "white";
+          iframe.src = dataUri;
+          
+          const closeBtn = document.createElement("button");
+          closeBtn.textContent = "✕ Закрыть";
+          closeBtn.style.cssText = "position:fixed;top:max(env(safe-area-inset-top,0px),44px);right:16px;z-index:100000;padding:8px 16px;background:#333;color:#fff;border:none;border-radius:8px;font-size:16px;";
+          closeBtn.onclick = () => {
+            document.body.removeChild(iframe);
+            document.body.removeChild(closeBtn);
+          };
+          
+          document.body.appendChild(iframe);
+          document.body.appendChild(closeBtn);
+        }
+      } else {
+        // Web browser: use blob URL with download link
+        const blob = doc.output("blob");
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      }
+      
       toast.success("Выписка скачана в PDF");
     } catch (error) {
       console.error("Export error:", error);
