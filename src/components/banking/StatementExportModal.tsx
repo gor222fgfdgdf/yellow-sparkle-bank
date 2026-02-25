@@ -621,7 +621,9 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       const doc = await generatePDF();
       const filename = `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
       
-      if (Capacitor.isNativePlatform()) {
+      const isNativeApp = Capacitor.isNativePlatform() || navigator.userAgent.includes("CapacitorApp");
+      console.log("[PDF] isNativeApp:", isNativeApp, "UA:", navigator.userAgent);
+      if (isNativeApp) {
         // Native iOS/Android: save to temp file and open native share sheet (Save to Files)
         try {
           const { Filesystem, Directory } = await import("@capacitor/filesystem");
