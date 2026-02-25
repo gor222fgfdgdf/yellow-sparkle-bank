@@ -335,7 +335,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Green header with gradient - includes promo banner */}
-      <div className="bg-gradient-to-b from-[hsl(145,63%,38%)] to-[hsl(145,63%,32%)]">
+      <div className="bg-gradient-to-br from-[hsl(75,65%,55%)] via-[hsl(120,55%,45%)] to-[hsl(145,63%,38%)]">
         <header>
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
             <button className="w-10 h-10 rounded-full bg-primary-foreground/15 flex items-center justify-center">
