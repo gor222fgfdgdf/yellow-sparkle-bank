@@ -112,6 +112,10 @@
     @apply border-border;
   }
 
+  html {
+    background-color: hsl(145, 63%, 32%);
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased safe-area-top;
   }
