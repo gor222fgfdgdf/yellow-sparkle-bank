@@ -622,31 +622,28 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       const filename = `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
       
       if (Capacitor.isNativePlatform()) {
-        // Native iOS/Android: use data URI to trigger system share/save
-        const dataUri = doc.output("datauristring");
-        const newWindow = window.open(dataUri, "_blank");
-        if (!newWindow) {
-          // Fallback: create an iframe to display the PDF
-          const iframe = document.createElement("iframe");
-          iframe.style.position = "fixed";
-          iframe.style.top = "0";
-          iframe.style.left = "0";
-          iframe.style.width = "100%";
-          iframe.style.height = "100%";
-          iframe.style.zIndex = "99999";
-          iframe.style.background = "white";
-          iframe.src = dataUri;
+        // Native iOS/Android: save to temp file and open native share sheet (Save to Files)
+        try {
+          const { Filesystem, Directory } = await import("@capacitor/filesystem");
+          const { Share } = await import("@capacitor/share");
           
-          const closeBtn = document.createElement("button");
-          closeBtn.textContent = "✕ Закрыть";
-          closeBtn.style.cssText = "position:fixed;top:max(env(safe-area-inset-top,0px),44px);right:16px;z-index:100000;padding:8px 16px;background:#333;color:#fff;border:none;border-radius:8px;font-size:16px;";
-          closeBtn.onclick = () => {
-            document.body.removeChild(iframe);
-            document.body.removeChild(closeBtn);
-          };
+          const base64 = doc.output("datauristring").split(",")[1];
           
-          document.body.appendChild(iframe);
-          document.body.appendChild(closeBtn);
+          const writeResult = await Filesystem.writeFile({
+            path: filename,
+            data: base64,
+            directory: Directory.Cache,
+          });
+          
+          await Share.share({
+            title: filename,
+            url: writeResult.uri,
+          });
+        } catch (e: any) {
+          console.log("[PDF] Native share error:", e?.message);
+          // Fallback: open as data URI
+          const dataUri = doc.output("datauristring");
+          window.open(dataUri, "_blank");
         }
       } else {
         // Web browser: use blob URL with download link
