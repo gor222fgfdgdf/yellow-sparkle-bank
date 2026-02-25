@@ -286,7 +286,6 @@ const Index = () => {
       default:
         return (
           <>
-            <HomePromoBanner onOpenVirtualCards={() => setIsVirtualCardsOpen(true)} />
             <HomeStoryCards 
               onOpenDeposits={() => setIsDepositsOpen(true)}
               onOpenInvestment={() => setIsInvestmentPortfolioOpen(true)}
@@ -294,12 +293,6 @@ const Index = () => {
               onOpenLoyalty={() => setIsLoyaltyOpen(true)}
             />
             <HomePromoBannerSlider />
-            <QuickActions
-              onTopUpClick={() => setIsTopUpOpen(true)}
-              onTransferClick={() => setIsInternalTransferOpen(true)}
-              onHistoryClick={() => setActiveTab("history")}
-              onMoreClick={() => setIsMoreOpen(true)}
-            />
             <HomeWidgetGrid
               totalBalance={accounts.reduce((s, a) => s + a.balance, 0)}
               onQRCode={() => setIsQRCodeOpen(true)}
@@ -341,25 +334,34 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="bg-primary">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <button className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-            <Eye className="w-5 h-5 text-primary-foreground" />
-          </button>
-          <div className="flex items-center gap-2">
-            <button className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-              <Search className="w-5 h-5 text-primary-foreground" />
+      {/* Green header with gradient - includes promo banner */}
+      <div className="bg-gradient-to-b from-[hsl(145,63%,38%)] to-[hsl(145,63%,32%)]">
+        <header>
+          <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+            <button className="w-10 h-10 rounded-full bg-primary-foreground/15 flex items-center justify-center">
+              <Eye className="w-5 h-5 text-primary-foreground" />
             </button>
-            <button onClick={() => setIsNotificationsOpen(true)} className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center relative">
-              <Bell className="w-5 h-5 text-primary-foreground" />
-              {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">{unreadCount}</span>}
-            </button>
-            <button onClick={() => setActiveTab("support")} className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-              <MessageCircle className="w-5 h-5 text-primary-foreground" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button className="w-10 h-10 rounded-full bg-primary-foreground/15 flex items-center justify-center">
+                <Search className="w-5 h-5 text-primary-foreground" />
+              </button>
+              <button onClick={() => setIsNotificationsOpen(true)} className="w-10 h-10 rounded-full bg-primary-foreground/15 flex items-center justify-center relative">
+                <Bell className="w-5 h-5 text-primary-foreground" />
+                {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">{unreadCount}</span>}
+              </button>
+              <button onClick={() => setActiveTab("support")} className="w-10 h-10 rounded-full bg-primary-foreground/15 flex items-center justify-center">
+                <MessageCircle className="w-5 h-5 text-primary-foreground" />
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+        {/* Promo banner inside green area */}
+        {activeTab === "home" && (
+          <div className="max-w-lg mx-auto px-4 pb-5">
+            <HomePromoBanner onOpenVirtualCards={() => setIsVirtualCardsOpen(true)} />
+          </div>
+        )}
+      </div>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">{renderTabContent()}</main>
 

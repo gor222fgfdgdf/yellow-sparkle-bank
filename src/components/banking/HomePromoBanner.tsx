@@ -9,12 +9,12 @@ const HomePromoBanner = ({ onOpenVirtualCards }: HomePromoBannerProps) => {
   return (
     <button
       onClick={onOpenVirtualCards}
-      className="w-full rounded-2xl overflow-hidden relative h-32 bg-gradient-to-r from-primary to-primary/70"
+      className="w-full rounded-2xl overflow-hidden relative h-28 bg-primary-foreground/10"
     >
       <img
         src={promoImage}
         alt="Promo"
-        className="absolute inset-0 w-full h-full object-cover opacity-60"
+        className="absolute inset-0 w-full h-full object-cover opacity-40"
       />
       <div className="relative z-10 h-full flex flex-col justify-end p-4 text-left">
         <p className="text-primary-foreground font-semibold text-lg leading-tight">
