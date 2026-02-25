@@ -621,10 +621,11 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       const doc = await generatePDF();
       const filename = `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
       
+      // Always try native share first (works in Capacitor WebView where <a download> is ignored)
       const isNativeApp = Capacitor.isNativePlatform() || navigator.userAgent.includes("CapacitorApp");
       console.log("[PDF] isNativeApp:", isNativeApp, "UA:", navigator.userAgent);
+
       if (isNativeApp) {
-        // Native iOS/Android: save to temp file and open native share sheet (Save to Files)
         try {
           const { Filesystem, Directory } = await import("@capacitor/filesystem");
           const { Share } = await import("@capacitor/share");
@@ -637,28 +638,35 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
             directory: Directory.Cache,
           });
           
+          console.log("[PDF] File written to:", writeResult.uri);
+          
           await Share.share({
             title: filename,
             url: writeResult.uri,
+            dialogTitle: "Сохранить выписку",
           });
+          
+          toast.success("Выписка готова");
+          setIsExporting(false);
+          return;
         } catch (e: any) {
-          console.log("[PDF] Native share error:", e?.message);
-          // Fallback: open as data URI
-          const dataUri = doc.output("datauristring");
-          window.open(dataUri, "_blank");
+          console.log("[PDF] Native share error:", e?.message, e);
         }
-      } else {
-        // Web browser: use blob URL with download link
-        const blob = doc.output("blob");
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
       }
+
+      // Fallback for web: open PDF as blob URL in new tab
+      const blob = doc.output("blob");
+      const blobUrl = URL.createObjectURL(blob);
+      
+      // Try download link first (works in desktop browsers)
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
       
       toast.success("Выписка скачана в PDF");
     } catch (error) {

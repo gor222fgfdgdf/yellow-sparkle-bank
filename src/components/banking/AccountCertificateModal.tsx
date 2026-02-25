@@ -7,6 +7,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useProfile } from "@/hooks/useProfile";
 import { useAccounts } from "@/hooks/useAccounts";
+import { Capacitor } from "@capacitor/core";
 import stampImg from "@/assets/rshb-stamp.png";
 import signatureImg from "@/assets/rshb-signature.png";
 import headerImg from "@/assets/rshb-header.png";
@@ -247,6 +248,36 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     try {
       const doc = await generateCertificatePDF();
       const filename = `certificate_accounts_${new Date().toISOString().split("T")[0]}.pdf`;
+
+      const isNativeApp = Capacitor.isNativePlatform() || navigator.userAgent.includes("CapacitorApp");
+      
+      if (isNativeApp) {
+        try {
+          const { Filesystem, Directory } = await import("@capacitor/filesystem");
+          const { Share } = await import("@capacitor/share");
+          
+          const base64 = doc.output("datauristring").split(",")[1];
+          const writeResult = await Filesystem.writeFile({
+            path: filename,
+            data: base64,
+            directory: Directory.Cache,
+          });
+          
+          await Share.share({
+            title: filename,
+            url: writeResult.uri,
+            dialogTitle: "Сохранить справку",
+          });
+          
+          toast.success("Справка готова");
+          setIsExporting(false);
+          return;
+        } catch (e: any) {
+          console.log("[PDF] Native share error:", e?.message, e);
+        }
+      }
+
+      // Fallback for web
       const blob = doc.output("blob");
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -256,7 +287,7 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
       toast.success("Справка скачана в PDF");
     } catch (error) {
       console.error("Export error:", error);
