@@ -1,28 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Delete, Fingerprint, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Loader2, Fingerprint, AlertCircle, ScanFace } from "lucide-react";
 import RSHBLogo from "@/components/banking/RSHBLogo";
+import { Capacitor } from "@capacitor/core";
 
 const DEMO_EMAIL = "egor.kotikov@demo.bank";
 const DEMO_PASSWORD = "demo123456";
-const CORRECT_PIN = "1234";
-const MAX_ATTEMPTS = 3;
-const LOCKOUT_DURATION = 60000;
 
 const Auth = () => {
   const navigate = useNavigate();
   const { user, signIn, signUp, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  
-  const [pin, setPin] = useState("");
-  const [showPin, setShowPin] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [attempts, setAttempts] = useState(0);
-  const [isLockedOut, setIsLockedOut] = useState(false);
-  const [lockoutTimeLeft, setLockoutTimeLeft] = useState(0);
+  const [biometryFailed, setBiometryFailed] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -30,63 +24,27 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
-  useEffect(() => {
-    const lockoutUntil = localStorage.getItem("auth_lockout_until");
-    if (lockoutUntil) {
-      const remaining = parseInt(lockoutUntil) - Date.now();
-      if (remaining > 0) {
-        setIsLockedOut(true);
-        setLockoutTimeLeft(Math.ceil(remaining / 1000));
-      } else {
-        localStorage.removeItem("auth_lockout_until");
-        localStorage.setItem("auth_attempts", "0");
-      }
-    }
-    const savedAttempts = localStorage.getItem("auth_attempts");
-    if (savedAttempts) {
-      setAttempts(parseInt(savedAttempts));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isLockedOut && lockoutTimeLeft > 0) {
-      const timer = setInterval(() => {
-        setLockoutTimeLeft(prev => {
-          if (prev <= 1) {
-            setIsLockedOut(false);
-            localStorage.removeItem("auth_lockout_until");
-            localStorage.setItem("auth_attempts", "0");
-            setAttempts(0);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [isLockedOut, lockoutTimeLeft]);
-
-  const handleLogin = async () => {
+  const handleLogin = useCallback(async () => {
+    if (isLoading) return;
     setIsLoading(true);
-    
-    // Try to sign in first
+    setError("");
+
     let { error } = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
-    
-    // If user doesn't exist, create them
+
     if (error?.message?.includes("Invalid login credentials")) {
       const signUpResult = await signUp(DEMO_EMAIL, DEMO_PASSWORD, "EGOR KOTIKOV");
       if (signUpResult.error) {
-        // If already exists, try signin again
         const retryResult = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
         error = retryResult.error;
       } else {
         error = null;
       }
     }
-    
+
     setIsLoading(false);
-    
+
     if (error) {
+      setError("Не удалось войти в систему");
       toast({
         title: "Ошибка входа",
         description: "Не удалось войти в систему",
@@ -98,49 +56,44 @@ const Auth = () => {
         description: "EGOR KOTIKOV",
       });
     }
-  };
+  }, [isLoading, signIn, signUp, toast]);
 
-  const handleDigit = async (digit: string) => {
-    if (isLockedOut || isLoading) return;
-    
-    setError("");
-    if (pin.length < 4) {
-      const newPin = pin + digit;
-      setPin(newPin);
-      
-      if (newPin.length === 4) {
-        if (newPin === CORRECT_PIN) {
-          localStorage.setItem("auth_attempts", "0");
+  const attemptBiometric = useCallback(async () => {
+    const isNative = Capacitor.isNativePlatform();
+
+    if (isNative) {
+      try {
+        const { BiometricAuth } = await import("@aparajita/capacitor-biometric-auth");
+        const result = await BiometricAuth.checkBiometry();
+        
+        if (result.isAvailable) {
+          await BiometricAuth.authenticate({
+            reason: "Войдите в Россельхозбанк",
+            cancelTitle: "Отмена",
+          });
+          // Auth succeeded
           await handleLogin();
         } else {
-          const newAttempts = attempts + 1;
-          setAttempts(newAttempts);
-          localStorage.setItem("auth_attempts", newAttempts.toString());
-          
-          if (newAttempts >= MAX_ATTEMPTS) {
-            const lockoutUntil = Date.now() + LOCKOUT_DURATION;
-            localStorage.setItem("auth_lockout_until", lockoutUntil.toString());
-            setIsLockedOut(true);
-            setLockoutTimeLeft(Math.ceil(LOCKOUT_DURATION / 1000));
-            setError("Слишком много попыток");
-          } else {
-            setError(`Неверный PIN. Осталось попыток: ${MAX_ATTEMPTS - newAttempts}`);
-          }
-          
-          setTimeout(() => setPin(""), 300);
+          // No biometry available on device, auto-login
+          await handleLogin();
         }
+      } catch (e: any) {
+        // User cancelled or biometry failed
+        setBiometryFailed(true);
+        setError("Биометрическая аутентификация отменена");
       }
+    } else {
+      // Web: just login directly (simulating Face ID)
+      await handleLogin();
     }
-  };
+  }, [handleLogin]);
 
-  const handleDelete = () => {
-    if (pin.length > 0 && !isLoading) {
-      setPin(pin.slice(0, -1));
-      setError("");
+  // Auto-trigger biometric on mount
+  useEffect(() => {
+    if (!authLoading && !user) {
+      attemptBiometric();
     }
-  };
-
-  const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "delete"];
+  }, [authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (authLoading) {
     return (
@@ -157,106 +110,52 @@ const Auth = () => {
 
       {/* Title */}
       <h1 className="text-xl font-bold text-foreground mb-2">
-        {isLockedOut ? "Приложение заблокировано" : "Введите PIN-код"}
+        {isLoading ? "Вход..." : "Россельхозбанк"}
       </h1>
-      
-      <p className="text-muted-foreground mb-6">EGOR KOTIKOV</p>
 
-      {isLockedOut ? (
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-          <p className="text-muted-foreground mb-2">Попробуйте снова через</p>
-          <p className="text-2xl font-bold text-foreground">{lockoutTimeLeft} сек</p>
+      <p className="text-muted-foreground mb-8">EGOR KOTIKOV</p>
+
+      {isLoading ? (
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <p className="text-muted-foreground text-sm">Авторизация...</p>
         </div>
       ) : (
-        <>
-          {/* PIN Dots */}
-          <div className="flex gap-4 mb-4">
-            {[0, 1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className={`w-4 h-4 rounded-full transition-all ${
-                  i < pin.length 
-                    ? error ? "bg-destructive" : "bg-primary" 
-                    : "bg-muted"
-                }`}
-              />
-            ))}
-          </div>
+        <div className="flex flex-col items-center gap-6">
+          {/* Face ID icon */}
+          <button
+            onClick={attemptBiometric}
+            className="flex flex-col items-center gap-3 text-primary"
+          >
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+              <ScanFace className="w-12 h-12" />
+            </div>
+            <span className="text-sm font-medium">Войти с Face ID</span>
+          </button>
 
-          {/* Error Message */}
+          {/* Error */}
           {error && (
-            <p className="text-destructive text-sm mb-4">{error}</p>
-          )}
-
-          {/* Loading */}
-          {isLoading && (
-            <div className="flex items-center gap-2 mb-4 text-muted-foreground">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Вход...</span>
+            <div className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="w-4 h-4" />
+              <p className="text-sm">{error}</p>
             </div>
           )}
 
-          {/* Show PIN Toggle */}
-          <button
-            onClick={() => setShowPin(!showPin)}
-            className="flex items-center gap-2 text-sm text-muted-foreground mb-8"
-          >
-            {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            {showPin ? "Скрыть" : "Показать"}
-          </button>
-
-          {showPin && pin && (
-            <p className="text-2xl font-mono font-bold text-foreground mb-4 tracking-widest">
-              {pin}
-            </p>
+          {/* Retry button if failed */}
+          {biometryFailed && (
+            <button
+              onClick={() => {
+                setBiometryFailed(false);
+                setError("");
+                attemptBiometric();
+              }}
+              className="text-sm text-primary underline"
+            >
+              Попробовать снова
+            </button>
           )}
-
-          {/* Numpad */}
-          <div className="grid grid-cols-3 gap-4 max-w-xs">
-            {digits.map((digit, i) => (
-              <div key={i} className="flex items-center justify-center">
-                {digit === "" ? (
-                  <div className="w-16 h-16" />
-                ) : digit === "delete" ? (
-                  <button
-                    onClick={handleDelete}
-                    disabled={isLoading}
-                    className="w-16 h-16 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors disabled:opacity-50"
-                  >
-                    <Delete className="w-6 h-6 text-foreground" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleDigit(digit)}
-                    disabled={isLoading}
-                    className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-2xl font-semibold text-foreground hover:bg-muted/80 transition-colors active:scale-95 disabled:opacity-50"
-                  >
-                    {digit}
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Biometric */}
-          <button
-            onClick={handleLogin}
-            disabled={isLoading}
-            className="mt-8 flex flex-col items-center gap-2 text-primary disabled:opacity-50"
-          >
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-              <Fingerprint className="w-8 h-8" />
-            </div>
-            <span className="text-sm">Touch ID / Face ID</span>
-          </button>
-        </>
+        </div>
       )}
-
-      {/* Hint */}
-      <p className="absolute bottom-8 text-xs text-muted-foreground">
-        PIN-код: 1234
-      </p>
     </div>
   );
 };
