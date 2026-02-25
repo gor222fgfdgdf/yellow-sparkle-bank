@@ -254,29 +254,21 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
 
       if (isNativeApp) {
         try {
-          const reader = new FileReader();
-          const dataUrl = await new Promise<string>((resolve, reject) => {
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-          
-          const newWindow = window.open("", "_blank");
-          if (newWindow) {
-            newWindow.document.write(
-              `<html><head><title>${filename}</title><meta name="viewport" content="width=device-width,initial-scale=1"></head>` +
-              `<body style="margin:0"><embed src="${dataUrl}" type="application/pdf" width="100%" height="100%" style="position:fixed;top:0;left:0;width:100%;height:100%"></body></html>`
-            );
-            newWindow.document.close();
-          } else {
-            window.location.href = dataUrl;
+          const file = new File([blob], filename, { type: "application/pdf" });
+          const shareData = { files: [file], title: filename };
+          if (navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+            toast.success("Справка отправлена");
+            setIsExporting(false);
+            return;
           }
-          
-          toast.success("Справка открыта");
-          setIsExporting(false);
-          return;
         } catch (e: any) {
-          console.log("[PDF] iOS open error:", e?.message, e);
+          if (e?.name !== "AbortError") {
+            console.log("[PDF] share error:", e?.message);
+          } else {
+            setIsExporting(false);
+            return;
+          }
         }
       }
 
