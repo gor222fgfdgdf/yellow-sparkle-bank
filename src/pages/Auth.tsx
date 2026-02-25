@@ -65,12 +65,18 @@ const Auth = () => {
 
   const attemptBiometric = useCallback(async () => {
     const isNative = Capacitor.isNativePlatform();
+    const platform = Capacitor.getPlatform();
+    console.log("[Auth] Platform:", platform, "isNative:", isNative);
 
-    if (isNative) {
+    // Detect native context by platform OR user agent fallback
+    const isCapacitorApp = isNative || navigator.userAgent.includes("CapacitorApp");
+    console.log("[Auth] isCapacitorApp:", isCapacitorApp);
+
+    if (isCapacitorApp) {
       try {
         const { BiometricAuth } = await import("@aparajita/capacitor-biometric-auth");
+        console.log("[Auth] BiometricAuth imported successfully");
         
-        // Add timeout for biometric check
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error("timeout")), 5000)
         );
@@ -80,7 +86,10 @@ const Auth = () => {
           timeoutPromise,
         ]) as any;
         
+        console.log("[Auth] checkBiometry result:", JSON.stringify(result));
+        
         if (result?.isAvailable) {
+          console.log("[Auth] Biometry available, requesting authentication...");
           await Promise.race([
             BiometricAuth.authenticate({
               reason: "Войдите в Россельхозбанк",
@@ -88,12 +97,14 @@ const Auth = () => {
             }),
             new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 10000)),
           ]);
+          console.log("[Auth] Biometric auth success");
           await handleLogin();
         } else {
+          console.log("[Auth] Biometry NOT available, falling back to login");
           await handleLogin();
         }
       } catch (e: any) {
-        console.log("Biometric error:", e);
+        console.log("[Auth] Biometric error:", e?.message, e);
         setBiometryFailed(true);
         if (e?.message === "timeout") {
           setError("Face ID недоступен, войдите вручную");
@@ -102,6 +113,7 @@ const Auth = () => {
         }
       }
     } else {
+      console.log("[Auth] Not native, direct login");
       await handleLogin();
     }
   }, [handleLogin]);
