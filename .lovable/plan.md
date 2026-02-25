@@ -1,85 +1,64 @@
 
 
-# Упаковка приложения в нативное iOS-приложение через Capacitor
+# Исправление черного экрана на iOS в Capacitor
+
+## Проблема
+
+При запуске нативного iOS-приложения через Capacitor отображается черный экран. Логи Xcode показывают:
+- `JS Eval error A JavaScript exception occurred` -- JavaScript не может выполниться в WKWebView
+- `Could not create a sandbox extension` -- iOS не может создать расширение песочницы для приложения
+- `UIScene lifecycle will soon be required` -- предупреждение о необходимости перехода на UIScene (не критично)
+
+Основная причина: приложение загружается через `server.url` с удаленного сервера, и WKWebView на iOS блокирует выполнение JS из-за отсутствия настроек навигации и возможных проблем с CORS/CSP.
 
 ## Что будет сделано
 
-Приложение будет подготовлено для запуска как настоящее нативное iOS-приложение через Capacitor -- обертку, которая позволяет запускать веб-приложение внутри нативного контейнера с полным доступом к функциям устройства.
+### 1. Добавить `allowNavigation` в `capacitor.config.ts`
 
-Backend (база данных, авторизация, серверные функции) уже работает в облаке и будет работать без изменений.
-
-## Шаги
-
-### 1. Установка зависимостей Capacitor
-
-Будут добавлены пакеты:
-- `@capacitor/core`
-- `@capacitor/cli` (dev)
-- `@capacitor/ios`
-- `@capacitor/android`
-
-### 2. Создание конфигурации Capacitor
-
-Файл `capacitor.config.ts` в корне проекта:
+Разрешить WKWebView загружать контент с домена Lovable:
 
 ```text
-appId:   app.lovable.c2d2ddb7eee04d3c8c511d25a45053ec
-appName: yellow-sparkle-bank
-webDir:  dist
-server.url: https://c2d2ddb7-eee0-4d3c-8c51-1d25a45053ec.lovableproject.com?forceHideBadge=true
-server.cleartext: true
+server: {
+  url: 'https://c2d2ddb7-eee0-4d3c-8c51-1d25a45053ec.lovableproject.com?forceHideBadge=true',
+  cleartext: true,
+  allowNavigation: ['*.lovableproject.com']
+}
 ```
 
-Параметр `server.url` включает горячую перезагрузку -- при разработке приложение на телефоне будет автоматически обновляться при изменениях в Lovable.
+### 2. Добавить `appendUserAgent` для корректной идентификации
 
-### 3. Что нужно сделать на вашей стороне (на Mac)
+Помогает серверу правильно отдавать контент для Capacitor WebView:
 
-После того как я внесу изменения в проект:
+```text
+server: {
+  ...
+  appendUserAgent: 'CapacitorApp'
+}
+```
 
-1. Перенесите проект на GitHub через кнопку **Export to GitHub** в настройках проекта
-2. Склонируйте репозиторий на Mac:
-   ```text
-   git clone <ваш-репозиторий>
-   cd <папка-проекта>
-   ```
-3. Установите зависимости:
-   ```text
-   npm install
-   ```
-4. Добавьте iOS-платформу:
-   ```text
-   npx cap add ios
-   ```
-5. Обновите зависимости платформы:
-   ```text
-   npx cap update ios
-   ```
-6. Соберите проект:
-   ```text
-   npm run build
-   ```
-7. Синхронизируйте с нативной платформой:
-   ```text
-   npx cap sync
-   ```
-8. Запустите на устройстве или эмуляторе:
-   ```text
-   npx cap run ios
-   ```
+### 3. Включить `loggingBehavior` для отладки
 
-**Требования:** Mac с установленным Xcode (бесплатно из App Store). Для публикации в App Store потребуется Apple Developer Account ($99/год).
+Для диагностики добавить логирование в конфиг:
 
----
+```text
+loggingBehavior: 'debug'
+```
 
-## Техническая часть
+## После применения изменений
 
-### Новые файлы
-- `capacitor.config.ts` -- конфигурация Capacitor с appId, appName, webDir и server URL для hot-reload
+На вашей стороне нужно выполнить:
 
-### Изменения в package.json
-- Добавление зависимостей: `@capacitor/core`, `@capacitor/ios`, `@capacitor/android`
-- Добавление dev-зависимости: `@capacitor/cli`
+```text
+git pull
+npx cap sync ios
+npx cap run ios
+```
 
-### Полезная ссылка
-После настройки рекомендую прочитать подробное руководство: https://docs.lovable.dev/tips-tricks/mobile-development
+## Технические детали
+
+Единственный файл изменения -- `capacitor.config.ts`. Итоговый конфиг будет содержать `allowNavigation` для домена Lovable, что позволит WKWebView корректно загружать и исполнять JavaScript с удаленного сервера.
+
+Предупреждение `UIScene lifecycle` -- это информационное сообщение от Apple, оно не вызывает черный экран и не требует действий на данный момент.
+
+Ошибка `sandbox extension` связана с тем, что iOS пытается создать расширение для локального бандла, но приложение загружает контент удаленно -- это нормальное поведение при использовании `server.url`.
 
