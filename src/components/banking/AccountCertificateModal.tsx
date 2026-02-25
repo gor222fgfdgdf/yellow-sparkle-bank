@@ -7,7 +7,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useProfile } from "@/hooks/useProfile";
 import { useAccounts } from "@/hooks/useAccounts";
-import { Capacitor } from "@capacitor/core";
+
 import stampImg from "@/assets/rshb-stamp.png";
 import signatureImg from "@/assets/rshb-signature.png";
 import headerImg from "@/assets/rshb-header.png";
@@ -249,27 +249,24 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
       const doc = await generateCertificatePDF();
       const filename = `certificate_accounts_${new Date().toISOString().split("T")[0]}.pdf`;
 
-      const isNativeApp = Capacitor.isNativePlatform() || navigator.userAgent.includes("CapacitorApp");
       const blob = doc.output("blob");
 
-      if (isNativeApp) {
-        try {
-          const file = new File([blob], filename, { type: "application/pdf" });
-          const shareData = { files: [file], title: filename };
-          if (navigator.canShare && navigator.canShare(shareData)) {
-            await navigator.share(shareData);
-            toast.success("Справка отправлена");
-            setIsExporting(false);
-            return;
-          }
-        } catch (e: any) {
-          if (e?.name !== "AbortError") {
-            console.log("[PDF] share error:", e?.message);
-          } else {
-            setIsExporting(false);
-            return;
-          }
+      // Try Web Share API first (works on iOS native app)
+      try {
+        const file = new File([blob], filename, { type: "application/pdf" });
+        const shareData = { files: [file], title: filename };
+        if (navigator.canShare && navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+          toast.success("Справка отправлена");
+          setIsExporting(false);
+          return;
         }
+      } catch (e: any) {
+        if (e?.name === "AbortError") {
+          setIsExporting(false);
+          return;
+        }
+        console.log("[PDF] share fallback:", e?.message);
       }
 
       // Desktop web fallback
