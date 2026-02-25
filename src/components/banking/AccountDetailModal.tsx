@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import type { Account } from "./AccountsList";
 import type { Transaction } from "./TransactionList";
 import UnionPayLogo from "./UnionPayLogo";
+import TransactionDetailModal from "./TransactionDetailModal";
 
 interface AccountDetailModalProps {
   isOpen: boolean;
@@ -50,6 +51,7 @@ const AccountDetailModal = ({
 }: AccountDetailModalProps) => {
   const [showCardNumber, setShowCardNumber] = useState(false);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   if (!isOpen) return null;
 
@@ -149,7 +151,7 @@ const AccountDetailModal = ({
               {txs.map((tx) => {
                 const Icon = tx.icon;
                 return (
-                  <div key={tx.id} className="flex items-center gap-3 py-3">
+                  <button key={tx.id} onClick={() => setSelectedTx(tx)} className="flex items-center gap-3 py-3 w-full text-left hover:bg-muted/50 transition-colors rounded-lg">
                     <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
                       <Icon className="w-5 h-5 text-muted-foreground" />
                     </div>
@@ -160,7 +162,7 @@ const AccountDetailModal = ({
                     <p className={`font-semibold text-sm ${tx.isIncoming ? 'text-primary' : 'text-foreground'}`}>
                       {tx.isIncoming ? '+' : '-'} {formatCurrencyShort(tx.amount)} ₽
                     </p>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -423,6 +425,13 @@ const AccountDetailModal = ({
       <div className="max-w-lg mx-auto px-4 pb-8 space-y-4">
         {renderContent()}
       </div>
+      {selectedTx && (
+        <TransactionDetailModal
+          isOpen={!!selectedTx}
+          onClose={() => setSelectedTx(null)}
+          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false }}
+        />
+      )}
     </div>
   );
 };
