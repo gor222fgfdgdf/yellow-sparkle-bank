@@ -246,7 +246,17 @@ const AccountCertificateModal = ({ isOpen, onClose }: AccountCertificateModalPro
     setIsExporting(true);
     try {
       const doc = await generateCertificatePDF();
-      doc.save(`certificate_accounts_${new Date().toISOString().split("T")[0]}.pdf`);
+      const filename = `certificate_accounts_${new Date().toISOString().split("T")[0]}.pdf`;
+      const blob = doc.output("blob");
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
       toast.success("Справка скачана в PDF");
     } catch (error) {
       console.error("Export error:", error);

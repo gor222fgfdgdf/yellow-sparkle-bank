@@ -18,7 +18,7 @@ const AllTransactionsModal = ({ isOpen, onClose, transactions }: AllTransactions
     <div className="fixed inset-0 z-50 bg-background">
       <div className="h-full flex flex-col max-w-lg mx-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-background border-b border-border p-4">
+        <div className="bg-background border-b border-border p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-foreground">Все операции</h2>
             <button
