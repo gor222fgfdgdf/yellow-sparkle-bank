@@ -85,7 +85,7 @@ const SupportPage = () => {
 
   if (isChatOpen) {
     return (
-      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+      <div className="fixed inset-0 z-50 bg-background flex flex-col" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)' }}>
         <div className="bg-background border-b border-border p-4 flex items-center gap-4">
           <button onClick={() => setIsChatOpen(false)} className="p-2 rounded-full hover:bg-muted">
             <ArrowLeft className="w-5 h-5 text-foreground" />
