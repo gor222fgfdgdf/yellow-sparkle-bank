@@ -395,9 +395,9 @@ const StoriesBanner = ({
 
       {/* Story Modal with Instagram-style progress */}
       {currentStory && currentStoryIndex !== null && (
-        <div className="fixed inset-0 z-50 bg-black">
+        <div className="fixed inset-0 z-50 bg-black" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)' }}>
           {/* Progress bars */}
-          <div className="absolute top-0 left-0 right-0 z-10 flex gap-1 p-2 pt-3">
+          <div className="absolute top-0 left-0 right-0 z-10 flex gap-1 p-2 pt-1">
             {stories.map((_, index) => (
               <div
                 key={index}

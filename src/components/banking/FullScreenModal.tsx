@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { ReactNode } from "react";
+import { useSwipeBack } from "@/hooks/useSwipeBack";
 
 interface FullScreenModalProps {
   isOpen: boolean;
@@ -10,10 +11,12 @@ interface FullScreenModalProps {
 }
 
 const FullScreenModal = ({ isOpen, onClose, title, children, headerRight }: FullScreenModalProps) => {
+  useSwipeBack({ onBack: onClose, enabled: isOpen });
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-y-auto pt-[env(safe-area-inset-top)]">
+    <div className="fixed inset-0 z-50 bg-background overflow-y-auto" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)' }}>
       <div className="max-w-lg mx-auto min-h-screen">
         <header className="bg-background border-b border-border">
           <div className="flex items-center justify-between px-4 py-3">

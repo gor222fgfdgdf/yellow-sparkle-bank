@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { ArrowLeft, ArrowRight, Plus, Settings, Eye, EyeOff, ChevronRight, QrCode, FileText, Link2, RefreshCw, Info, CreditCard, PiggyBank, TrendingUp, Wallet, Minus, Percent, Calendar, Clock, DollarSign, PieChart, BarChart3, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -52,6 +53,8 @@ const AccountDetailModal = ({
   const [showCardNumber, setShowCardNumber] = useState(false);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+
+  useSwipeBack({ onBack: onClose, enabled: isOpen });
 
   if (!isOpen) return null;
 

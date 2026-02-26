@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { 
   CreditCard, 
   Lock, 
@@ -31,6 +32,8 @@ const formatCurrency = (value: number) => {
 
 const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManagementProps) => {
   const [isCardFrozen, setIsCardFrozen] = useState(false);
+
+  useSwipeBack({ onBack: onClose });
   const [showPin, setShowPin] = useState(false);
   const [showLimits, setShowLimits] = useState(false);
   const [showOrderCard, setShowOrderCard] = useState(false);
@@ -56,7 +59,7 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
 
   if (showLimits) {
     return (
-      <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+      <div className="fixed inset-0 z-50 bg-background overflow-y-auto" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)' }}>
         <div className="max-w-lg mx-auto min-h-screen">
           <header className="bg-background border-b border-border">
             <div className="px-4 py-4 flex items-center gap-4">
@@ -184,7 +187,7 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
 
   if (showOrderCard) {
     return (
-      <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+      <div className="fixed inset-0 z-50 bg-background overflow-y-auto" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)' }}>
         <div className="max-w-lg mx-auto min-h-screen">
           <header className="bg-background border-b border-border">
             <div className="px-4 py-4 flex items-center gap-4">
@@ -262,7 +265,7 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-background overflow-y-auto" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)' }}>
       <div className="max-w-lg mx-auto min-h-screen pb-24">
         <header className="bg-background border-b border-border">
           <div className="px-4 py-4 flex items-center gap-4">
