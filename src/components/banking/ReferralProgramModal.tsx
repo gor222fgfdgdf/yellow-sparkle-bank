@@ -43,7 +43,7 @@ const ReferralProgramModal = ({ isOpen, onClose }: ReferralProgramModalProps) =>
   const [copied, setCopied] = useState(false);
   
   const referralCode = "ALEX2024";
-  const referralLink = `https://tinkoff.ru/invite/${referralCode}`;
+  const referralLink = `https://rshb.ru/invite/${referralCode}`;
   const totalEarned = 4500;
   const pendingBonus = 1500;
   const invitedCount = referrals.length;
