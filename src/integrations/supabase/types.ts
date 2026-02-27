@@ -472,36 +472,45 @@ export type Database = {
           account_id: string
           amount: number
           category: string
+          commission: number | null
           created_at: string
+          currency: string
           date: string
           icon: string
           id: string
           is_income: boolean | null
           name: string
+          original_amount: number | null
           user_id: string
         }
         Insert: {
           account_id: string
           amount: number
           category: string
+          commission?: number | null
           created_at?: string
+          currency?: string
           date?: string
           icon?: string
           id?: string
           is_income?: boolean | null
           name: string
+          original_amount?: number | null
           user_id: string
         }
         Update: {
           account_id?: string
           amount?: number
           category?: string
+          commission?: number | null
           created_at?: string
+          currency?: string
           date?: string
           icon?: string
           id?: string
           is_income?: boolean | null
           name?: string
+          original_amount?: number | null
           user_id?: string
         }
         Relationships: [
