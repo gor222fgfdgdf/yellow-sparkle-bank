@@ -136,6 +136,9 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       case "quarter":
         start.setMonth(now.getMonth() - 3);
         break;
+      case "halfyear":
+        start.setMonth(now.getMonth() - 6);
+        break;
       case "year":
         start.setFullYear(now.getFullYear() - 1);
         break;
@@ -741,6 +744,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
                 <SelectItem value="week">За неделю</SelectItem>
                 <SelectItem value="month">За месяц</SelectItem>
                 <SelectItem value="quarter">За квартал</SelectItem>
+                <SelectItem value="halfyear">За 6 месяцев</SelectItem>
                 <SelectItem value="year">За год</SelectItem>
                 <SelectItem value="custom">Произвольный период</SelectItem>
               </SelectContent>
