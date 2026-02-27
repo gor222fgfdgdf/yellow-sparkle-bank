@@ -477,8 +477,11 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       const commissionVal = tx.commission || 0;
       const commissionStr = commissionVal !== 0 ? formatSignedRu(-Math.abs(commissionVal)) : "0,00";
 
-      // Card number - always show last 4 digits
-      const cardStr = cardNumber ? cardNumber.slice(-4) : "";
+      // Card number - show for card payments (not transfers, not SBP)
+      const nameLower = tx.name.toLowerCase();
+      const catLower = (tx.category || '').toLowerCase();
+      const isTransferOrSBP = nameLower.includes('перевод') || nameLower.includes('сбп') || nameLower.includes('sbp') || catLower.includes('перевод') || catLower.includes('пополнение') || nameLower.includes('пополнение') || nameLower.includes('мани мен');
+      const cardStr = !isTransferOrSBP ? "6234 46**\n**** 7694" : "";
 
       return [
         dateStr,        // Дата проведения
