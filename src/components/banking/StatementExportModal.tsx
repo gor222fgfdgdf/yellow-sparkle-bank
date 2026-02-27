@@ -53,15 +53,15 @@ const i18n: Record<string, Record<Lang, string>> = {
   accountNumber: { en: "Account number:", ru: "Номер счёта:" },
   cardNumber: { en: "Card number:", ru: "Номер карты:" },
   currency: { en: "Account currency:", ru: "Валюта счёта:" },
-  currencyVal: { en: "Russian Ruble (RUB)", ru: "Российский рубль (RUB)" },
+  currencyVal: { en: "Russian Ruble (RUB)", ru: "Российский рубль" },
   branch: { en: "Branch:", ru: "Отделение:" },
-  branchVal: { en: "Moscow Regional Branch No. 3349/0101", ru: "Московский региональный филиал №3349/0101" },
+  branchVal: { en: "Moscow Regional Branch No. 3349/0101", ru: "Воронежский региональный филиал" },
   period: { en: "Statement period:", ru: "Период выписки:" },
   opening: { en: "Opening balance:", ru: "Остаток на начало:" },
   closing: { en: "Closing balance:", ru: "Остаток на конец:" },
   totalDebit: { en: "Total debit:", ru: "Итого списания:" },
   totalCredit: { en: "Total credit:", ru: "Итого зачисления:" },
-  transactions: { en: "TRANSACTIONS", ru: "ОПЕРАЦИИ" },
+  transactions: { en: "TRANSACTIONS", ru: "ПОДТВЕРЖДЕННЫЕ ОПЕРАЦИИ" },
   no: { en: "No.", ru: "№" },
   dateTime: { en: "Date / Time", ru: "Дата / Время" },
   reference: { en: "Reference", ru: "Референс" },
@@ -111,6 +111,21 @@ const formatAmount = (value: number) => {
   }).format(Math.abs(value));
 };
 
+/** Russian number format: 10 000,00 */
+const formatAmountRu = (value: number) => {
+  const abs = Math.abs(value);
+  const parts = abs.toFixed(2).split(".");
+  const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return `${intPart},${parts[1]}`;
+};
+
+/** Signed Russian amount: -10 000,00 or 10 000,00 */
+const formatSignedRu = (value: number) => {
+  if (value === 0) return "0,00";
+  const formatted = formatAmountRu(value);
+  return value < 0 ? `-${formatted}` : formatted;
+};
+
 const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: StatementExportModalProps) => {
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [period, setPeriod] = useState<string>("month");
@@ -118,7 +133,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   const [isExporting, setIsExporting] = useState(false);
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useState<Lang>("ru");
   const { data: profile } = useProfile();
 
   const getDateRange = (): { start: Date; end: Date } => {
@@ -222,10 +237,10 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   const getOperationType = (t: Transaction): string => {
     const nameLower = t.name.toLowerCase();
     const cat = t.category;
-    
-    if (nameLower.includes('atm') || cat === 'Снятие наличных') 
+
+    if (nameLower.includes('atm') || cat === 'Снятие наличных')
       return 'ATM Cash Withdrawal';
-    
+
     if (cat === 'Переводы' || nameLower.includes('перевод') || nameLower.includes('transfer')) {
       if (t.is_income) {
         if (nameLower.includes('сбп') || nameLower.includes('sbp')) return 'SBP Incoming Transfer';
@@ -234,10 +249,10 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       if (nameLower.includes('сбп') || nameLower.includes('sbp')) return 'SBP Outgoing Transfer';
       return 'Outgoing Card Transfer';
     }
-    
+
     if (cat === 'Зарплата' || nameLower.includes('salary') || nameLower.includes('зарплат') || nameLower.includes('аванс') || nameLower.includes('зп и премия') || nameLower.includes('отпускн'))
       return 'Salary Credit';
-    
+
     if (nameLower.includes('qr')) return 'QR Code Payment (SBP)';
     if (cat === 'Кафе и рестораны' || cat === 'Фастфуд') return 'QR Code Payment (SBP)';
     if (cat === 'Супермаркеты' || cat === 'Продукты' || cat === 'Маркетплейсы' || cat === 'Электроника' || cat === 'Одежда')
@@ -254,16 +269,16 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
   const transliterateName = (name: string): string => {
     if (/^[a-zA-Z0-9\s.,\-*@&()\/!#$%^+=:;'"]+$/.test(name)) return name;
-    
+
     const map: Record<string, string> = {
-      'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i',
-      'й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t',
-      'у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ъ':'','ы':'y',
-      'ь':'','э':'e','ю':'yu','я':'ya',
-      'А':'A','Б':'B','В':'V','Г':'G','Д':'D','Е':'E','Ё':'Yo','Ж':'Zh','З':'Z','И':'I',
-      'Й':'Y','К':'K','Л':'L','М':'M','Н':'N','О':'O','П':'P','Р':'R','С':'S','Т':'T',
-      'У':'U','Ф':'F','Х':'Kh','Ц':'Ts','Ч':'Ch','Ш':'Sh','Щ':'Shch','Ъ':'','Ы':'Y',
-      'Ь':'','Э':'E','Ю':'Yu','Я':'Ya',
+      'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
+      'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't',
+      'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ъ': '', 'ы': 'y',
+      'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+      'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'Yo', 'Ж': 'Zh', 'З': 'Z', 'И': 'I',
+      'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T',
+      'У': 'U', 'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch', 'Ъ': '', 'Ы': 'Y',
+      'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
     };
     return name.split('').map(c => map[c] ?? c).join('');
   };
@@ -273,13 +288,12 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const opType = lang === "ru" ? (opTypesRu[opTypeEn] || opTypeEn) : opTypeEn;
     const lastCard = cardNum.replace(/\s/g, '').slice(-4);
     const lastAcc = accountNum.slice(-4);
-    
+
     const isCardOp = !t.name.toLowerCase().includes('счет') && !t.name.toLowerCase().includes('сбп');
     const opSuffix = lang === "ru"
       ? (isCardOp ? `Карта ****${lastCard}` : `Счёт ****${lastAcc}`)
       : (isCardOp ? `Card ****${lastCard}` : `Account ****${lastAcc}`);
-    
-    // For salary transactions, use a proper English name instead of transliteration
+
     let safeName: string;
     if (lang !== "ru" && opTypeEn === 'Salary Credit') {
       const nl = t.name.toLowerCase();
@@ -289,24 +303,22 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     } else {
       safeName = lang === "ru" ? t.name : transliterateName(t.name);
     }
-    
+
     return `${opType}\n${safeName}. ${opSuffix}`;
   };
 
   const loadFont = async (doc: jsPDF) => {
-    if (lang !== "ru") return;
-    
     try {
       const [regularResp, boldResp] = await Promise.all([
         fetch("/fonts/Roboto-Regular.ttf"),
         fetch("/fonts/Roboto-Bold.ttf"),
       ]);
-      
+
       const [regularBuf, boldBuf] = await Promise.all([
         regularResp.arrayBuffer(),
         boldResp.arrayBuffer(),
       ]);
-      
+
       const toBase64 = (buf: ArrayBuffer) => {
         const bytes = new Uint8Array(buf);
         let binary = '';
@@ -315,10 +327,10 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
         }
         return btoa(binary);
       };
-      
+
       doc.addFileToVFS("Roboto-Regular.ttf", toBase64(regularBuf));
       doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
-      
+
       doc.addFileToVFS("Roboto-Bold.ttf", toBase64(boldBuf));
       doc.addFont("Roboto-Bold.ttf", "Roboto", "bold");
     } catch (e) {
@@ -329,16 +341,265 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   const t = (key: string) => i18n[key]?.[lang] || key;
   const fontName = lang === "ru" ? "Roboto" : "helvetica";
 
-  const generatePDF = async () => {
+  // ===== RUSSIAN FORMAT: exact replica of RSHB bank statement =====
+  const generateRuPDF = async () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    
     await loadFont(doc);
 
     const { start, end } = getDateRange();
     const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
     const accountNumber = account?.account_number || "40817810514230007456";
+    const cardNumber = account?.card_number || "";
+    const ownerName = profile?.full_name || "Владелец счёта";
+
+    const pageWidth = 210;
+    const margin = 14;
+    const fn = "Roboto";
+    let y = 16;
+
+    // Title
+    doc.setFontSize(11);
+    doc.setFont(fn, "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ", pageWidth / 2, y, { align: "center" });
+    y += 8;
+
+    // Subtitle
+    doc.setFontSize(10);
+    doc.setFont(fn, "bold");
+    doc.text(
+      `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber} за период с ${formatDateRu(start.toISOString())} по ${formatDateRu(end.toISOString())}`,
+      pageWidth / 2, y, { align: "center", maxWidth: pageWidth - margin * 2 }
+    );
+    y += 10;
+
+    // Info fields (plain text, not table)
+    doc.setFontSize(9);
+    doc.setFont(fn, "normal");
+    const infoLines = [
+      `Дата выписки: ${formatDateRu(new Date().toISOString())}`,
+      `Валюта счёта: Российский рубль`,
+      `Владелец счёта: ${ownerName}`,
+      `Дата входящего остатка: ${formatDateRu(start.toISOString())}`,
+      `Филиал/Отделение: Воронежский региональный филиал`,
+    ];
+    infoLines.forEach((line) => {
+      doc.text(line, margin, y);
+      y += 5;
+    });
+
+    // Calculate opening balance
+    const sortedAsc = filteredTransactions.slice().sort((a, b) => {
+      const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return new Date(a.created_at || a.date).getTime() - new Date(b.created_at || b.date).getTime();
+    });
+    const income = sortedAsc.filter((tx) => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
+    const expense = sortedAsc.filter((tx) => !tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
+    const closingBalance = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
+    const openingBalance = closingBalance - income + expense;
+
+    doc.text(`Сумма входящего остатка в валюте счета на дату начала периода: ${formatSignedRu(openingBalance)}`, margin, y);
+    y += 8;
+
+    // Section title
+    doc.setFontSize(10);
+    doc.setFont(fn, "bold");
+    doc.text("ПОДТВЕРЖДЕННЫЕ ОПЕРАЦИИ", margin, y);
+    y += 4;
+
+    // 9-column table matching RSHB format
+    const tableHeaders = [
+      "Дата\nпроведения\nоперации",
+      "Дата\nсовершения\nоперации",
+      "Расход\nпо счету",
+      "Приход\nпо счету",
+      "Содержание\nоперации",
+      "Валюта\nоперации",
+      "Сумма в\nвалюте\nоперации",
+      "Комиссия\nв валюте",
+      "№ карты",
+    ];
+
+    // Sort descending by date (newest first), matching the original statement
+    const sortedDesc = filteredTransactions.slice().sort((a, b) => {
+      const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime();
+    });
+
+    let totalDebit = 0;
+    let totalCredit = 0;
+
+    const tableData = sortedDesc.map((tx) => {
+      const dateStr = formatDateRu(tx.date);
+      const debitVal = !tx.is_income ? -Math.abs(tx.amount) : 0;
+      const creditVal = tx.is_income ? Math.abs(tx.amount) : 0;
+
+      if (debitVal < 0) totalDebit += debitVal;
+      if (creditVal > 0) totalCredit += creditVal;
+
+      const debitStr = debitVal !== 0 ? formatSignedRu(debitVal) : "0,00";
+      const creditStr = creditVal !== 0 ? formatAmountRu(creditVal) : "0,00";
+
+      // Build description - use full transaction name as content
+      const description = tx.name;
+
+      // Currency amount matches debit/credit
+      const currAmountStr = debitVal !== 0 ? formatSignedRu(debitVal) : formatAmountRu(creditVal);
+
+      // Card number - show last 4 if card transaction
+      const lastCard = cardNumber ? `${cardNumber.slice(-4)}` : "";
+      const isCardTx = tx.name.includes("ATM") || tx.name.includes("THA") || tx.name.includes("VNM") || tx.name.includes("REST") || tx.name.includes("RUS,");
+      const cardStr = isCardTx && lastCard ? lastCard : "";
+
+      return [
+        dateStr,        // Дата проведения
+        dateStr,        // Дата совершения
+        debitStr,       // Расход
+        creditStr,      // Приход
+        description,    // Содержание
+        "Российский\nрубль",  // Валюта
+        currAmountStr,  // Сумма в валюте
+        "0,00",         // Комиссия
+        cardStr,        // № карты
+      ];
+    });
+
+    // Add totals row
+    tableData.push([
+      "", "", formatSignedRu(totalDebit), formatAmountRu(totalCredit), "", "", "", "", "",
+    ]);
+
+    autoTable(doc, {
+      startY: y,
+      head: [tableHeaders],
+      body: tableData,
+      styles: {
+        fontSize: 7,
+        cellPadding: 1.5,
+        font: fn,
+        textColor: [0, 0, 0],
+        lineColor: [0, 0, 0],
+        lineWidth: 0.2,
+        overflow: "linebreak",
+        valign: "top",
+      },
+      headStyles: {
+        fillColor: [255, 255, 255],
+        textColor: [0, 0, 0],
+        fontStyle: "bold",
+        halign: "left",
+        lineWidth: 0.2,
+        lineColor: [0, 0, 0],
+      },
+      columnStyles: {
+        0: { cellWidth: 18, halign: "left" },   // Дата проведения
+        1: { cellWidth: 18, halign: "left" },   // Дата совершения
+        2: { cellWidth: 18, halign: "right" },  // Расход
+        3: { cellWidth: 18, halign: "right" },  // Приход
+        4: { cellWidth: 40 },                    // Содержание
+        5: { cellWidth: 18 },                    // Валюта
+        6: { cellWidth: 20, halign: "right" },  // Сумма в валюте
+        7: { cellWidth: 16, halign: "right" },  // Комиссия
+        8: { cellWidth: 16 },                    // № карты
+      },
+      theme: "grid",
+      margin: { left: margin, right: margin },
+      didParseCell: (data) => {
+        if (data.section === "body") {
+          const isLast = data.row.index === tableData.length - 1;
+          if (isLast) {
+            data.cell.styles.fontStyle = "bold";
+          }
+        }
+      },
+    });
+
+    // Footer after table
+    const finalY = (doc as any).lastAutoTable?.finalY || y + 40;
+    let footerY = finalY + 6;
+
+    if (footerY > 270) {
+      doc.addPage();
+      footerY = 20;
+    }
+
+    doc.setFontSize(9);
+    doc.setFont(fn, "normal");
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Дата исходящего остатка: ${formatDateRu(end.toISOString())}`, margin, footerY);
+    footerY += 5;
+    doc.text(`Исходящий остаток в валюте счета на дату окончания периода: ${formatSignedRu(closingBalance)}`, margin, footerY);
+    footerY += 10;
+
+    // Pending operations section
+    doc.setFontSize(10);
+    doc.setFont(fn, "bold");
+    doc.text("ОПЕРАЦИИ, ОЖИДАЮЩИЕ ОБРАБОТКИ", margin, footerY);
+    footerY += 4;
+
+    // Empty pending operations table
+    const pendingHeaders = [
+      "Дата совершения\nоперации",
+      "Сумма в валюте\nоперации",
+      "Комиссия в валюте\nоперации",
+      "Валюта\nоперации",
+      "Содержание\nоперации",
+      "№ карты",
+    ];
+
+    autoTable(doc, {
+      startY: footerY,
+      head: [pendingHeaders],
+      body: [],
+      styles: {
+        fontSize: 7,
+        cellPadding: 1.5,
+        font: fn,
+        textColor: [0, 0, 0],
+        lineColor: [0, 0, 0],
+        lineWidth: 0.2,
+      },
+      headStyles: {
+        fillColor: [255, 255, 255],
+        textColor: [0, 0, 0],
+        fontStyle: "bold",
+        halign: "left",
+        lineWidth: 0.2,
+        lineColor: [0, 0, 0],
+      },
+      theme: "grid",
+      margin: { left: margin, right: margin },
+    });
+
+    const pendingFinalY = (doc as any).lastAutoTable?.finalY || footerY + 15;
+    let afterPendingY = pendingFinalY + 6;
+
+    if (afterPendingY > 270) {
+      doc.addPage();
+      afterPendingY = 20;
+    }
+
+    doc.setFontSize(8);
+    doc.setFont(fn, "normal");
+    doc.text(
+      `Сумма доступного остатка на дату формирования выписки с учетом неподтвержденных операций: ${formatSignedRu(closingBalance)}`,
+      margin, afterPendingY
+    );
+
+    return doc;
+  };
+
+  // ===== ENGLISH FORMAT: existing professional format =====
+  const generateEnPDF = async () => {
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+    const { start, end } = getDateRange();
+    const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
+    const accountNumber = account?.account_number || "40817810514230007456";
     const cardNumber = account?.card_number ? account.card_number.replace(/(\d{4})(?=\d)/g, "$1 ") : "6282 8700 0412 7694";
-    const ownerName = profile?.full_name || (lang === "ru" ? "Владелец счёта" : "Account Holder");
+    const ownerName = profile?.full_name || "Account Holder";
 
     const pageWidth = 210;
     const margin = 14;
@@ -348,11 +609,11 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     try {
       const headerImg = await loadImageWithWhiteBg((await import("@/assets/rshb-header.png")).default);
       doc.addImage(headerImg, "PNG", margin, y, 50, 12);
-    } catch {}
+    } catch { }
 
     // Bank details on right side
     doc.setFontSize(7);
-    doc.setFont(fontName, "normal");
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 100, 100);
     const bankInfo = [t("bankName"), t("license"), t("address"), t("bic")];
     bankInfo.forEach((line, i) => {
@@ -368,12 +629,12 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     // Title
     doc.setFontSize(11);
-    doc.setFont(fontName, "bold");
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 0, 0);
     doc.text(t("title"), pageWidth / 2, y, { align: "center" });
     y += 5;
     doc.setFontSize(9);
-    doc.setFont(fontName, "normal");
+    doc.setFont("helvetica", "normal");
     doc.text(
       `${t("noLabel")} ${accountNumber} ${t("forPeriodFrom")} ${formatDateRu(start.toISOString())} ${t("to")} ${formatDateRu(end.toISOString())}`,
       pageWidth / 2, y, { align: "center" }
@@ -400,7 +661,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       styles: {
         fontSize: 8,
         cellPadding: 1.5,
-        font: fontName,
+        font: "helvetica",
         textColor: [0, 0, 0],
         lineWidth: 0,
       },
@@ -421,25 +682,25 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       if (dateDiff !== 0) return dateDiff;
       return new Date(a.created_at || a.date).getTime() - new Date(b.created_at || b.date).getTime();
     });
-    const income = sortedAsc.filter((tx) => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
-    const expense = sortedAsc.filter((tx) => !tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
+    const incomeVal = sortedAsc.filter((tx) => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
+    const expenseVal = sortedAsc.filter((tx) => !tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
     const closingBalance = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
-    const openingBalance = closingBalance - income + expense;
+    const openingBalance = closingBalance - incomeVal + expenseVal;
 
     // Balance summary box
     doc.setFillColor(245, 247, 245);
     doc.roundedRect(margin, y, pageWidth - margin * 2, 12, 1, 1, "F");
     doc.setFontSize(8);
-    doc.setFont(fontName, "bold");
+    doc.setFont("helvetica", "bold");
     doc.text(`${t("opening")} ${formatAmount(openingBalance)} RUB`, margin + 4, y + 5);
     doc.text(`${t("closing")} ${formatAmount(closingBalance)} RUB`, margin + 4, y + 9.5);
-    doc.text(`${t("totalDebit")} ${formatAmount(expense)} RUB`, pageWidth / 2 + 10, y + 5);
-    doc.text(`${t("totalCredit")} ${formatAmount(income)} RUB`, pageWidth / 2 + 10, y + 9.5);
+    doc.text(`${t("totalDebit")} ${formatAmount(expenseVal)} RUB`, pageWidth / 2 + 10, y + 5);
+    doc.text(`${t("totalCredit")} ${formatAmount(incomeVal)} RUB`, pageWidth / 2 + 10, y + 9.5);
     y += 16;
 
     // Section title
     doc.setFontSize(9);
-    doc.setFont(fontName, "bold");
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 0, 0);
     doc.text(t("transactions"), margin, y);
     y += 4;
@@ -490,7 +751,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       });
 
     // Add totals row
-    tableData.push(["", "", "", t("total"), formatAmount(expense), formatAmount(income), formatAmount(runningBalance)]);
+    tableData.push(["", "", "", t("total"), formatAmount(expenseVal), formatAmount(incomeVal), formatAmount(runningBalance)]);
 
     autoTable(doc, {
       startY: y,
@@ -499,7 +760,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       styles: {
         fontSize: 6.5,
         cellPadding: 1.8,
-        font: fontName,
+        font: "helvetica",
         textColor: [0, 0, 0],
         lineColor: [180, 180, 180],
         lineWidth: 0.15,
@@ -556,7 +817,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     }
 
     doc.setFontSize(8);
-    doc.setFont(fontName, "normal");
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(80, 80, 80);
     doc.text(
       `${t("stmtContains")} ${filteredTransactions.length} ${t("footerCount")} ${formatDateRu(start.toISOString())} — ${formatDateRu(end.toISOString())}.`,
@@ -581,7 +842,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     }
 
     doc.setFontSize(8);
-    doc.setFont(fontName, "normal");
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
     doc.text(t("authRep"), margin, footerY);
     doc.text("_________________________", margin + 45, footerY);
@@ -590,7 +851,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     try {
       const sigImg = await loadImageWithWhiteBg(signatureImg);
       doc.addImage(sigImg, "PNG", margin + 50, footerY - 6, 25, 10);
-    } catch {}
+    } catch { }
 
     footerY += 15;
 
@@ -601,47 +862,14 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       doc.setFillColor(255, 255, 255);
       doc.rect(stampX, footerY - 5, stampSize, stampSize, "F");
       doc.addImage(stmpDataUrl, "JPEG", stampX, footerY - 5, stampSize, stampSize);
-    } catch {}
+    } catch { }
 
     return doc;
   };
 
-  const generateCSV = () => {
-    const headers = ["No.", "Date", "Time", "Reference", "Description", "Debit", "Credit", "Balance", "Currency"];
-    
-    const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
-    const incomeTotal = filteredTransactions.filter((tx) => tx.is_income).reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
-    const expenseTotal = filteredTransactions.filter((tx) => !tx.is_income).reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
-    const closingBal = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
-    let runBal = closingBal - incomeTotal + expenseTotal;
-
-     const sorted = filteredTransactions.slice().sort((a, b) => {
-      const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
-      if (dateDiff !== 0) return dateDiff;
-      return new Date(a.created_at || a.date).getTime() - new Date(b.created_at || b.date).getTime();
-    });
-    const rows = sorted.map((tx, i) => {
-      if (tx.is_income) runBal += Math.abs(tx.amount); else runBal -= Math.abs(tx.amount);
-      return [
-        String(i + 1),
-        formatDateRu(tx.date),
-        generateTransactionTime(tx, i),
-        generateTransactionRef(tx.id, tx.date),
-        `"${tx.name}"`,
-        !tx.is_income ? formatAmount(tx.amount) : "",
-        tx.is_income ? formatAmount(tx.amount) : "",
-        formatAmount(runBal),
-        "RUB",
-      ];
-    });
-
-    const summary = [
-      [],
-      ["", "", "", "", "TOTAL", formatAmount(expenseTotal), formatAmount(incomeTotal), formatAmount(runBal), ""],
-    ];
-
-    const csvContent = [headers, ...rows, ...summary].map((row) => row.join(";")).join("\n");
-    return csvContent;
+  const generatePDF = async () => {
+    if (lang === "ru") return generateRuPDF();
+    return generateEnPDF();
   };
 
   const [readyBlob, setReadyBlob] = useState<Blob | null>(null);
@@ -655,16 +883,13 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       const filename = `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
       const blob = doc.output("blob");
 
-      // Check if Web Share API supports file sharing
       const file = new File([blob], filename, { type: "application/pdf" });
       const shareData = { files: [file], title: filename };
       if (navigator.canShare && navigator.canShare(shareData)) {
-        // Store blob for second tap (iOS requires user gesture)
         setReadyBlob(blob);
         setReadyFilename(filename);
         toast.success("Выписка готова — нажмите «Поделиться»");
       } else {
-        // Desktop: download directly
         const blobUrl = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = blobUrl;
@@ -704,133 +929,131 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   return (
     <FullScreenModal isOpen={isOpen} onClose={onClose} title="Выписка по счёту">
       <div className="space-y-6">
-          {/* Language Selection */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Globe className="w-4 h-4" />
-              Язык выписки
-            </Label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setLang("ru")}
-                className={`p-3 rounded-xl border-2 transition-all text-center ${
-                  lang === "ru" ? "border-primary bg-primary/10" : "border-border bg-card"
+        {/* Language Selection */}
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Globe className="w-4 h-4" />
+            Язык выписки
+          </Label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setLang("ru")}
+              className={`p-3 rounded-xl border-2 transition-all text-center ${lang === "ru" ? "border-primary bg-primary/10" : "border-border bg-card"
                 }`}
-              >
-                <p className="text-lg mb-1">🇷🇺</p>
-                <p className={`text-sm font-medium ${lang === "ru" ? "text-primary" : "text-foreground"}`}>Русский</p>
-              </button>
-              <button
-                onClick={() => setLang("en")}
-                className={`p-3 rounded-xl border-2 transition-all text-center ${
-                  lang === "en" ? "border-primary bg-primary/10" : "border-border bg-card"
+            >
+              <p className="text-lg mb-1">🇷🇺</p>
+              <p className={`text-sm font-medium ${lang === "ru" ? "text-primary" : "text-foreground"}`}>Русский</p>
+            </button>
+            <button
+              onClick={() => setLang("en")}
+              className={`p-3 rounded-xl border-2 transition-all text-center ${lang === "en" ? "border-primary bg-primary/10" : "border-border bg-card"
                 }`}
-              >
-                <p className="text-lg mb-1">🇬🇧</p>
-                <p className={`text-sm font-medium ${lang === "en" ? "text-primary" : "text-foreground"}`}>English</p>
-              </button>
-            </div>
+            >
+              <p className="text-lg mb-1">🇬🇧</p>
+              <p className={`text-sm font-medium ${lang === "en" ? "text-primary" : "text-foreground"}`}>English</p>
+            </button>
           </div>
+        </div>
 
-          {/* Account Selection */}
-          <div className="space-y-2">
-            <Label>Счёт</Label>
-            <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все счета</SelectItem>
-                {accounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
-                    {account.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Account Selection */}
+        <div className="space-y-2">
+          <Label>Счёт</Label>
+          <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все счета</SelectItem>
+              {accounts.map((account) => (
+                <SelectItem key={account.id} value={account.id}>
+                  {account.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-          {/* Period Selection */}
-          <div className="space-y-2">
-            <Label>Период</Label>
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="week">За неделю</SelectItem>
-                <SelectItem value="month">За месяц</SelectItem>
-                <SelectItem value="quarter">За квартал</SelectItem>
-                <SelectItem value="halfyear">За 6 месяцев</SelectItem>
-                <SelectItem value="year">За год</SelectItem>
-                <SelectItem value="custom">Произвольный период</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Period Selection */}
+        <div className="space-y-2">
+          <Label>Период</Label>
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="week">За неделю</SelectItem>
+              <SelectItem value="month">За месяц</SelectItem>
+              <SelectItem value="quarter">За квартал</SelectItem>
+              <SelectItem value="halfyear">За 6 месяцев</SelectItem>
+              <SelectItem value="year">За год</SelectItem>
+              <SelectItem value="custom">Произвольный период</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-          {/* Custom Date Range */}
-          {period === "custom" && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>С</Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type="date"
-                    value={customStartDate}
-                    onChange={(e) => setCustomStartDate(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>По</Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type="date"
-                    value={customEndDate}
-                    onChange={(e) => setCustomEndDate(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+        {/* Custom Date Range */}
+        {period === "custom" && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>С</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="pl-10"
+                />
               </div>
             </div>
-          )}
+            <div className="space-y-2">
+              <Label>По</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
-          {/* Download Button */}
-          <Button onClick={handleExport} className="w-full" disabled={isExporting}>
-            <Download className="w-4 h-4 mr-2" />
-            {isExporting ? "Экспорт..." : "Сформировать выписку"}
+        {/* Download Button */}
+        <Button onClick={handleExport} className="w-full" disabled={isExporting}>
+          <Download className="w-4 h-4 mr-2" />
+          {isExporting ? "Экспорт..." : "Сформировать выписку"}
+        </Button>
+
+        {readyBlob && (
+          <Button onClick={handleShare} className="w-full" variant="default">
+            <Share2 className="w-4 h-4 mr-2" />
+            Поделиться PDF
           </Button>
+        )}
 
-          {readyBlob && (
-            <Button onClick={handleShare} className="w-full" variant="default">
-              <Share2 className="w-4 h-4 mr-2" />
-              Поделиться PDF
-            </Button>
-          )}
-
-          {/* Preview */}
-          <div className="bg-muted rounded-xl p-4 space-y-3">
-            <p className="text-sm text-muted-foreground">Будет экспортировано</p>
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-foreground">{filteredTransactions.length} операций</span>
-              <Check className="w-5 h-5 text-success" />
-            </div>
-            {filteredTransactions.length > 0 && (
-              <div className="text-sm text-muted-foreground space-y-1">
-                <div className="flex justify-between">
-                  <span>Поступления:</span>
-                  <span className="text-success font-medium">+{incomeSum.toLocaleString("ru-RU")} ₽</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Расходы:</span>
-                  <span className="text-destructive font-medium">−{expensesSum.toLocaleString("ru-RU")} ₽</span>
-                </div>
-              </div>
-            )}
+        {/* Preview */}
+        <div className="bg-muted rounded-xl p-4 space-y-3">
+          <p className="text-sm text-muted-foreground">Будет экспортировано</p>
+          <div className="flex items-center justify-between">
+            <span className="font-medium text-foreground">{filteredTransactions.length} операций</span>
+            <Check className="w-5 h-5 text-success" />
           </div>
+          {filteredTransactions.length > 0 && (
+            <div className="text-sm text-muted-foreground space-y-1">
+              <div className="flex justify-between">
+                <span>Поступления:</span>
+                <span className="text-success font-medium">+{incomeSum.toLocaleString("ru-RU")} ₽</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Расходы:</span>
+                <span className="text-destructive font-medium">−{expensesSum.toLocaleString("ru-RU")} ₽</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </FullScreenModal>
   );
