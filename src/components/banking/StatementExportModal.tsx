@@ -4,14 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FileText, Download, Check, Calendar, Globe, Share2 } from "lucide-react";
+import { FileText, Download, Check, Calendar, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 import { useProfile } from "@/hooks/useProfile";
-import stampImg from "@/assets/rshb-stamp.png";
-import signatureImg from "@/assets/rshb-signature.png";
 
 interface Transaction {
   id: string;
@@ -43,75 +41,12 @@ interface StatementExportModalProps {
   accounts: Account[];
 }
 
-type Lang = "en" | "ru";
-
-const i18n: Record<string, Record<Lang, string>> = {
-  bankName: { en: "JSC Rosselkhozbank", ru: "АО «Россельхозбанк»" },
-  license: { en: "License No. 3349 dated 12.08.2015", ru: "Лицензия №3349 от 12.08.2015" },
-  address: { en: "119034, Moscow, Gagarinsky per., 3", ru: "119034, г. Москва, Гагаринский пер., д. 3" },
-  bic: { en: "BIC 044525111 | INN 7725114488", ru: "БИК 044525111 | ИНН 7725114488" },
-  title: { en: "STATEMENT OF CARD ACCOUNT", ru: "ВЫПИСКА ПО КАРТОЧНОМУ СЧЁТУ" },
-  statementDate: { en: "Statement date:", ru: "Дата выписки:" },
-  accountHolder: { en: "Account holder:", ru: "Владелец счёта:" },
-  accountNumber: { en: "Account number:", ru: "Номер счёта:" },
-  cardNumber: { en: "Card number:", ru: "Номер карты:" },
-  currency: { en: "Account currency:", ru: "Валюта счёта:" },
-  currencyVal: { en: "Russian Ruble (RUB)", ru: "Российский рубль" },
-  branch: { en: "Branch:", ru: "Отделение:" },
-  branchVal: { en: "Moscow Regional Branch No. 3349/0101", ru: "Воронежский региональный филиал" },
-  period: { en: "Statement period:", ru: "Период выписки:" },
-  opening: { en: "Opening balance:", ru: "Остаток на начало:" },
-  closing: { en: "Closing balance:", ru: "Остаток на конец:" },
-  totalDebit: { en: "Total debit:", ru: "Итого списания:" },
-  totalCredit: { en: "Total credit:", ru: "Итого зачисления:" },
-  transactions: { en: "TRANSACTIONS", ru: "ПОДТВЕРЖДЕННЫЕ ОПЕРАЦИИ" },
-  no: { en: "No.", ru: "№" },
-  dateTime: { en: "Date / Time", ru: "Дата / Время" },
-  reference: { en: "Reference", ru: "Референс" },
-  description: { en: "Description", ru: "Описание" },
-  debit: { en: "Debit\n(RUB)", ru: "Списание\n(RUB)" },
-  credit: { en: "Credit\n(RUB)", ru: "Зачисление\n(RUB)" },
-  balance: { en: "Balance\n(RUB)", ru: "Остаток\n(RUB)" },
-  total: { en: "TOTAL", ru: "ИТОГО" },
-  footerCount: { en: "transaction(s) for the period", ru: "операций за период" },
-  footerGenerated: { en: "Statement generated electronically on", ru: "Выписка сформирована электронно" },
-  footerValid: { en: "and is valid without signature.", ru: "и действительна без подписи." },
-  authRep: { en: "Authorized representative:", ru: "Уполномоченный представитель:" },
-  authName: { en: "A. G. Osipenko", ru: "А. Г. Осипенко" },
-  forPeriodFrom: { en: "for period from", ru: "за период с" },
-  to: { en: "to", ru: "по" },
-  noLabel: { en: "No.", ru: "№" },
-  stmtContains: { en: "This statement contains", ru: "Выписка содержит" },
-};
-
-const opTypesRu: Record<string, string> = {
-  "ATM Cash Withdrawal": "Выдача наличных в банкомате",
-  "SBP Incoming Transfer": "Входящий перевод СБП",
-  "Incoming Card Transfer": "Входящий перевод по карте",
-  "SBP Outgoing Transfer": "Исходящий перевод СБП",
-  "Outgoing Card Transfer": "Исходящий перевод по карте",
-  "Salary Credit": "Зачисление заработной платы",
-  "QR Code Payment (SBP)": "Оплата по QR-коду (СБП)",
-  "Store Purchase": "Покупка в магазине",
-  "Service Payment": "Оплата услуг",
-  "Commission Fee": "Комиссия",
-  "Loyalty Refund": "Возврат по программе лояльности",
-  "Purchase": "Покупка",
-};
-
 const formatDateRu = (dateString: string) => {
   const d = new Date(dateString);
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
   return `${dd}.${mm}.${yyyy}`;
-};
-
-const formatAmount = (value: number) => {
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(value));
 };
 
 /** Russian number format: 10 000,00 */
@@ -129,14 +64,93 @@ const formatSignedRu = (value: number) => {
   return value < 0 ? `-${formatted}` : formatted;
 };
 
+// Generate a random merchant code like S1C4304, S1B9576
+const genMerchantCode = (txId: string) => {
+  const hash = txId.replace(/-/g, '').slice(0, 6);
+  const n = parseInt(hash, 16);
+  const letter = String.fromCharCode(65 + (n % 26));
+  return `S1${letter}${(n % 9000 + 1000)}`;
+};
+
+// Generate a random SBP ID
+const genSbpId = (txId: string) => {
+  const hash = txId.replace(/-/g, '');
+  return hash.slice(0, 9).replace(/[a-f]/gi, (c) => String(parseInt(c, 16)));
+};
+
+// Build detailed description matching RSHB original format
+const buildStatementDescription = (tx: Transaction, dateStr: string) => {
+  const name = tx.name;
+  const nameLower = name.toLowerCase();
+  const catLower = (tx.category || '').toLowerCase();
+  const txCurrency = tx.currency || 'RUB';
+  const isForex = txCurrency !== 'RUB';
+
+  // Комиссия за информирование
+  if (nameLower.includes('комиссия') && nameLower.includes('информир')) {
+    return 'Комиссия за услугу информирования по счету';
+  }
+
+  // Foreign card transactions (THB, VND, etc.)
+  if (isForex && !tx.is_income) {
+    const countryMap: Record<string, string> = { 'THB': 'THA', 'VND': 'VNM', 'USD': 'USA', 'EUR': 'EUR', 'CNY': 'CHN' };
+    const country = countryMap[txCurrency] || 'INT';
+    const merchantCode = genMerchantCode(tx.id);
+    if (nameLower.includes('atm') || catLower.includes('снятие')) {
+      return `${country}, ATM ${name.replace(/atm/i, '').trim()}\n${merchantCode}`;
+    }
+    return `${country},\n${merchantCode}\n${name}`;
+  }
+
+  // Salary
+  if (catLower.includes('зарплат') || nameLower.includes('мани мен')) {
+    if (nameLower.includes('аванс')) {
+      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление аванса\nот ООО МФК «Мани Мен» (ИНН 7704784072)`;
+    }
+    if (nameLower.includes('отпускн')) {
+      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление отпускных\nот ООО МФК «Мани Мен» (ИНН 7704784072)`;
+    }
+    return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление заработной платы и премии\nот ООО МФК «Мани Мен» (ИНН 7704784072)`;
+  }
+
+  // SBP transfers (incoming)
+  if (tx.is_income && (nameLower.includes('перевод') || catLower.includes('перевод'))) {
+    const sbpId = genSbpId(tx.id);
+    return `Перевод через СБП от ${name} на 4081781051 4230007456.\nИдентификатор операции в СБП С2С ${sbpId}\nДата операции ${dateStr}\nСтатус перевода Исполнен`;
+  }
+
+  // SBP transfers (outgoing)
+  if (!tx.is_income && (nameLower.includes('перевод') || catLower.includes('перевод'))) {
+    const sbpId = genSbpId(tx.id);
+    return `Перевод ${name} через СБП, по номеру телефона, ID перевода ${sbpId}, дата ${dateStr}`;
+  }
+
+  // SBP payments (оплата товаров)
+  if (nameLower.includes('сбп') || nameLower.includes('sbp') || nameLower.includes('plati')) {
+    const sbpId = genSbpId(tx.id);
+    return `Оплата товаров и услуг ${name.replace(/через СБП/i, '').trim()} через СБП, ID перевода ${sbpId}, дата ${dateStr}`;
+  }
+
+  // Mobile/Telecom payments
+  if (catLower.includes('связь') || nameLower.includes('мтс') || nameLower.includes('билайн') || nameLower.includes('мегафон') || nameLower.includes('теле2')) {
+    return `Перевод денежных средств за услугу "${name}" ПАО "${name}", Дата и время операции ${dateStr}`;
+  }
+
+  // Regular RUB card purchase
+  if (!tx.is_income && txCurrency === 'RUB') {
+    const merchantCode = genMerchantCode(tx.id);
+    return `RUS, ${name}\n${merchantCode}`;
+  }
+
+  return name;
+};
+
 const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: StatementExportModalProps) => {
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [period, setPeriod] = useState<string>("month");
-  const format = "pdf";
   const [isExporting, setIsExporting] = useState(false);
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
-  const [lang, setLang] = useState<Lang>("ru");
   const { data: profile } = useProfile();
 
   const getDateRange = (): { start: Date; end: Date } => {
@@ -187,129 +201,6 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions, period, selectedAccount, customStartDate, customEndDate]);
 
-  const loadImageWithWhiteBg = (src: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d")!;
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL("image/png"));
-      };
-      img.onerror = reject;
-      img.src = src;
-    });
-  };
-
-  const generateTransactionRef = (id: string, date: string) => {
-    const d = new Date(date);
-    const hash = id.replace(/-/g, "").substring(0, 8).toUpperCase();
-    return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}${hash}`;
-  };
-
-  const generateTransactionTime = (tx: Transaction, index: number) => {
-    if (tx.created_at) {
-      const d = new Date(tx.created_at);
-      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
-    }
-    const seed = parseInt(tx.id.replace(/-/g, "").substring(0, 8), 16);
-    const hours = (seed + index * 3) % 14 + 8;
-    const minutes = (seed + index * 7) % 60;
-    const seconds = (seed + index * 13) % 60;
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-  };
-
-  const generateAuthCode = (id: string) => {
-    const hash = id.replace(/-/g, "");
-    return hash.substring(0, 6).toUpperCase();
-  };
-
-  const generateTerminalId = (id: string) => {
-    const seed = parseInt(id.replace(/-/g, "").substring(4, 12), 16);
-    return String(seed % 90000000 + 10000000);
-  };
-
-  const generateMCC = (id: string) => {
-    return String((parseInt(id.substring(0, 4), 16) % 9000) + 1000);
-  };
-
-  const getOperationType = (t: Transaction): string => {
-    const nameLower = t.name.toLowerCase();
-    const cat = t.category;
-
-    if (nameLower.includes('atm') || cat === 'Снятие наличных')
-      return 'ATM Cash Withdrawal';
-
-    if (cat === 'Переводы' || nameLower.includes('перевод') || nameLower.includes('transfer')) {
-      if (t.is_income) {
-        if (nameLower.includes('сбп') || nameLower.includes('sbp')) return 'SBP Incoming Transfer';
-        return 'Incoming Card Transfer';
-      }
-      if (nameLower.includes('сбп') || nameLower.includes('sbp')) return 'SBP Outgoing Transfer';
-      return 'Outgoing Card Transfer';
-    }
-
-    if (cat === 'Зарплата' || nameLower.includes('salary') || nameLower.includes('зарплат') || nameLower.includes('аванс') || nameLower.includes('зп и премия') || nameLower.includes('отпускн'))
-      return 'Salary Credit';
-
-    if (nameLower.includes('qr')) return 'QR Code Payment (SBP)';
-    if (cat === 'Кафе и рестораны' || cat === 'Фастфуд') return 'QR Code Payment (SBP)';
-    if (cat === 'Супермаркеты' || cat === 'Продукты' || cat === 'Маркетплейсы' || cat === 'Электроника' || cat === 'Одежда')
-      return 'Store Purchase';
-    if (cat === 'Подписки' || cat === 'Связь' || cat === 'ЖКХ') return 'Service Payment';
-    if (nameLower.includes('комиссия') || nameLower.includes('commission')) return 'Commission Fee';
-    if (cat === 'Все для дома' || cat === 'Дом') return 'Store Purchase';
-    if (cat === 'Развлечения') return 'QR Code Payment (SBP)';
-    if (cat === 'Транспорт' || cat === 'Такси') return 'Service Payment';
-    if (nameLower.includes('возврат') || nameLower.includes('loyalty') || nameLower.includes('лояльност')) return 'Loyalty Refund';
-    if (t.is_income) return 'Incoming Card Transfer';
-    return 'Purchase';
-  };
-
-  const transliterateName = (name: string): string => {
-    if (/^[a-zA-Z0-9\s.,\-*@&()\/!#$%^+=:;'"]+$/.test(name)) return name;
-
-    const map: Record<string, string> = {
-      'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
-      'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't',
-      'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ъ': '', 'ы': 'y',
-      'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
-      'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'Yo', 'Ж': 'Zh', 'З': 'Z', 'И': 'I',
-      'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T',
-      'У': 'U', 'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch', 'Ъ': '', 'Ы': 'Y',
-      'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
-    };
-    return name.split('').map(c => map[c] ?? c).join('');
-  };
-
-  const buildDescription = (t: Transaction, authCode: string, cardNum: string, accountNum: string) => {
-    const opTypeEn = getOperationType(t);
-    const opType = lang === "ru" ? (opTypesRu[opTypeEn] || opTypeEn) : opTypeEn;
-    const lastCard = cardNum.replace(/\s/g, '').slice(-4);
-    const lastAcc = accountNum.slice(-4);
-
-    const isCardOp = !t.name.toLowerCase().includes('счет') && !t.name.toLowerCase().includes('сбп');
-    const opSuffix = lang === "ru"
-      ? (isCardOp ? `Карта ****${lastCard}` : `Счёт ****${lastAcc}`)
-      : (isCardOp ? `Card ****${lastCard}` : `Account ****${lastAcc}`);
-
-    let safeName: string;
-    if (lang !== "ru" && opTypeEn === 'Salary Credit') {
-      const nl = t.name.toLowerCase();
-      if (nl.includes('аванс')) safeName = 'MFK ManiMen LLC — Salary Advance';
-      else if (nl.includes('отпускн')) safeName = 'MFK ManiMen LLC — Vacation Pay';
-      else safeName = 'MFK ManiMen LLC — Salary & Bonus';
-    } else {
-      safeName = lang === "ru" ? t.name : transliterateName(t.name);
-    }
-
-    return `${opType}\n${safeName}. ${opSuffix}`;
-  };
-
   const loadFont = async (doc: jsPDF) => {
     try {
       const [regularResp, boldResp] = await Promise.all([
@@ -341,101 +232,13 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     }
   };
 
-  const t = (key: string) => i18n[key]?.[lang] || key;
-  const fontName = lang === "ru" ? "Roboto" : "helvetica";
-
-  // Generate a random merchant code like S1C4304, S1B9576
-  const genMerchantCode = (txId: string) => {
-    const hash = txId.replace(/-/g, '').slice(0, 6);
-    const n = parseInt(hash, 16);
-    const letter = String.fromCharCode(65 + (n % 26));
-    return `S1${letter}${(n % 9000 + 1000)}`;
-  };
-
-  // Generate a random SBP ID
-  const genSbpId = (txId: string) => {
-    const hash = txId.replace(/-/g, '');
-    return hash.slice(0, 9).replace(/[a-f]/gi, (c) => String(parseInt(c, 16)));
-  };
-
-  // Build detailed description matching RSHB original format
-  const buildStatementDescription = (tx: Transaction, dateStr: string) => {
-    const name = tx.name;
-    const nameLower = name.toLowerCase();
-    const catLower = (tx.category || '').toLowerCase();
-    const txCurrency = tx.currency || 'RUB';
-    const isForex = txCurrency !== 'RUB';
-
-    // Комиссия за информирование
-    if (nameLower.includes('комиссия') && nameLower.includes('информир')) {
-      return 'Комиссия за услугу информирования по счету';
-    }
-
-    // Foreign card transactions (THB, VND, etc.)
-    if (isForex && !tx.is_income) {
-      const countryMap: Record<string, string> = { 'THB': 'THA', 'VND': 'VNM', 'USD': 'USA', 'EUR': 'EUR', 'CNY': 'CHN' };
-      const country = countryMap[txCurrency] || 'INT';
-      const merchantCode = genMerchantCode(tx.id);
-      // For ATM withdrawals
-      if (nameLower.includes('atm') || catLower.includes('снятие')) {
-        return `${country}, ATM ${name.replace(/atm/i, '').trim()}\n${merchantCode}`;
-      }
-      // Regular card purchase
-      return `${country},\n${merchantCode}\n${name}`;
-    }
-
-    // Salary
-    if (catLower.includes('зарплат') || nameLower.includes('мани мен')) {
-      if (nameLower.includes('аванс')) {
-        return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление аванса\nот ООО МФК «Мани Мен» (ИНН 7704784072)`;
-      }
-      if (nameLower.includes('отпускн')) {
-        return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление отпускных\nот ООО МФК «Мани Мен» (ИНН 7704784072)`;
-      }
-      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление заработной платы и премии\nот ООО МФК «Мани Мен» (ИНН 7704784072)`;
-    }
-
-    // SBP transfers (incoming)
-    if (tx.is_income && (nameLower.includes('перевод') || catLower.includes('перевод'))) {
-      const sbpId = genSbpId(tx.id);
-      return `Перевод через СБП от ${name} на 4081781051 4230007456.\nИдентификатор операции в СБП С2С ${sbpId}\nДата операции ${dateStr}\nСтатус перевода Исполнен`;
-    }
-
-    // SBP transfers (outgoing)
-    if (!tx.is_income && (nameLower.includes('перевод') || catLower.includes('перевод'))) {
-      const sbpId = genSbpId(tx.id);
-      return `Перевод ${name} через СБП, по номеру телефона, ID перевода ${sbpId}, дата ${dateStr}`;
-    }
-
-    // SBP payments (оплата товаров)
-    if (nameLower.includes('сбп') || nameLower.includes('sbp') || nameLower.includes('plati')) {
-      const sbpId = genSbpId(tx.id);
-      return `Оплата товаров и услуг ${name.replace(/через СБП/i, '').trim()} через СБП, ID перевода ${sbpId}, дата ${dateStr}`;
-    }
-
-    // Mobile/Telecom payments
-    if (catLower.includes('связь') || nameLower.includes('мтс') || nameLower.includes('билайн') || nameLower.includes('мегафон') || nameLower.includes('теле2')) {
-      return `Перевод денежных средств за услугу "${name}" ПАО "${name}", Дата и время операции ${dateStr}`;
-    }
-
-    // Regular RUB card purchase
-    if (!tx.is_income && txCurrency === 'RUB') {
-      const merchantCode = genMerchantCode(tx.id);
-      return `RUS, ${name}\n${merchantCode}`;
-    }
-
-    return name;
-  };
-
-  // ===== RUSSIAN FORMAT: exact replica of RSHB bank statement =====
-  const generateRuPDF = async () => {
+  const generatePDF = async () => {
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     await loadFont(doc);
 
     const { start, end } = getDateRange();
     const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
     const accountNumber = account?.account_number || "40817810514230007456";
-    const cardNumber = account?.card_number || "";
     const ownerName = profile?.full_name || "Владелец счёта";
 
     const pageWidth = 297;
@@ -459,7 +262,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     );
     y += 10;
 
-    // Info fields (plain text, not table)
+    // Info fields
     doc.setFontSize(9);
     doc.setFont(fn, "normal");
     const infoLines = [
@@ -507,7 +310,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       "№ карты",
     ];
 
-    // Sort descending by date (newest first), matching the original statement
+    // Sort descending by date (newest first)
     const sortedDesc = filteredTransactions.slice().sort((a, b) => {
       const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
       if (dateDiff !== 0) return dateDiff;
@@ -528,14 +331,11 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       const debitStr = debitVal !== 0 ? formatSignedRu(debitVal) : "0,00";
       const creditStr = creditVal !== 0 ? formatAmountRu(creditVal) : "0,00";
 
-      // Build detailed description matching RSHB format
       const description = buildStatementDescription(tx, dateStr);
 
-      // Determine currency display
       const txCurrency = tx.currency || 'RUB';
       const isForex = txCurrency !== 'RUB';
       
-      // Currency name for display
       const currencyDisplayMap: Record<string, string> = {
         'RUB': 'Российский\nрубль',
         'THB': 'Бат',
@@ -546,7 +346,6 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       };
       const currencyDisplay = currencyDisplayMap[txCurrency] || txCurrency;
 
-      // Currency amount: for forex transactions, show original amount in foreign currency
       let currAmountStr: string;
       if (isForex && tx.original_amount != null) {
         currAmountStr = debitVal !== 0 
@@ -556,26 +355,24 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
         currAmountStr = debitVal !== 0 ? formatSignedRu(debitVal) : formatAmountRu(creditVal);
       }
 
-      // Commission for forex transactions
       const commissionVal = tx.commission || 0;
       const commissionStr = commissionVal !== 0 ? formatSignedRu(-Math.abs(commissionVal)) : "0,00";
 
-      // Card number - show for card payments (not transfers, not SBP)
       const nameLower = tx.name.toLowerCase();
       const catLower = (tx.category || '').toLowerCase();
       const isTransferOrSBP = nameLower.includes('перевод') || nameLower.includes('сбп') || nameLower.includes('sbp') || catLower.includes('перевод') || catLower.includes('пополнение') || nameLower.includes('пополнение') || nameLower.includes('мани мен');
       const cardStr = !isTransferOrSBP ? "6234 46**\n**** 7694" : "";
 
       return [
-        dateStr,        // Дата проведения
-        dateStr,        // Дата совершения
-        debitStr,       // Расход по счету (всегда в RUB)
-        creditStr,      // Приход по счету (всегда в RUB)
-        description,    // Содержание
-        currencyDisplay, // Валюта операции
-        currAmountStr,  // Сумма в валюте операции
-        commissionStr,  // Комиссия
-        cardStr,        // № карты
+        dateStr,
+        dateStr,
+        debitStr,
+        creditStr,
+        description,
+        currencyDisplay,
+        currAmountStr,
+        commissionStr,
+        cardStr,
       ];
     });
 
@@ -607,15 +404,15 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
         lineColor: [0, 0, 0],
       },
       columnStyles: {
-        0: { cellWidth: 24, halign: "left" },   // Дата проведения
-        1: { cellWidth: 24, halign: "left" },   // Дата совершения
-        2: { cellWidth: 28, halign: "right" },  // Расход
-        3: { cellWidth: 28, halign: "right" },  // Приход
-        4: { cellWidth: 80 },                    // Содержание
-        5: { cellWidth: 26 },                    // Валюта
-        6: { cellWidth: 28, halign: "right" },  // Сумма в валюте
-        7: { cellWidth: 20, halign: "right" },  // Комиссия
-        8: { cellWidth: 11 },                    // № карты
+        0: { cellWidth: 24, halign: "left" },
+        1: { cellWidth: 24, halign: "left" },
+        2: { cellWidth: 28, halign: "right" },
+        3: { cellWidth: 28, halign: "right" },
+        4: { cellWidth: 80 },
+        5: { cellWidth: 26 },
+        6: { cellWidth: 28, halign: "right" },
+        7: { cellWidth: 20, halign: "right" },
+        8: { cellWidth: 11 },
       },
       theme: "grid",
       rowPageBreak: "avoid",
@@ -653,7 +450,6 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.text("ОПЕРАЦИИ, ОЖИДАЮЩИЕ ОБРАБОТКИ", margin, footerY);
     footerY += 4;
 
-    // Empty pending operations table
     const pendingHeaders = [
       "Дата совершения\nоперации",
       "Сумма в валюте\nоперации",
@@ -703,288 +499,6 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     );
 
     return doc;
-  };
-
-  // ===== ENGLISH FORMAT: existing professional format =====
-  const generateEnPDF = async () => {
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-
-    const { start, end } = getDateRange();
-    const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
-    const accountNumber = account?.account_number || "40817810514230007456";
-    const cardNumber = account?.card_number ? account.card_number.replace(/(\d{4})(?=\d)/g, "$1 ") : "6282 8700 0412 7694";
-    const ownerName = profile?.full_name || "Account Holder";
-
-    const pageWidth = 210;
-    const margin = 14;
-    let y = 12;
-
-    // Bank header with logo
-    try {
-      const headerImg = await loadImageWithWhiteBg((await import("@/assets/rshb-header.png")).default);
-      doc.addImage(headerImg, "PNG", margin, y, 50, 12);
-    } catch { }
-
-    // Bank details on right side
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 100, 100);
-    const bankInfo = [t("bankName"), t("license"), t("address"), t("bic")];
-    bankInfo.forEach((line, i) => {
-      doc.text(line, pageWidth - margin, y + 3 + i * 3.5, { align: "right" });
-    });
-    y += 18;
-
-    // Divider line
-    doc.setDrawColor(0, 100, 50);
-    doc.setLineWidth(0.8);
-    doc.line(margin, y, pageWidth - margin, y);
-    y += 6;
-
-    // Title
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text(t("title"), pageWidth / 2, y, { align: "center" });
-    y += 5;
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      `${t("noLabel")} ${accountNumber} ${t("forPeriodFrom")} ${formatDateRu(start.toISOString())} ${t("to")} ${formatDateRu(end.toISOString())}`,
-      pageWidth / 2, y, { align: "center" }
-    );
-    y += 8;
-
-    // Info table
-    doc.setFontSize(8);
-    doc.setTextColor(0, 0, 0);
-
-    const infoData: [string, string][] = [
-      [t("statementDate"), formatDateRu(new Date().toISOString())],
-      [t("accountHolder"), ownerName],
-      [t("accountNumber"), accountNumber],
-      [t("cardNumber"), cardNumber],
-      [t("currency"), t("currencyVal")],
-      [t("branch"), t("branchVal")],
-      [t("period"), `${formatDateRu(start.toISOString())} — ${formatDateRu(end.toISOString())}`],
-    ];
-
-    autoTable(doc, {
-      startY: y,
-      body: infoData,
-      styles: {
-        fontSize: 8,
-        cellPadding: 1.5,
-        font: "helvetica",
-        textColor: [0, 0, 0],
-        lineWidth: 0,
-      },
-      columnStyles: {
-        0: { cellWidth: 40, fontStyle: "bold", textColor: [80, 80, 80] },
-        1: { cellWidth: 120 },
-      },
-      theme: "plain",
-      margin: { left: margin, right: margin },
-    });
-
-    y = (doc as any).lastAutoTable?.finalY || y + 30;
-    y += 4;
-
-    // Calculate balances
-    const sortedAsc = filteredTransactions.slice().sort((a, b) => {
-      const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
-      if (dateDiff !== 0) return dateDiff;
-      return new Date(a.created_at || a.date).getTime() - new Date(b.created_at || b.date).getTime();
-    });
-    const incomeVal = sortedAsc.filter((tx) => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
-    const expenseVal = sortedAsc.filter((tx) => !tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
-    const closingBalance = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
-    const openingBalance = closingBalance - incomeVal + expenseVal;
-
-    // Balance summary box
-    doc.setFillColor(245, 247, 245);
-    doc.roundedRect(margin, y, pageWidth - margin * 2, 12, 1, 1, "F");
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${t("opening")} ${formatAmount(openingBalance)} RUB`, margin + 4, y + 5);
-    doc.text(`${t("closing")} ${formatAmount(closingBalance)} RUB`, margin + 4, y + 9.5);
-    doc.text(`${t("totalDebit")} ${formatAmount(expenseVal)} RUB`, pageWidth / 2 + 10, y + 5);
-    doc.text(`${t("totalCredit")} ${formatAmount(incomeVal)} RUB`, pageWidth / 2 + 10, y + 9.5);
-    y += 16;
-
-    // Section title
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text(t("transactions"), margin, y);
-    y += 4;
-
-    // Table headers
-    const tableHeaders = [
-      t("no"),
-      t("dateTime"),
-      t("reference"),
-      t("description"),
-      t("debit"),
-      t("credit"),
-      t("balance"),
-    ];
-
-    let runningBalance = openingBalance;
-    const tableData = filteredTransactions
-      .slice()
-      .sort((a, b) => {
-        const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
-        if (dateDiff !== 0) return dateDiff;
-        return new Date(a.created_at || a.date).getTime() - new Date(b.created_at || b.date).getTime();
-      })
-      .map((tx, i) => {
-        if (tx.is_income) {
-          runningBalance += Math.abs(tx.amount);
-        } else {
-          runningBalance -= Math.abs(tx.amount);
-        }
-
-        const debit = !tx.is_income ? formatAmount(tx.amount) : "";
-        const credit = tx.is_income ? formatAmount(tx.amount) : "";
-        const time = generateTransactionTime(tx, i);
-        const ref = generateTransactionRef(tx.id, tx.date);
-        const authCode = generateAuthCode(tx.id);
-
-        const description = buildDescription(tx, authCode, cardNumber, accountNumber);
-
-        return [
-          String(i + 1),
-          `${formatDateRu(tx.date)}\n${time}`,
-          ref,
-          description,
-          debit,
-          credit,
-          formatAmount(runningBalance),
-        ];
-      });
-
-    // Add totals row
-    tableData.push(["", "", "", t("total"), formatAmount(expenseVal), formatAmount(incomeVal), formatAmount(runningBalance)]);
-
-    autoTable(doc, {
-      startY: y,
-      head: [tableHeaders],
-      body: tableData,
-      styles: {
-        fontSize: 6.5,
-        cellPadding: 1.8,
-        font: "helvetica",
-        textColor: [0, 0, 0],
-        lineColor: [180, 180, 180],
-        lineWidth: 0.15,
-        overflow: "linebreak",
-        valign: "middle",
-      },
-      headStyles: {
-        fillColor: [0, 100, 50],
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-        halign: "center",
-        lineWidth: 0.15,
-        lineColor: [0, 80, 40],
-      },
-      columnStyles: {
-        0: { cellWidth: 10, halign: "center" },
-        1: { cellWidth: 24 },
-        2: { cellWidth: 28, fontSize: 5.5, textColor: [100, 100, 100] },
-        3: { cellWidth: 60 },
-        4: { cellWidth: 22, halign: "right" },
-        5: { cellWidth: 22, halign: "right" },
-        6: { cellWidth: 22, halign: "right" },
-      },
-      theme: "grid",
-      rowPageBreak: "avoid",
-      margin: { left: margin, right: margin },
-      alternateRowStyles: {
-        fillColor: [250, 252, 250],
-      },
-      didParseCell: (data) => {
-        if (data.section === "body") {
-          if (data.column.index === 4 && data.cell.raw && data.cell.raw !== "") {
-            data.cell.styles.textColor = [180, 30, 30];
-          }
-          if (data.column.index === 5 && data.cell.raw && data.cell.raw !== "") {
-            data.cell.styles.textColor = [0, 120, 50];
-          }
-          const isLast = data.row.index === tableData.length - 1;
-          if (isLast) {
-            data.cell.styles.fontStyle = "bold";
-            data.cell.styles.fillColor = [235, 240, 235];
-            data.cell.styles.textColor = [0, 0, 0];
-          }
-        }
-      },
-    });
-
-    // Footer
-    const finalY = (doc as any).lastAutoTable?.finalY || y + 40;
-    let footerY = finalY + 10;
-
-    if (footerY > 250) {
-      doc.addPage();
-      footerY = 20;
-    }
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 80, 80);
-    doc.text(
-      `${t("stmtContains")} ${filteredTransactions.length} ${t("footerCount")} ${formatDateRu(start.toISOString())} — ${formatDateRu(end.toISOString())}.`,
-      margin, footerY
-    );
-    footerY += 4;
-    doc.text(
-      `${t("footerGenerated")} ${formatDateRu(new Date().toISOString())} ${t("footerValid")}`,
-      margin, footerY
-    );
-    footerY += 10;
-
-    // Divider
-    doc.setDrawColor(0, 100, 50);
-    doc.setLineWidth(0.3);
-    doc.line(margin, footerY, pageWidth - margin, footerY);
-    footerY += 8;
-
-    if (footerY > 240) {
-      doc.addPage();
-      footerY = 20;
-    }
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(0, 0, 0);
-    doc.text(t("authRep"), margin, footerY);
-    doc.text("_________________________", margin + 45, footerY);
-    doc.text(t("authName"), margin + 100, footerY);
-
-    try {
-      const sigImg = await loadImageWithWhiteBg(signatureImg);
-      doc.addImage(sigImg, "PNG", margin + 50, footerY - 6, 25, 10);
-    } catch { }
-
-    footerY += 15;
-
-    try {
-      const stmpDataUrl = await loadImageWithWhiteBg(stampImg);
-      const stampSize = 38;
-      const stampX = pageWidth / 2 - stampSize / 2;
-      doc.setFillColor(255, 255, 255);
-      doc.rect(stampX, footerY - 5, stampSize, stampSize, "F");
-      doc.addImage(stmpDataUrl, "JPEG", stampX, footerY - 5, stampSize, stampSize);
-    } catch { }
-
-    return doc;
-  };
-
-  const generatePDF = async () => {
-    if (lang === "ru") return generateRuPDF();
-    return generateEnPDF();
   };
 
   const [readyBlob, setReadyBlob] = useState<Blob | null>(null);
@@ -1044,32 +558,6 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   return (
     <FullScreenModal isOpen={isOpen} onClose={onClose} title="Выписка по счёту">
       <div className="space-y-6">
-        {/* Language Selection */}
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2">
-            <Globe className="w-4 h-4" />
-            Язык выписки
-          </Label>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => setLang("ru")}
-              className={`p-3 rounded-xl border-2 transition-all text-center ${lang === "ru" ? "border-primary bg-primary/10" : "border-border bg-card"
-                }`}
-            >
-              <p className="text-lg mb-1">🇷🇺</p>
-              <p className={`text-sm font-medium ${lang === "ru" ? "text-primary" : "text-foreground"}`}>Русский</p>
-            </button>
-            <button
-              onClick={() => setLang("en")}
-              className={`p-3 rounded-xl border-2 transition-all text-center ${lang === "en" ? "border-primary bg-primary/10" : "border-border bg-card"
-                }`}
-            >
-              <p className="text-lg mb-1">🇬🇧</p>
-              <p className={`text-sm font-medium ${lang === "en" ? "text-primary" : "text-foreground"}`}>English</p>
-            </button>
-          </div>
-        </div>
-
         {/* Account Selection */}
         <div className="space-y-2">
           <Label>Счёт</Label>
