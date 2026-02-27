@@ -615,6 +615,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
         8: { cellWidth: 11 },                    // № карты
       },
       theme: "grid",
+      rowPageBreak: "avoid",
       margin: { left: margin, right: margin },
       didParseCell: (data) => {
         if (data.section === "body") {
@@ -895,6 +896,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
         6: { cellWidth: 22, halign: "right" },
       },
       theme: "grid",
+      rowPageBreak: "avoid",
       margin: { left: margin, right: margin },
       alternateRowStyles: {
         fillColor: [250, 252, 250],
