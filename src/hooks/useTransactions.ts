@@ -14,6 +14,9 @@ export interface Transaction {
   icon: string;
   date: string;
   created_at: string;
+  currency: string;
+  original_amount: number | null;
+  commission: number | null;
 }
 
 export const useTransactions = (accountId?: string) => {
@@ -81,7 +84,7 @@ export const useCreateTransaction = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (transaction: Omit<Transaction, "id" | "user_id" | "created_at">) => {
+    mutationFn: async (transaction: Omit<Transaction, "id" | "user_id" | "created_at" | "currency" | "original_amount" | "commission"> & { currency?: string; original_amount?: number | null; commission?: number | null }) => {
       if (!user) throw new Error("User not authenticated");
 
       const { data, error } = await supabase

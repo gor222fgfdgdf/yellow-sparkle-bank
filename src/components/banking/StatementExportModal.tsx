@@ -22,6 +22,9 @@ interface Transaction {
   is_income?: boolean;
   account_id?: string;
   created_at?: string;
+  currency?: string;
+  original_amount?: number | null;
+  commission?: number | null;
 }
 
 interface Account {
@@ -445,23 +448,49 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       // Build description - use full transaction name as content
       const description = tx.name;
 
-      // Currency amount matches debit/credit
-      const currAmountStr = debitVal !== 0 ? formatSignedRu(debitVal) : formatAmountRu(creditVal);
+      // Determine currency display
+      const txCurrency = tx.currency || 'RUB';
+      const isForex = txCurrency !== 'RUB';
+      
+      // Currency name for display
+      const currencyDisplayMap: Record<string, string> = {
+        'RUB': 'Российский\nрубль',
+        'THB': 'Бат',
+        'VND': 'Донг',
+        'USD': 'Доллар\nСША',
+        'EUR': 'Евро',
+        'CNY': 'Юань',
+      };
+      const currencyDisplay = currencyDisplayMap[txCurrency] || txCurrency;
+
+      // Currency amount: for forex transactions, show original amount in foreign currency
+      let currAmountStr: string;
+      if (isForex && tx.original_amount != null) {
+        currAmountStr = debitVal !== 0 
+          ? formatSignedRu(-Math.abs(tx.original_amount)) 
+          : formatAmountRu(Math.abs(tx.original_amount));
+      } else {
+        currAmountStr = debitVal !== 0 ? formatSignedRu(debitVal) : formatAmountRu(creditVal);
+      }
+
+      // Commission for forex transactions
+      const commissionVal = tx.commission || 0;
+      const commissionStr = commissionVal !== 0 ? formatSignedRu(-Math.abs(commissionVal)) : "0,00";
 
       // Card number - show last 4 if card transaction
       const lastCard = cardNumber ? `${cardNumber.slice(-4)}` : "";
-      const isCardTx = tx.name.includes("ATM") || tx.name.includes("THA") || tx.name.includes("VNM") || tx.name.includes("REST") || tx.name.includes("RUS,");
+      const isCardTx = isForex || tx.name.includes("ATM") || tx.name.includes("THA") || tx.name.includes("VNM") || tx.name.includes("REST") || tx.name.includes("RUS,");
       const cardStr = isCardTx && lastCard ? lastCard : "";
 
       return [
         dateStr,        // Дата проведения
         dateStr,        // Дата совершения
-        debitStr,       // Расход
-        creditStr,      // Приход
+        debitStr,       // Расход по счету (всегда в RUB)
+        creditStr,      // Приход по счету (всегда в RUB)
         description,    // Содержание
-        "Российский\nрубль",  // Валюта
-        currAmountStr,  // Сумма в валюте
-        "0,00",         // Комиссия
+        currencyDisplay, // Валюта операции
+        currAmountStr,  // Сумма в валюте операции
+        commissionStr,  // Комиссия
         cardStr,        // № карты
       ];
     });
