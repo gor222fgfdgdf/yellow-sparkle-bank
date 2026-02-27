@@ -152,6 +152,9 @@ const Index = () => {
       icon: iconMap[tx.icon] || CreditCard,
       isIncoming: tx.is_income || false,
       accountId: tx.account_id,
+      currency: tx.currency || 'RUB',
+      originalAmount: tx.original_amount != null ? Math.abs(Number(tx.original_amount)) : null,
+      commission: tx.commission != null ? Number(tx.commission) : null,
     };
   });
 

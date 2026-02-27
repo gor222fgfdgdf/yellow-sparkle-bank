@@ -12,6 +12,9 @@ interface Transaction {
   icon: any;
   accountName?: string;
   accountCardNumber?: string;
+  currency?: string;
+  originalAmount?: number | null;
+  commission?: number | null;
 }
 
 interface TransactionDetailModalProps {
@@ -167,7 +170,11 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
             <h3 className="text-xl font-bold text-foreground mb-1">{transaction.name}</h3>
             <p className="text-muted-foreground mb-4">{transaction.category}</p>
             <p className={`text-3xl font-bold ${transaction.isIncoming ? "text-green-600" : "text-foreground"}`}>
-              {transaction.isIncoming ? "+" : "-"}{formatCurrency(transaction.amount)} ₽
+              {transaction.isIncoming ? "+" : "-"}
+              {transaction.currency && transaction.currency !== 'RUB' && transaction.originalAmount != null
+                ? `${formatCurrency(transaction.originalAmount)} ${transaction.currency}`
+                : `${formatCurrency(transaction.amount)} ₽`
+              }
             </p>
           </div>
 
@@ -237,6 +244,32 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
                   <p className="font-medium text-foreground">{transaction.name}</p>
                 </div>
               </div>
+            )}
+
+            {/* Forex details: RUB amount, commission */}
+            {transaction.currency && transaction.currency !== 'RUB' && (
+              <>
+                <div className="flex items-center gap-4 p-3 hover:bg-muted/50 rounded-xl transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                    <CreditCard className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-muted-foreground">Сумма операции в валюте счета</p>
+                    <p className="font-medium text-foreground">{transaction.isIncoming ? "" : "-"}{formatCurrency(transaction.amount)} ₽</p>
+                  </div>
+                </div>
+                {transaction.commission != null && transaction.commission !== 0 && (
+                  <div className="flex items-center gap-4 p-3 hover:bg-muted/50 rounded-xl transition-colors">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                      <Receipt className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-muted-foreground">Комиссия</p>
+                      <p className="font-medium text-foreground">-{formatCurrency(Math.abs(transaction.commission))} ₽</p>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
