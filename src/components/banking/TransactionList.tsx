@@ -2,6 +2,7 @@ import { ArrowDownLeft } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import TransactionDetailModal from "./TransactionDetailModal";
+import type { Account } from "./AccountsList";
 
 export interface Transaction {
   id: string;
@@ -17,14 +18,22 @@ export interface Transaction {
 
 interface TransactionListProps {
   transactions: Transaction[];
+  accounts?: Account[];
 }
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("ru-RU").format(value);
 };
 
-const TransactionList = ({ transactions }: TransactionListProps) => {
+const TransactionList = ({ transactions, accounts }: TransactionListProps) => {
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+
+  const getAccountInfo = (accountId?: string) => {
+    if (!accounts || !accountId) return {};
+    const acc = accounts.find(a => a.id === accountId);
+    if (!acc) return {};
+    return { accountName: acc.name, accountCardNumber: acc.cardNumber };
+  };
 
   const groupTransactionsByDate = (transactions: Transaction[]) => {
     const groups: { [key: string]: Transaction[] } = {};
@@ -83,7 +92,7 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
         <TransactionDetailModal
           isOpen={!!selectedTx}
           onClose={() => setSelectedTx(null)}
-          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false }}
+          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, ...getAccountInfo(selectedTx.accountId) }}
         />
       )}
     </>

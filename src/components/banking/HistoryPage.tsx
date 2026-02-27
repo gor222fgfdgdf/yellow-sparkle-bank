@@ -240,7 +240,7 @@ const HistoryPage = ({ transactions, accounts }: HistoryPageProps) => {
         <TransactionDetailModal
           isOpen={!!selectedTx}
           onClose={() => setSelectedTx(null)}
-          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false }}
+          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, accountName: accounts.find(a => a.id === selectedTx.accountId)?.name, accountCardNumber: accounts.find(a => a.id === selectedTx.accountId)?.cardNumber }}
         />
       )}
     </div>

@@ -10,6 +10,8 @@ interface Transaction {
   date: string;
   isIncoming: boolean;
   icon: any;
+  accountName?: string;
+  accountCardNumber?: string;
 }
 
 interface TransactionDetailModalProps {
@@ -208,7 +210,7 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Способ оплаты</p>
-                <p className="font-medium text-foreground">Union Pay •••• 7823</p>
+                <p className="font-medium text-foreground">{transaction.accountName || "Счёт"} {transaction.accountCardNumber ? `•••• ${transaction.accountCardNumber}` : ""}</p>
               </div>
             </div>
 
