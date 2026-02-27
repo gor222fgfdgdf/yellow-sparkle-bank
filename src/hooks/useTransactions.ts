@@ -25,10 +25,13 @@ export const useTransactions = (accountId?: string) => {
     queryFn: async () => {
       if (!user) return [];
 
+      const today = new Date().toISOString().split('T')[0];
+
       let queryBuilder = supabase
         .from("transactions")
         .select("*")
         .eq("user_id", user.id)
+        .lte("date", today)
         .order("date", { ascending: false })
         .order("created_at", { ascending: false });
 
