@@ -163,7 +163,10 @@ const AccountDetailModal = ({
                       <p className="text-xs text-muted-foreground">{tx.category}</p>
                     </div>
                     <p className={`font-semibold text-sm ${tx.isIncoming ? 'text-primary' : 'text-foreground'}`}>
-                      {tx.isIncoming ? '+' : '-'} {formatCurrencyShort(tx.amount)} ₽
+                      {tx.isIncoming ? '+' : '-'}{tx.currency && tx.currency !== 'RUB' && tx.originalAmount != null
+                        ? `${formatCurrencyShort(tx.originalAmount)} ${tx.currency}`
+                        : `${formatCurrencyShort(tx.amount)} ₽`
+                      }
                     </p>
                   </button>
                 );
