@@ -387,9 +387,12 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     // Salary
     if (catLower.includes('зарплат') || nameLower.includes('мани мен')) {
       if (nameLower.includes('аванс')) {
-        return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление аванса`;
+        return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление аванса\nот ООО МФК «Мани Мен» (ИНН 7703794586)`;
       }
-      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление заработной платы и премии`;
+      if (nameLower.includes('отпускн')) {
+        return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление отпускных\nот ООО МФК «Мани Мен» (ИНН 7703794586)`;
+      }
+      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление заработной платы и премии\nот ООО МФК «Мани Мен» (ИНН 7703794586)`;
     }
 
     // SBP transfers (incoming)
