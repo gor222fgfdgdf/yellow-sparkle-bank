@@ -344,6 +344,86 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
   const t = (key: string) => i18n[key]?.[lang] || key;
   const fontName = lang === "ru" ? "Roboto" : "helvetica";
 
+  // Generate a random merchant code like S1C4304, S1B9576
+  const genMerchantCode = (txId: string) => {
+    const hash = txId.replace(/-/g, '').slice(0, 6);
+    const n = parseInt(hash, 16);
+    const letter = String.fromCharCode(65 + (n % 26));
+    return `S1${letter}${(n % 9000 + 1000)}`;
+  };
+
+  // Generate a random SBP ID
+  const genSbpId = (txId: string) => {
+    const hash = txId.replace(/-/g, '');
+    return hash.slice(0, 9).replace(/[a-f]/gi, (c) => String(parseInt(c, 16)));
+  };
+
+  // Build detailed description matching RSHB original format
+  const buildStatementDescription = (tx: Transaction, dateStr: string) => {
+    const name = tx.name;
+    const nameLower = name.toLowerCase();
+    const catLower = (tx.category || '').toLowerCase();
+    const txCurrency = tx.currency || 'RUB';
+    const isForex = txCurrency !== 'RUB';
+
+    // Комиссия за информирование
+    if (nameLower.includes('комиссия') && nameLower.includes('информир')) {
+      return 'Комиссия за услугу информирования по счету';
+    }
+
+    // Foreign card transactions (THB, VND, etc.)
+    if (isForex && !tx.is_income) {
+      const countryMap: Record<string, string> = { 'THB': 'THA', 'VND': 'VNM', 'USD': 'USA', 'EUR': 'EUR', 'CNY': 'CHN' };
+      const country = countryMap[txCurrency] || 'INT';
+      const merchantCode = genMerchantCode(tx.id);
+      // For ATM withdrawals
+      if (nameLower.includes('atm') || catLower.includes('снятие')) {
+        return `${country}, ATM ${name.replace(/atm/i, '').trim()}\n${merchantCode}`;
+      }
+      // Regular card purchase
+      return `${country},\n${merchantCode}\n${name}`;
+    }
+
+    // Salary
+    if (catLower.includes('зарплат') || nameLower.includes('мани мен')) {
+      if (nameLower.includes('аванс')) {
+        return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление аванса`;
+      }
+      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nЗачисление заработной платы и премии`;
+    }
+
+    // SBP transfers (incoming)
+    if (tx.is_income && (nameLower.includes('перевод') || catLower.includes('перевод'))) {
+      const sbpId = genSbpId(tx.id);
+      return `Перевод через СБП от ${name} на 4081781051 4230007456.\nИдентификатор операции в СБП С2С ${sbpId}\nДата операции ${dateStr}\nСтатус перевода Исполнен`;
+    }
+
+    // SBP transfers (outgoing)
+    if (!tx.is_income && (nameLower.includes('перевод') || catLower.includes('перевод'))) {
+      const sbpId = genSbpId(tx.id);
+      return `Перевод ${name} через СБП, по номеру телефона, ID перевода ${sbpId}, дата ${dateStr}`;
+    }
+
+    // SBP payments (оплата товаров)
+    if (nameLower.includes('сбп') || nameLower.includes('sbp') || nameLower.includes('plati')) {
+      const sbpId = genSbpId(tx.id);
+      return `Оплата товаров и услуг ${name.replace(/через СБП/i, '').trim()} через СБП, ID перевода ${sbpId}, дата ${dateStr}`;
+    }
+
+    // Mobile/Telecom payments
+    if (catLower.includes('связь') || nameLower.includes('мтс') || nameLower.includes('билайн') || nameLower.includes('мегафон') || nameLower.includes('теле2')) {
+      return `Перевод денежных средств за услугу "${name}" ПАО "${name}", Дата и время операции ${dateStr}`;
+    }
+
+    // Regular RUB card purchase
+    if (!tx.is_income && txCurrency === 'RUB') {
+      const merchantCode = genMerchantCode(tx.id);
+      return `RUS, ${name}\n${merchantCode}`;
+    }
+
+    return name;
+  };
+
   // ===== RUSSIAN FORMAT: exact replica of RSHB bank statement =====
   const generateRuPDF = async () => {
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
@@ -445,8 +525,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       const debitStr = debitVal !== 0 ? formatSignedRu(debitVal) : "0,00";
       const creditStr = creditVal !== 0 ? formatAmountRu(creditVal) : "0,00";
 
-      // Build description - use full transaction name as content
-      const description = tx.name;
+      // Build detailed description matching RSHB format
+      const description = buildStatementDescription(tx, dateStr);
 
       // Determine currency display
       const txCurrency = tx.currency || 'RUB';
@@ -506,8 +586,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       head: [tableHeaders],
       body: tableData,
       styles: {
-        fontSize: 7,
-        cellPadding: 1.5,
+        fontSize: 9,
+        cellPadding: 2,
         font: fn,
         textColor: [0, 0, 0],
         lineColor: [0, 0, 0],
