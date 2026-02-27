@@ -477,10 +477,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       const commissionVal = tx.commission || 0;
       const commissionStr = commissionVal !== 0 ? formatSignedRu(-Math.abs(commissionVal)) : "0,00";
 
-      // Card number - show last 4 if card transaction
-      const lastCard = cardNumber ? `${cardNumber.slice(-4)}` : "";
-      const isCardTx = isForex || tx.name.includes("ATM") || tx.name.includes("THA") || tx.name.includes("VNM") || tx.name.includes("REST") || tx.name.includes("RUS,");
-      const cardStr = isCardTx && lastCard ? lastCard : "";
+      // Card number - always show last 4 digits
+      const cardStr = cardNumber ? cardNumber.slice(-4) : "";
 
       return [
         dateStr,        // Дата проведения
