@@ -39,9 +39,8 @@ const getCardBadge = (account: Account) => {
 const HomeAccountsList = ({ accounts, onAccountClick, onShowAll }: HomeAccountsListProps) => {
   return (
     <div className="bg-card rounded-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
+      <div className="px-4 pt-4 pb-2">
         <h2 className="text-lg font-bold text-foreground">Счета и карты</h2>
-        <button onClick={onShowAll} className="text-sm font-medium text-primary">Ещё</button>
       </div>
 
       <div className="divide-y divide-border">
