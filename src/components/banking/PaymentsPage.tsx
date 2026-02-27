@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import AutoPaymentsModal from "./AutoPaymentsModal";
 import QRCodeModal from "./QRCodeModal";
-import InternalTransferModal from "./InternalTransferModal";
+// InternalTransferModal removed — single account
 import TransferModal from "./TransferModal";
 import CurrencyExchangeModal from "./CurrencyExchangeModal";
 import SBPTransferModal from "./SBPTransferModal";
@@ -141,18 +141,18 @@ interface PaymentsPageProps {
   userName: string;
   cardNumber: string;
   onTransfer: (amount: number, recipient: string) => void;
-  onInternalTransfer: (fromId: string, toId: string, amount: number) => void;
+  // onInternalTransfer removed
   onSBPTransfer: (amount: number, recipient: string) => void;
   onQRReceive: (amount: number, sender: string) => void;
 }
 
-const PaymentsPage = ({ onPayment, transactions, balance, accounts, userName, cardNumber, onTransfer, onInternalTransfer, onSBPTransfer, onQRReceive }: PaymentsPageProps) => {
+const PaymentsPage = ({ onPayment, transactions, balance, accounts, userName, cardNumber, onTransfer, onSBPTransfer, onQRReceive }: PaymentsPageProps) => {
   const [selectedCategory, setSelectedCategory] = useState<{ icon: LucideIcon; label: string; color: string } | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isAutoPaymentsOpen, setIsAutoPaymentsOpen] = useState(false);
   const [isQROpen, setIsQROpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
-  const [isInternalTransferOpen, setIsInternalTransferOpen] = useState(false);
+  // isInternalTransferOpen removed
   const [isCurrencyExchangeOpen, setIsCurrencyExchangeOpen] = useState(false);
   const [isSBPOpen, setIsSBPOpen] = useState(false);
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
@@ -162,7 +162,7 @@ const PaymentsPage = ({ onPayment, transactions, balance, accounts, userName, ca
 
   const transferCards = [
     { icon: QrCode, label: "По QR-коду", action: () => setIsQROpen(true) },
-    { icon: ArrowLeftRight, label: "Между счетами", action: () => setIsInternalTransferOpen(true) },
+    { icon: Globe, label: "В другую страну", action: () => setIsCurrencyExchangeOpen(true) },
     { icon: Globe, label: "В другую страну", action: () => setIsCurrencyExchangeOpen(true) },
     { icon: CreditCard, label: "По номеру карты", action: () => setIsTransferOpen(true) },
     { icon: CircleDollarSign, label: "В валюту или металлы", action: () => setIsCurrencyExchangeOpen(true) },
@@ -374,12 +374,7 @@ const PaymentsPage = ({ onPayment, transactions, balance, accounts, userName, ca
         onTransfer={onTransfer}
       />
 
-      <InternalTransferModal
-        isOpen={isInternalTransferOpen}
-        onClose={() => setIsInternalTransferOpen(false)}
-        accounts={accounts}
-        onTransfer={onInternalTransfer}
-      />
+      
 
       <CurrencyExchangeModal
         isOpen={isCurrencyExchangeOpen}
