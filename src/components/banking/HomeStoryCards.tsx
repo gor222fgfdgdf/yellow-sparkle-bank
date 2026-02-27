@@ -4,15 +4,15 @@ import storyKwikpay from "@/assets/story-kwikpay.jpg";
 import storyWish from "@/assets/story-wish.jpg";
 
 interface HomeStoryCardsProps {
-  onOpenDeposits?: () => void;
+  onOpenLoans?: () => void;
   onOpenInvestment?: () => void;
   onOpenCurrency?: () => void;
   onOpenLoyalty?: () => void;
 }
 
-const HomeStoryCards = ({ onOpenDeposits, onOpenInvestment, onOpenCurrency, onOpenLoyalty }: HomeStoryCardsProps) => {
+const HomeStoryCards = ({ onOpenLoans, onOpenInvestment, onOpenCurrency, onOpenLoyalty }: HomeStoryCardsProps) => {
   const cards = [
-    { image: storyHotels, label: "Кредит по\nставке на\n2-6% ниже", onClick: onOpenDeposits },
+    { image: storyHotels, label: "Кредит по\nставке на\n2-6% ниже", onClick: onOpenLoans },
     { image: storyInvest, label: "Приглашаем\nв мир\nинвестиций", onClick: onOpenInvestment, hasBorder: true },
     { image: storyKwikpay, label: "KWIKPAY для\nзарубежных\nпереводов", onClick: onOpenCurrency },
     { image: storyWish, label: "Карта,\nисполняющая\nжелания", onClick: onOpenLoyalty },

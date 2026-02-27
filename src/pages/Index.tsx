@@ -287,7 +287,7 @@ const Index = () => {
         return (
           <>
             <HomeStoryCards 
-              onOpenDeposits={() => setIsDepositsOpen(true)}
+              onOpenLoans={() => setIsLoansOpen(true)}
               onOpenInvestment={() => setIsInvestmentPortfolioOpen(true)}
               onOpenCurrency={() => setIsCurrencyOpen(true)}
               onOpenLoyalty={() => setIsLoyaltyOpen(true)}
@@ -306,7 +306,7 @@ const Index = () => {
               onShowAll={() => setShowCardManagement(true)}
             />
             <Button 
-              onClick={() => setIsDepositsOpen(true)}
+              onClick={() => setActiveTab("menu")}
               className="w-full h-12 rounded-2xl text-base font-semibold"
             >
               Оформить новый продукт
