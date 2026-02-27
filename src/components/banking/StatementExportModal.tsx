@@ -346,7 +346,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
   // ===== RUSSIAN FORMAT: exact replica of RSHB bank statement =====
   const generateRuPDF = async () => {
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     await loadFont(doc);
 
     const { start, end } = getDateRange();
@@ -355,7 +355,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const cardNumber = account?.card_number || "";
     const ownerName = profile?.full_name || "Владелец счёта";
 
-    const pageWidth = 210;
+    const pageWidth = 297;
     const margin = 14;
     const fn = "Roboto";
     let y = 16;
