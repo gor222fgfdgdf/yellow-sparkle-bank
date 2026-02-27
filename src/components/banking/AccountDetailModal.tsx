@@ -13,7 +13,7 @@ interface AccountDetailModalProps {
   onClose: () => void;
   account: Account;
   transactions: Transaction[];
-  onTransfer: () => void;
+  onTransfer?: () => void;
   onTopUp: () => void;
   onCardSettings?: () => void;
   cardHolderName?: string;

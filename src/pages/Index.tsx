@@ -21,7 +21,7 @@ import AllTransactionsModal from "@/components/banking/AllTransactionsModal";
 import PaymentsPage from "@/components/banking/PaymentsPage";
 import SupportPage from "@/components/banking/SupportPage";
 import MenuPage from "@/components/banking/MenuPage";
-import InternalTransferModal from "@/components/banking/InternalTransferModal";
+// InternalTransferModal removed — single account
 import AccountDetailModal from "@/components/banking/AccountDetailModal";
 import HistoryPage from "@/components/banking/HistoryPage";
 import BudgetsModal from "@/components/banking/BudgetsModal";
@@ -82,7 +82,7 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
-  const [isInternalTransferOpen, setIsInternalTransferOpen] = useState(false);
+  // isInternalTransferOpen removed — single account
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isAllTransactionsOpen, setIsAllTransactionsOpen] = useState(false);
@@ -181,23 +181,7 @@ const Index = () => {
     });
   };
 
-  const handleInternalTransfer = async (fromId: string, toId: string, amount: number) => {
-    const fromAcc = accounts.find(a => a.id === fromId);
-    const toAcc = accounts.find(a => a.id === toId);
-    if (!fromAcc || !toAcc) return;
-    
-    await updateBalance.mutateAsync({ accountId: fromId, newBalance: fromAcc.balance - amount });
-    await updateBalance.mutateAsync({ accountId: toId, newBalance: toAcc.balance + amount });
-    await createTransaction.mutateAsync({
-      account_id: fromId,
-      name: `${fromAcc.name} → ${toAcc.name}`,
-      category: "Перевод между счетами",
-      amount: -amount,
-      is_income: false,
-      icon: "ArrowUpRight",
-      date: new Date().toISOString().split("T")[0],
-    });
-  };
+  // handleInternalTransfer removed — single account
 
   const handleTopUp = async (amount: number, method: string) => {
     if (!mainAccount) return;
@@ -264,7 +248,6 @@ const Index = () => {
             userName={userName}
             cardNumber={mainAccount?.cardNumber || "0000"}
             onTransfer={handleTransfer}
-            onInternalTransfer={handleInternalTransfer}
             onSBPTransfer={handleSBPTransfer}
             onQRReceive={handleQRReceive}
           />
@@ -324,9 +307,9 @@ const Index = () => {
   if (selectedAccount) {
     return (
       <div className="min-h-screen bg-background">
-        <AccountDetailModal isOpen={true} onClose={() => setSelectedAccount(null)} account={selectedAccount} transactions={transactions} onTransfer={() => setIsInternalTransferOpen(true)} onTopUp={() => setIsTopUpOpen(true)} onCardSettings={() => { setSelectedAccount(null); setShowCardManagement(true); }} cardHolderName={cardHolderName} onOpenStatementExport={() => { setSelectedAccount(null); setIsStatementExportOpen(true); }} onOpenAccountCertificate={() => { setSelectedAccount(null); setIsAccountCertificateOpen(true); }} />
+        <AccountDetailModal isOpen={true} onClose={() => setSelectedAccount(null)} account={selectedAccount} transactions={transactions} onTopUp={() => setIsTopUpOpen(true)} onCardSettings={() => { setSelectedAccount(null); setShowCardManagement(true); }} cardHolderName={cardHolderName} onOpenStatementExport={() => { setSelectedAccount(null); setIsStatementExportOpen(true); }} onOpenAccountCertificate={() => { setSelectedAccount(null); setIsAccountCertificateOpen(true); }} />
         <TransferModal isOpen={isTransferOpen} onClose={() => setIsTransferOpen(false)} balance={mainAccountBalance} onTransfer={handleTransfer} />
-        <InternalTransferModal isOpen={isInternalTransferOpen} onClose={() => setIsInternalTransferOpen(false)} accounts={accounts} onTransfer={handleInternalTransfer} />
+        
         <TopUpModal isOpen={isTopUpOpen} onClose={() => setIsTopUpOpen(false)} onTopUp={handleTopUp} />
         <StatementExportModal isOpen={isStatementExportOpen} onClose={() => setIsStatementExportOpen(false)} transactions={(dbTransactions || []).map(tx => ({ id: tx.id, name: tx.name, category: tx.category, amount: Number(tx.amount), date: tx.date, is_income: tx.is_income || false, account_id: tx.account_id, created_at: tx.created_at, currency: tx.currency, original_amount: tx.original_amount != null ? Number(tx.original_amount) : null, commission: tx.commission != null ? Number(tx.commission) : null }))} accounts={(dbAccounts || []).map(acc => ({ id: acc.id, name: acc.name, balance: Number(acc.balance), card_number: acc.card_number, account_number: acc.account_number, type: acc.type }))} />
         <AccountCertificateModal isOpen={isAccountCertificateOpen} onClose={() => setIsAccountCertificateOpen(false)} />
@@ -369,7 +352,7 @@ const Index = () => {
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">{renderTabContent()}</main>
 
       <TransferModal isOpen={isTransferOpen} onClose={() => setIsTransferOpen(false)} balance={mainAccountBalance} onTransfer={handleTransfer} />
-      <InternalTransferModal isOpen={isInternalTransferOpen} onClose={() => setIsInternalTransferOpen(false)} accounts={accounts} onTransfer={handleInternalTransfer} />
+      
       <TopUpModal isOpen={isTopUpOpen} onClose={() => setIsTopUpOpen(false)} onTopUp={handleTopUp} />
       <MoreActionsSheet
         isOpen={isMoreOpen}
