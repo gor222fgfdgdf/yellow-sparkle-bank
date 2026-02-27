@@ -60,6 +60,7 @@ export const useTransactions = (accountId?: string) => {
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ["transactions", user.id] });
+          queryClient.invalidateQueries({ queryKey: ["accounts", user.id] });
         }
       )
       .subscribe();
