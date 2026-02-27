@@ -14,6 +14,9 @@ export interface Transaction {
   icon: LucideIcon;
   isIncoming?: boolean;
   accountId?: string;
+  currency?: string;
+  originalAmount?: number | null;
+  commission?: number | null;
 }
 
 interface TransactionListProps {
@@ -79,7 +82,10 @@ const TransactionList = ({ transactions, accounts }: TransactionListProps) => {
                   <p className={`font-semibold ${
                     transaction.isIncoming ? "text-success" : "text-foreground"
                   }`}>
-                    {transaction.isIncoming ? "+" : "-"}{formatCurrency(transaction.amount)} ₽
+                    {transaction.isIncoming ? "+" : "-"}{transaction.currency && transaction.currency !== 'RUB' && transaction.originalAmount != null
+                      ? `${formatCurrency(transaction.originalAmount)} ${transaction.currency}`
+                      : `${formatCurrency(transaction.amount)} ₽`
+                    }
                   </p>
                 </button>
               ))}
@@ -92,7 +98,7 @@ const TransactionList = ({ transactions, accounts }: TransactionListProps) => {
         <TransactionDetailModal
           isOpen={!!selectedTx}
           onClose={() => setSelectedTx(null)}
-          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, ...getAccountInfo(selectedTx.accountId) }}
+          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, ...getAccountInfo(selectedTx.accountId), currency: selectedTx.currency, originalAmount: selectedTx.originalAmount, commission: selectedTx.commission }}
         />
       )}
     </>

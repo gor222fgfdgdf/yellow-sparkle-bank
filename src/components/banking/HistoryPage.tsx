@@ -215,7 +215,10 @@ const HistoryPage = ({ transactions, accounts }: HistoryPageProps) => {
                         </div>
                         <div className="text-right flex-shrink-0">
                           <p className={`font-semibold text-sm ${tx.isIncoming ? 'text-primary' : 'text-foreground'}`}>
-                            {tx.isIncoming ? '+' : '-'} {formatCurrencyShort(tx.amount)} ₽
+                            {tx.isIncoming ? '+' : '-'} {tx.currency && tx.currency !== 'RUB' && tx.originalAmount != null
+                              ? `${formatCurrencyShort(tx.originalAmount)} ${tx.currency}`
+                              : `${formatCurrencyShort(tx.amount)} ₽`
+                            }
                           </p>
                           <p className="text-[10px] text-muted-foreground">{getAccountLabel(tx)}</p>
                         </div>
@@ -240,7 +243,7 @@ const HistoryPage = ({ transactions, accounts }: HistoryPageProps) => {
         <TransactionDetailModal
           isOpen={!!selectedTx}
           onClose={() => setSelectedTx(null)}
-          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, accountName: accounts.find(a => a.id === selectedTx.accountId)?.name, accountCardNumber: accounts.find(a => a.id === selectedTx.accountId)?.cardNumber }}
+          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, accountName: accounts.find(a => a.id === selectedTx.accountId)?.name, accountCardNumber: accounts.find(a => a.id === selectedTx.accountId)?.cardNumber, currency: selectedTx.currency, originalAmount: selectedTx.originalAmount, commission: selectedTx.commission }}
         />
       )}
     </div>
