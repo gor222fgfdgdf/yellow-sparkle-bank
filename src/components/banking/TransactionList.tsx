@@ -25,7 +25,10 @@ interface TransactionListProps {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("ru-RU").format(value);
+  const abs = Math.abs(value);
+  const intPart = new Intl.NumberFormat("ru-RU").format(Math.trunc(abs));
+  const frac = Math.round((abs - Math.trunc(abs)) * 100).toString().padStart(2, '0');
+  return `${intPart}.${frac}`;
 };
 
 const TransactionList = ({ transactions, accounts }: TransactionListProps) => {
