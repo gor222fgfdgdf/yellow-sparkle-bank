@@ -325,7 +325,7 @@ const Index = () => {
         <TransferModal isOpen={isTransferOpen} onClose={() => setIsTransferOpen(false)} balance={mainAccountBalance} onTransfer={handleTransfer} />
         <InternalTransferModal isOpen={isInternalTransferOpen} onClose={() => setIsInternalTransferOpen(false)} accounts={accounts} onTransfer={handleInternalTransfer} />
         <TopUpModal isOpen={isTopUpOpen} onClose={() => setIsTopUpOpen(false)} onTopUp={handleTopUp} />
-        <StatementExportModal isOpen={isStatementExportOpen} onClose={() => setIsStatementExportOpen(false)} transactions={(dbTransactions || []).map(tx => ({ id: tx.id, name: tx.name, category: tx.category, amount: Number(tx.amount), date: tx.date, is_income: tx.is_income || false, account_id: tx.account_id }))} accounts={(dbAccounts || []).map(acc => ({ id: acc.id, name: acc.name, balance: Number(acc.balance), card_number: acc.card_number, account_number: acc.account_number, type: acc.type }))} />
+        <StatementExportModal isOpen={isStatementExportOpen} onClose={() => setIsStatementExportOpen(false)} transactions={(dbTransactions || []).map(tx => ({ id: tx.id, name: tx.name, category: tx.category, amount: Number(tx.amount), date: tx.date, is_income: tx.is_income || false, account_id: tx.account_id, created_at: tx.created_at }))} accounts={(dbAccounts || []).map(acc => ({ id: acc.id, name: acc.name, balance: Number(acc.balance), card_number: acc.card_number, account_number: acc.account_number, type: acc.type }))} />
         <AccountCertificateModal isOpen={isAccountCertificateOpen} onClose={() => setIsAccountCertificateOpen(false)} />
         {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} cardHolderName={cardHolderName} />}
       </div>
@@ -391,7 +391,7 @@ const Index = () => {
       <CashbackModal isOpen={isCashbackOpen} onClose={() => setIsCashbackOpen(false)} onWithdraw={handleCashbackWithdraw} />
       <CurrencyExchangeModal isOpen={isCurrencyOpen} onClose={() => setIsCurrencyOpen(false)} balance={mainAccountBalance} onExchange={handleCurrencyExchange} />
       <SubscriptionsModal isOpen={isSubscriptionsOpen} onClose={() => setIsSubscriptionsOpen(false)} transactions={transactions} />
-      <StatementExportModal isOpen={isStatementExportOpen} onClose={() => setIsStatementExportOpen(false)} transactions={(dbTransactions || []).map(tx => ({ id: tx.id, name: tx.name, category: tx.category, amount: Number(tx.amount), date: tx.date, is_income: tx.is_income || false, account_id: tx.account_id }))} accounts={(dbAccounts || []).map(acc => ({ id: acc.id, name: acc.name, balance: Number(acc.balance), card_number: acc.card_number, account_number: acc.account_number, type: acc.type }))} />
+      <StatementExportModal isOpen={isStatementExportOpen} onClose={() => setIsStatementExportOpen(false)} transactions={(dbTransactions || []).map(tx => ({ id: tx.id, name: tx.name, category: tx.category, amount: Number(tx.amount), date: tx.date, is_income: tx.is_income || false, account_id: tx.account_id, created_at: tx.created_at }))} accounts={(dbAccounts || []).map(acc => ({ id: acc.id, name: acc.name, balance: Number(acc.balance), card_number: acc.card_number, account_number: acc.account_number, type: acc.type }))} />
       <AccountCertificateModal isOpen={isAccountCertificateOpen} onClose={() => setIsAccountCertificateOpen(false)} />
       <LoansModal isOpen={isLoansOpen} onClose={() => setIsLoansOpen(false)} />
       <InsuranceModal isOpen={isInsuranceOpen} onClose={() => setIsInsuranceOpen(false)} />
