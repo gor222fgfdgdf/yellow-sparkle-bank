@@ -30,14 +30,31 @@ export const useAccounts = () => {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
-        .from("accounts")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: true });
+      const [accountsRes, txRes] = await Promise.all([
+        supabase
+          .from("accounts")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("transactions")
+          .select("account_id, amount")
+          .eq("user_id", user.id),
+      ]);
 
-      if (error) throw error;
-      return data as Account[];
+      if (accountsRes.error) throw accountsRes.error;
+      if (txRes.error) throw txRes.error;
+
+      // Compute balance per account from transactions
+      const balanceMap: Record<string, number> = {};
+      for (const tx of txRes.data) {
+        balanceMap[tx.account_id] = (balanceMap[tx.account_id] || 0) + Number(tx.amount);
+      }
+
+      return (accountsRes.data as Account[]).map((acc) => ({
+        ...acc,
+        balance: balanceMap[acc.id] ?? 0,
+      }));
     },
     enabled: !!user,
   });
