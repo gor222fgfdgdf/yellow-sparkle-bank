@@ -523,15 +523,15 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
         lineColor: [0, 0, 0],
       },
       columnStyles: {
-        0: { cellWidth: 18, halign: "left" },   // Дата проведения
-        1: { cellWidth: 18, halign: "left" },   // Дата совершения
-        2: { cellWidth: 18, halign: "right" },  // Расход
-        3: { cellWidth: 18, halign: "right" },  // Приход
-        4: { cellWidth: 40 },                    // Содержание
-        5: { cellWidth: 18 },                    // Валюта
-        6: { cellWidth: 20, halign: "right" },  // Сумма в валюте
-        7: { cellWidth: 16, halign: "right" },  // Комиссия
-        8: { cellWidth: 16 },                    // № карты
+        0: { cellWidth: 24, halign: "left" },   // Дата проведения
+        1: { cellWidth: 24, halign: "left" },   // Дата совершения
+        2: { cellWidth: 28, halign: "right" },  // Расход
+        3: { cellWidth: 28, halign: "right" },  // Приход
+        4: { cellWidth: 80 },                    // Содержание
+        5: { cellWidth: 26 },                    // Валюта
+        6: { cellWidth: 28, halign: "right" },  // Сумма в валюте
+        7: { cellWidth: 20, halign: "right" },  // Комиссия
+        8: { cellWidth: 11 },                    // № карты
       },
       theme: "grid",
       margin: { left: margin, right: margin },
@@ -549,7 +549,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const finalY = (doc as any).lastAutoTable?.finalY || y + 40;
     let footerY = finalY + 6;
 
-    if (footerY > 270) {
+    if (footerY > 185) {
       doc.addPage();
       footerY = 20;
     }
