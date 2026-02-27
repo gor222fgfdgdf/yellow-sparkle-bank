@@ -227,7 +227,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       return 'Outgoing Card Transfer';
     }
     
-    if (cat === 'Зарплата' || nameLower.includes('salary') || nameLower.includes('зарплат'))
+    if (cat === 'Зарплата' || nameLower.includes('salary') || nameLower.includes('зарплат') || nameLower.includes('аванс') || nameLower.includes('зп и премия') || nameLower.includes('отпускн'))
       return 'Salary Credit';
     
     if (nameLower.includes('qr')) return 'QR Code Payment (SBP)';
@@ -271,7 +271,16 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       ? (isCardOp ? `Карта ****${lastCard}` : `Счёт ****${lastAcc}`)
       : (isCardOp ? `Card ****${lastCard}` : `Account ****${lastAcc}`);
     
-    const safeName = lang === "ru" ? t.name : transliterateName(t.name);
+    // For salary transactions, use a proper English name instead of transliteration
+    let safeName: string;
+    if (lang !== "ru" && opTypeEn === 'Salary Credit') {
+      const nl = t.name.toLowerCase();
+      if (nl.includes('аванс')) safeName = 'MFK ManiMen LLC — Salary Advance';
+      else if (nl.includes('отпускн')) safeName = 'MFK ManiMen LLC — Vacation Pay';
+      else safeName = 'MFK ManiMen LLC — Salary & Bonus';
+    } else {
+      safeName = lang === "ru" ? t.name : transliterateName(t.name);
+    }
     
     return `${opType}\n${safeName}. ${opSuffix}`;
   };
