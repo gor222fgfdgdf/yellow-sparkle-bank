@@ -21,6 +21,7 @@ interface Transaction {
   date: string;
   is_income?: boolean;
   account_id?: string;
+  created_at?: string;
 }
 
 interface Account {
@@ -192,8 +193,12 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}${hash}`;
   };
 
-  const generateTransactionTime = (id: string, index: number) => {
-    const seed = parseInt(id.replace(/-/g, "").substring(0, 8), 16);
+  const generateTransactionTime = (tx: Transaction, index: number) => {
+    if (tx.created_at) {
+      const d = new Date(tx.created_at);
+      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+    }
+    const seed = parseInt(tx.id.replace(/-/g, "").substring(0, 8), 16);
     const hours = (seed + index * 3) % 14 + 8;
     const minutes = (seed + index * 7) % 60;
     const seconds = (seed + index * 13) % 60;
@@ -411,7 +416,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     y += 4;
 
     // Calculate balances
-    const sortedAsc = filteredTransactions.slice().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sortedAsc = filteredTransactions.slice().sort((a, b) => new Date(a.created_at || a.date).getTime() - new Date(b.created_at || b.date).getTime());
     const income = sortedAsc.filter((tx) => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
     const expense = sortedAsc.filter((tx) => !tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
     const closingBalance = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
@@ -449,7 +454,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     let runningBalance = openingBalance;
     const tableData = filteredTransactions
       .slice()
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .sort((a, b) => new Date(a.created_at || a.date).getTime() - new Date(b.created_at || b.date).getTime())
       .map((tx, i) => {
         if (tx.is_income) {
           runningBalance += Math.abs(tx.amount);
@@ -459,7 +464,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
         const debit = !tx.is_income ? formatAmount(tx.amount) : "";
         const credit = tx.is_income ? formatAmount(tx.amount) : "";
-        const time = generateTransactionTime(tx.id, i);
+        const time = generateTransactionTime(tx, i);
         const ref = generateTransactionRef(tx.id, tx.date);
         const authCode = generateAuthCode(tx.id);
 
@@ -602,13 +607,13 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const closingBal = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
     let runBal = closingBal - incomeTotal + expenseTotal;
 
-    const sorted = filteredTransactions.slice().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sorted = filteredTransactions.slice().sort((a, b) => new Date(a.created_at || a.date).getTime() - new Date(b.created_at || b.date).getTime());
     const rows = sorted.map((tx, i) => {
       if (tx.is_income) runBal += Math.abs(tx.amount); else runBal -= Math.abs(tx.amount);
       return [
         String(i + 1),
         formatDateRu(tx.date),
-        generateTransactionTime(tx.id, i),
+        generateTransactionTime(tx, i),
         generateTransactionRef(tx.id, tx.date),
         `"${tx.name}"`,
         !tx.is_income ? formatAmount(tx.amount) : "",
