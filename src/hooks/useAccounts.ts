@@ -30,6 +30,8 @@ export const useAccounts = () => {
     queryFn: async () => {
       if (!user) return [];
       
+      const today = new Date().toISOString().split('T')[0];
+
       const [accountsRes, txRes] = await Promise.all([
         supabase
           .from("accounts")
@@ -39,7 +41,8 @@ export const useAccounts = () => {
         supabase
           .from("transactions")
           .select("account_id, amount")
-          .eq("user_id", user.id),
+          .eq("user_id", user.id)
+          .lte("date", today),
       ]);
 
       if (accountsRes.error) throw accountsRes.error;
