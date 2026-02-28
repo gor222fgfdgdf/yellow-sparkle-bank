@@ -49,6 +49,27 @@ const formatDateRu = (dateString: string) => {
   return `${dd}.${mm}.${yyyy}`;
 };
 
+const formatDateEn = (dateString: string) => {
+  const d = new Date(dateString);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+};
+
+const formatAmountEn = (value: number) => {
+  const abs = Math.abs(value);
+  const parts = abs.toFixed(2).split(".");
+  const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${intPart}.${parts[1]}`;
+};
+
+const formatSignedEn = (value: number) => {
+  if (value === 0) return "0.00";
+  const formatted = formatAmountEn(value);
+  return value < 0 ? `-${formatted}` : formatted;
+};
+
 /** Russian number format: 10 000,00 */
 const formatAmountRu = (value: number) => {
   const abs = Math.abs(value);
@@ -145,9 +166,69 @@ const buildStatementDescription = (tx: Transaction, dateStr: string) => {
   return name;
 };
 
+// English version of description builder — same structure, translated
+const buildStatementDescriptionEn = (tx: Transaction, dateStr: string) => {
+  const name = tx.name;
+  const nameLower = name.toLowerCase();
+  const catLower = (tx.category || '').toLowerCase();
+  const txCurrency = tx.currency || 'RUB';
+  const isForex = txCurrency !== 'RUB';
+
+  if (nameLower.includes('комиссия') && nameLower.includes('информир')) {
+    return 'Account information service fee';
+  }
+
+  if (isForex && !tx.is_income) {
+    const countryMap: Record<string, string> = { 'THB': 'THA', 'VND': 'VNM', 'USD': 'USA', 'EUR': 'EUR', 'CNY': 'CHN' };
+    const country = countryMap[txCurrency] || 'INT';
+    const merchantCode = genMerchantCode(tx.id);
+    if (nameLower.includes('atm') || catLower.includes('снятие')) {
+      return `${country}, ATM ${name.replace(/atm/i, '').trim()}\n${merchantCode}`;
+    }
+    return `${country},\n${merchantCode}\n${name}`;
+  }
+
+  if (catLower.includes('зарплат') || nameLower.includes('мани мен')) {
+    if (nameLower.includes('аванс')) {
+      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nAdvance payment credit\nfrom OOO MFK "Mani Men" (TIN 7704784072)`;
+    }
+    if (nameLower.includes('отпускн')) {
+      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nVacation pay credit\nfrom OOO MFK "Mani Men" (TIN 7704784072)`;
+    }
+    return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nSalary and bonus credit\nfrom OOO MFK "Mani Men" (TIN 7704784072)`;
+  }
+
+  if (tx.is_income && (nameLower.includes('перевод') || catLower.includes('перевод'))) {
+    const sbpId = genSbpId(tx.id);
+    return `FPS transfer from ${name} to 4081781051 4230007456.\nFPS operation ID C2C ${sbpId}\nOperation date ${dateStr}\nTransfer status Completed`;
+  }
+
+  if (!tx.is_income && (nameLower.includes('перевод') || catLower.includes('перевод'))) {
+    const sbpId = genSbpId(tx.id);
+    return `Transfer to ${name} via FPS, by phone number, transfer ID ${sbpId}, date ${dateStr}`;
+  }
+
+  if (nameLower.includes('сбп') || nameLower.includes('sbp') || nameLower.includes('plati')) {
+    const sbpId = genSbpId(tx.id);
+    return `Payment for goods and services ${name.replace(/через СБП/i, '').trim()} via FPS, transfer ID ${sbpId}, date ${dateStr}`;
+  }
+
+  if (catLower.includes('связь') || nameLower.includes('мтс') || nameLower.includes('билайн') || nameLower.includes('мегафон') || nameLower.includes('теле2')) {
+    return `Funds transfer for service "${name}" PJSC "${name}", Operation date ${dateStr}`;
+  }
+
+  if (!tx.is_income && txCurrency === 'RUB') {
+    const merchantCode = genMerchantCode(tx.id);
+    return `RUS, ${name}\n${merchantCode}`;
+  }
+
+  return name;
+};
+
 const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: StatementExportModalProps) => {
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [period, setPeriod] = useState<string>("month");
+  const [lang, setLang] = useState<"ru" | "en">("ru");
   const [isExporting, setIsExporting] = useState(false);
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
@@ -501,6 +582,202 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     return doc;
   };
 
+  const generateEnPDF = async () => {
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    await loadFont(doc);
+
+    const { start, end } = getDateRange();
+    const account = selectedAccount !== "all" ? accounts.find((a) => a.id === selectedAccount) : null;
+    const accountNumber = account?.account_number || "40817810514230007456";
+    const ownerName = profile?.full_name || "Account Holder";
+
+    const pageWidth = 297;
+    const margin = 14;
+    const fn = "Roboto";
+    let y = 16;
+
+    doc.setFontSize(11);
+    doc.setFont(fn, "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("CARD ACCOUNT STATEMENT", pageWidth / 2, y, { align: "center" });
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setFont(fn, "bold");
+    doc.text(
+      `CARD ACCOUNT STATEMENT ${accountNumber} for the period from ${formatDateEn(start.toISOString())} to ${formatDateEn(end.toISOString())}`,
+      pageWidth / 2, y, { align: "center", maxWidth: pageWidth - margin * 2 }
+    );
+    y += 10;
+
+    doc.setFontSize(9);
+    doc.setFont(fn, "normal");
+    const infoLines = [
+      `Statement date: ${formatDateEn(new Date().toISOString())}`,
+      `Account currency: Russian Ruble`,
+      `Account holder: ${ownerName}`,
+      `Opening balance date: ${formatDateEn(start.toISOString())}`,
+      `Branch/Office: Voronezh Regional Branch`,
+    ];
+    infoLines.forEach((line) => {
+      doc.text(line, margin, y);
+      y += 5;
+    });
+
+    const sortedAsc = filteredTransactions.slice().sort((a, b) => {
+      const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return new Date(a.created_at || a.date).getTime() - new Date(b.created_at || b.date).getTime();
+    });
+    const income = sortedAsc.filter((tx) => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
+    const expense = sortedAsc.filter((tx) => !tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
+    const closingBalance = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
+    const openingBalance = closingBalance - income + expense;
+
+    doc.text(`Opening balance in account currency at the beginning of the period: ${formatSignedEn(openingBalance)}`, margin, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setFont(fn, "bold");
+    doc.text("CONFIRMED OPERATIONS", margin, y);
+    y += 4;
+
+    const tableHeaders = [
+      "Processing\ndate",
+      "Transaction\ndate",
+      "Account\ndebit",
+      "Account\ncredit",
+      "Transaction\ndescription",
+      "Transaction\ncurrency",
+      "Amount in\ntransaction\ncurrency",
+      "Commission\nin currency",
+      "Card No.",
+    ];
+
+    const sortedDesc = filteredTransactions.slice().sort((a, b) => {
+      const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime();
+    });
+
+    let totalDebit = 0;
+    let totalCredit = 0;
+
+    const tableData = sortedDesc.map((tx) => {
+      const dateStr = formatDateEn(tx.date);
+      const debitVal = !tx.is_income ? -Math.abs(tx.amount) : 0;
+      const creditVal = tx.is_income ? Math.abs(tx.amount) : 0;
+
+      if (debitVal < 0) totalDebit += debitVal;
+      if (creditVal > 0) totalCredit += creditVal;
+
+      const debitStr = debitVal !== 0 ? formatSignedEn(debitVal) : "0.00";
+      const creditStr = creditVal !== 0 ? formatAmountEn(creditVal) : "0.00";
+
+      const description = buildStatementDescriptionEn(tx, dateStr);
+
+      const txCurrency = tx.currency || 'RUB';
+      const isForex = txCurrency !== 'RUB';
+      
+      const currencyDisplayMap: Record<string, string> = {
+        'RUB': 'Russian\nRuble',
+        'THB': 'Baht',
+        'VND': 'Dong',
+        'USD': 'US\nDollar',
+        'EUR': 'Euro',
+        'CNY': 'Yuan',
+      };
+      const currencyDisplay = currencyDisplayMap[txCurrency] || txCurrency;
+
+      let currAmountStr: string;
+      if (isForex && tx.original_amount != null) {
+        currAmountStr = debitVal !== 0 
+          ? formatSignedEn(-Math.abs(tx.original_amount)) 
+          : formatAmountEn(Math.abs(tx.original_amount));
+      } else {
+        currAmountStr = debitVal !== 0 ? formatSignedEn(debitVal) : formatAmountEn(creditVal);
+      }
+
+      const commissionVal = tx.commission || 0;
+      const commissionStr = commissionVal !== 0 ? formatSignedEn(-Math.abs(commissionVal)) : "0.00";
+
+      const nameLower = tx.name.toLowerCase();
+      const catLower = (tx.category || '').toLowerCase();
+      const isTransferOrSBP = nameLower.includes('перевод') || nameLower.includes('сбп') || nameLower.includes('sbp') || catLower.includes('перевод') || catLower.includes('пополнение') || nameLower.includes('пополнение') || nameLower.includes('мани мен');
+      const cardStr = !isTransferOrSBP ? "6234 46**\n**** 7694" : "";
+
+      return [dateStr, dateStr, debitStr, creditStr, description, currencyDisplay, currAmountStr, commissionStr, cardStr];
+    });
+
+    tableData.push(["", "", formatSignedEn(totalDebit), formatAmountEn(totalCredit), "", "", "", "", ""]);
+
+    autoTable(doc, {
+      startY: y,
+      head: [tableHeaders],
+      body: tableData,
+      styles: {
+        fontSize: 9, cellPadding: 2, font: fn, textColor: [0, 0, 0],
+        lineColor: [0, 0, 0], lineWidth: 0.2, overflow: "linebreak", valign: "top",
+      },
+      headStyles: {
+        fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold",
+        halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0],
+      },
+      columnStyles: {
+        0: { cellWidth: 24, halign: "left" }, 1: { cellWidth: 24, halign: "left" },
+        2: { cellWidth: 28, halign: "right" }, 3: { cellWidth: 28, halign: "right" },
+        4: { cellWidth: 80 }, 5: { cellWidth: 26 },
+        6: { cellWidth: 28, halign: "right" }, 7: { cellWidth: 20, halign: "right" },
+        8: { cellWidth: 11 },
+      },
+      theme: "grid", rowPageBreak: "avoid", margin: { left: margin, right: margin },
+      didParseCell: (data) => {
+        if (data.section === "body" && data.row.index === tableData.length - 1) {
+          data.cell.styles.fontStyle = "bold";
+        }
+      },
+    });
+
+    const finalY = (doc as any).lastAutoTable?.finalY || y + 40;
+    let footerY = finalY + 6;
+    if (footerY > 185) { doc.addPage(); footerY = 20; }
+
+    doc.setFontSize(9);
+    doc.setFont(fn, "normal");
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Closing balance date: ${formatDateEn(end.toISOString())}`, margin, footerY);
+    footerY += 5;
+    doc.text(`Closing balance in account currency at the end of the period: ${formatSignedEn(closingBalance)}`, margin, footerY);
+    footerY += 10;
+
+    doc.setFontSize(10);
+    doc.setFont(fn, "bold");
+    doc.text("PENDING OPERATIONS", margin, footerY);
+    footerY += 4;
+
+    autoTable(doc, {
+      startY: footerY,
+      head: [["Transaction\ndate", "Amount in\ntransaction currency", "Commission in\ntransaction currency", "Transaction\ncurrency", "Transaction\ndescription", "Card No."]],
+      body: [],
+      styles: { fontSize: 7, cellPadding: 1.5, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2 },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
+      theme: "grid", margin: { left: margin, right: margin },
+    });
+
+    const pendingFinalY = (doc as any).lastAutoTable?.finalY || footerY + 15;
+    let afterPendingY = pendingFinalY + 6;
+    if (afterPendingY > 270) { doc.addPage(); afterPendingY = 20; }
+
+    doc.setFontSize(8);
+    doc.setFont(fn, "normal");
+    doc.text(
+      `Available balance as of the statement date including pending operations: ${formatSignedEn(closingBalance)}`,
+      margin, afterPendingY
+    );
+
+    return doc;
+  };
+
   const [readyBlob, setReadyBlob] = useState<Blob | null>(null);
   const [readyFilename, setReadyFilename] = useState("");
 
@@ -508,8 +785,10 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     setIsExporting(true);
     setReadyBlob(null);
     try {
-      const doc = await generatePDF();
-      const filename = `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
+      const doc = lang === "en" ? await generateEnPDF() : await generatePDF();
+      const filename = lang === "en"
+        ? `statement_${new Date().toISOString().split("T")[0]}.pdf`
+        : `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
       const blob = doc.output("blob");
 
       const file = new File([blob], filename, { type: "application/pdf" });
@@ -576,7 +855,20 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
           </Select>
         </div>
 
-        {/* Period Selection */}
+        {/* Language Selection */}
+        <div className="space-y-2">
+          <Label>Язык выписки</Label>
+          <Select value={lang} onValueChange={(v) => setLang(v as "ru" | "en")}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ru">Русский</SelectItem>
+              <SelectItem value="en">English</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="space-y-2">
           <Label>Период</Label>
           <Select value={period} onValueChange={setPeriod}>
