@@ -366,10 +366,10 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
 
     const tableHeaders = isRu ? [
       "Дата\nпроведения\nоперации", "Дата\nсовершения\nоперации", "Расход\nпо счету", "Приход\nпо счету",
-      "Содержание\nоперации", "Валюта\nоперации", "Сумма в\nвалюте\nоперации", "Комиссия\nв валюте", "№ карты",
+      "Содержание\nоперации", "Валюта\nоперации", "Сумма в\nвалюте\nоперации", "Комиссия в\nвалюте\nоперации", "№ карты",
     ] : [
       "Processing\ndate", "Transaction\ndate", "Account\ndebit", "Account\ncredit",
-      "Transaction\ndescription", "Transaction\ncurrency", "Amount in\ntransaction\ncurrency", "Commission\nin currency", "Card No.",
+      "Transaction\ndescription", "Transaction\ncurrency", "Amount in\ntransaction\ncurrency", "Commission\nin transaction\ncurrency", "Card No.",
     ];
 
     const sortedDesc = filteredTransactions.slice().sort((a, b) => {
