@@ -713,7 +713,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       head: [tableHeaders],
       body: tableData,
       styles: {
-        fontSize: 9, cellPadding: 2, font: fn, textColor: [0, 0, 0],
+        fontSize: 11, cellPadding: 3, font: fn, textColor: [0, 0, 0],
         lineColor: [0, 0, 0], lineWidth: 0.2, overflow: "linebreak", valign: "top",
       },
       headStyles: {
