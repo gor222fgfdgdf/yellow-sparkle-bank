@@ -546,8 +546,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       head: [pendingHeaders],
       body: [],
       styles: {
-        fontSize: 7,
-        cellPadding: 1.5,
+        fontSize: 9,
+        cellPadding: 2,
         font: fn,
         textColor: [0, 0, 0],
         lineColor: [0, 0, 0],
