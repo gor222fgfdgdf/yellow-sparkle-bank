@@ -102,7 +102,7 @@ const TransactionList = ({ transactions, accounts }: TransactionListProps) => {
         <TransactionDetailModal
           isOpen={!!selectedTx}
           onClose={() => setSelectedTx(null)}
-          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, ...getAccountInfo(selectedTx.accountId), currency: selectedTx.currency, originalAmount: selectedTx.originalAmount, commission: selectedTx.commission }}
+          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, ...getAccountInfo(selectedTx.accountId), currency: selectedTx.currency, originalAmount: selectedTx.originalAmount, commission: selectedTx.commission, createdAt: selectedTx.createdAt }}
         />
       )}
     </>
