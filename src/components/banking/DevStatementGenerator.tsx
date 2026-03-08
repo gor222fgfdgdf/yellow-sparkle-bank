@@ -327,7 +327,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     doc.text(periodLabel, pageWidth / 2, y, { align: "center", maxWidth: pageWidth - margin * 2 });
     y += 10;
 
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont(fn, "normal");
     const statementDateStr = fmtDate(end.toISOString());
     const infoLines = isRu ? [
