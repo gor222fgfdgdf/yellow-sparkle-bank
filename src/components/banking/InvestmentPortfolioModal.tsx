@@ -571,12 +571,12 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                     <div key={trade.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                       <div className="flex items-center gap-2">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                          trade.type === "buy" ? "bg-green-500/10" : "bg-red-500/10"
+                          trade.type === "buy" ? "bg-primary/10" : "bg-destructive/10"
                         }`}>
                           {trade.type === "buy" ? (
-                            <ArrowDownRight className="w-3 h-3 text-green-500" />
+                            <ArrowDownRight className="w-3 h-3 text-primary" />
                           ) : (
-                            <ArrowUpRight className="w-3 h-3 text-red-500" />
+                            <ArrowUpRight className="w-3 h-3 text-destructive" />
                           )}
                         </div>
                         <div>
