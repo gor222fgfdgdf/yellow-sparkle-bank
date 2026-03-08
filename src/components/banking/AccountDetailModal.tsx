@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
-import { ArrowLeft, ArrowRight, Plus, Settings, Eye, EyeOff, ChevronRight, QrCode, FileText, Link2, RefreshCw, Info, CreditCard, PiggyBank, TrendingUp, Wallet, Minus, Percent, Calendar, Clock, DollarSign, PieChart, BarChart3, TrendingDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, Settings, Eye, EyeOff, QrCode, FileText, Link2, RefreshCw, Info, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Account } from "./AccountsList";
