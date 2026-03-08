@@ -314,7 +314,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     const fmtAbs = isRu ? formatAmountRu : formatAmountEn;
 
     // Title
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont(fn, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text(isRu ? "ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ" : "CARD ACCOUNT STATEMENT", pageWidth / 2, y, { align: "center" });
