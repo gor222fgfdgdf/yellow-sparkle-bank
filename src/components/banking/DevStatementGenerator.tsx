@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import FullScreenModal from "./FullScreenModal";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -183,6 +183,17 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
   const [isExporting, setIsExporting] = useState(false);
   const [readyBlob, setReadyBlob] = useState<Blob | null>(null);
   const [readyFilename, setReadyFilename] = useState("");
+  const [sixMonthAnchor, setSixMonthAnchor] = useState<string>("");
+
+  const apply6Months = useCallback((anchorDate: string) => {
+    if (!anchorDate) return;
+    const end = new Date(anchorDate);
+    const start = new Date(anchorDate);
+    start.setMonth(start.getMonth() - 6);
+    start.setDate(start.getDate() + 1);
+    setStartDate(start.toISOString().slice(0, 10));
+    setEndDate(end.toISOString().slice(0, 10));
+  }, []);
 
   // Fetch ALL transactions without date filter (includes future)
   const { data: allTransactions = [], isLoading } = useQuery({
@@ -573,12 +584,49 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
               key={q.label}
               variant="outline"
               size="sm"
-              onClick={() => { setStartDate(q.s); setEndDate(q.e); }}
+              onClick={() => { setStartDate(q.s); setEndDate(q.e); setSixMonthAnchor(""); }}
               className="text-xs"
             >
               {q.label}
             </Button>
           ))}
+        </div>
+
+        {/* 6-month range with anchor date */}
+        <div className="space-y-2">
+          <Label>За 6 месяцев до указанной даты</Label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input 
+                type="date" 
+                value={sixMonthAnchor} 
+                onChange={(e) => {
+                  setSixMonthAnchor(e.target.value);
+                  apply6Months(e.target.value);
+                }} 
+                className="pl-10" 
+                placeholder="Конечная дата"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const today = new Date().toISOString().slice(0, 10);
+                setSixMonthAnchor(today);
+                apply6Months(today);
+              }}
+              className="text-xs whitespace-nowrap"
+            >
+              Сегодня
+            </Button>
+          </div>
+          {sixMonthAnchor && (
+            <p className="text-xs text-muted-foreground">
+              Период: {startDate} — {endDate}
+            </p>
+          )}
         </div>
 
         {/* Export */}
