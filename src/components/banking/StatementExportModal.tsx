@@ -468,8 +468,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       head: [tableHeaders],
       body: tableData,
       styles: {
-        fontSize: 9,
-        cellPadding: 2,
+        fontSize: 11,
+        cellPadding: 3,
         font: fn,
         textColor: [0, 0, 0],
         lineColor: [0, 0, 0],
