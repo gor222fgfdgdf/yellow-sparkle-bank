@@ -717,7 +717,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
         lineColor: [0, 0, 0], lineWidth: 0.2, overflow: "linebreak", valign: "top",
       },
       headStyles: {
-        fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold",
+        fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "normal",
         halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0],
       },
       columnStyles: {
