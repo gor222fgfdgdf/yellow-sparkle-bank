@@ -586,6 +586,7 @@ const MenuPage = ({ onOpenCardManagement, onOpenSupport, userName, balance, port
       <DevPdfTestPage isOpen={isDevTestOpen} onClose={() => setIsDevTestOpen(false)} />
       <DevStatementGenerator isOpen={isDevStatementOpen} onClose={() => setIsDevStatementOpen(false)} />
       <DevTransactionManager isOpen={isDevTxManagerOpen} onClose={() => setIsDevTxManagerOpen(false)} />
+      <DevCertificateGenerator isOpen={isDevCertOpen} onClose={() => setIsDevCertOpen(false)} />
     </div>
   );
 };
