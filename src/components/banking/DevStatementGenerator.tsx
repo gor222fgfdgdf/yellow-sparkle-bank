@@ -404,9 +404,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
       },
       theme: "grid", rowPageBreak: "avoid", margin: { left: margin, right: margin },
       didParseCell: (data) => {
-        if (data.section === "body" && data.row.index === tableData.length - 1) {
-          data.cell.styles.fontStyle = "bold";
-        }
+        // no bold for totals row - match original
       },
     });
 
