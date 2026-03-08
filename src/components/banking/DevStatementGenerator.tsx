@@ -314,7 +314,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     const fmtAbs = isRu ? formatAmountRu : formatAmountEn;
 
     // Title
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont(fn, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text(isRu ? "ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ" : "CARD ACCOUNT STATEMENT", pageWidth / 2, y, { align: "center" });
@@ -323,11 +323,11 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     const periodLabel = isRu
       ? `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber} за период с ${fmtDate(start.toISOString())} по ${fmtDate(end.toISOString())}`
       : `CARD ACCOUNT STATEMENT ${accountNumber} for the period from ${fmtDate(start.toISOString())} to ${fmtDate(end.toISOString())}`;
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.text(periodLabel, pageWidth / 2, y, { align: "center", maxWidth: pageWidth - margin * 2 });
     y += 10;
 
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont(fn, "normal");
     const statementDateStr = fmtDate(end.toISOString());
     const infoLines = isRu ? [
@@ -366,10 +366,10 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
 
     const tableHeaders = isRu ? [
       "Дата\nпроведения\nоперации", "Дата\nсовершения\nоперации", "Расход\nпо счету", "Приход\nпо счету",
-      "Содержание\nоперации", "Валюта\nоперации", "Сумма в\nвалюте\nоперации", "Комиссия\nв валюте", "№ карты",
+      "Содержание\nоперации", "Валюта\nоперации", "Сумма в\nвалюте\nоперации", "Комиссия в\nвалюте\nоперации", "№ карты",
     ] : [
       "Processing\ndate", "Transaction\ndate", "Account\ndebit", "Account\ncredit",
-      "Transaction\ndescription", "Transaction\ncurrency", "Amount in\ntransaction\ncurrency", "Commission\nin currency", "Card No.",
+      "Transaction\ndescription", "Transaction\ncurrency", "Amount in\ntransaction\ncurrency", "Commission\nin transaction\ncurrency", "Card No.",
     ];
 
     const sortedDesc = filteredTransactions.slice().sort((a, b) => {
@@ -398,8 +398,8 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
       columnStyles: {
         0: { cellWidth: 24, halign: "left" }, 1: { cellWidth: 24, halign: "left" },
         2: { cellWidth: 28, halign: "right" }, 3: { cellWidth: 28, halign: "right" },
-        4: { cellWidth: 80 }, 5: { cellWidth: 26 },
-        6: { cellWidth: 28, halign: "right" }, 7: { cellWidth: 20, halign: "right" },
+        4: { cellWidth: 75 }, 5: { cellWidth: 26 },
+        6: { cellWidth: 28, halign: "right" }, 7: { cellWidth: 25, halign: "right" },
         8: { cellWidth: 11 },
       },
       theme: "grid", rowPageBreak: "avoid", margin: { left: margin, right: margin },
@@ -438,7 +438,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
 
     autoTable(doc, {
       startY: footerY, head: [pendingHeaders], body: [],
-      styles: { fontSize: 7, cellPadding: 1.5, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2 },
+      styles: { fontSize: 9, cellPadding: 2, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2 },
       headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
       theme: "grid", margin: { left: margin, right: margin },
     });
@@ -447,7 +447,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     let afterPendingY = pendingFinalY + 6;
     if (afterPendingY > 270) { doc.addPage(); afterPendingY = 20; }
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont(fn, "normal");
     doc.text(
       isRu

@@ -328,14 +328,14 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     let y = 16;
 
     // Title
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont(fn, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text("ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ", pageWidth / 2, y, { align: "center" });
     y += 8;
 
     // Subtitle
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "bold");
     doc.text(
       `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber} за период с ${formatDateRu(start.toISOString())} по ${formatDateRu(end.toISOString())}`,
@@ -344,10 +344,11 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     y += 10;
 
     // Info fields
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont(fn, "normal");
+    const statementDateStr = formatDateRu(end.toISOString());
     const infoLines = [
-      `Дата выписки: ${formatDateRu(new Date().toISOString())}`,
+      `Дата выписки: ${statementDateStr}`,
       `Валюта счёта: Российский рубль`,
       `Владелец счёта: ${ownerName}`,
       `Дата входящего остатка: ${formatDateRu(start.toISOString())}`,
@@ -387,7 +388,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       "Содержание\nоперации",
       "Валюта\nоперации",
       "Сумма в\nвалюте\nоперации",
-      "Комиссия\nв валюте",
+      "Комиссия в\nвалюте\nоперации",
       "№ карты",
     ];
 
@@ -489,10 +490,10 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
         1: { cellWidth: 24, halign: "left" },
         2: { cellWidth: 28, halign: "right" },
         3: { cellWidth: 28, halign: "right" },
-        4: { cellWidth: 80 },
+        4: { cellWidth: 75 },
         5: { cellWidth: 26 },
         6: { cellWidth: 28, halign: "right" },
-        7: { cellWidth: 20, halign: "right" },
+        7: { cellWidth: 25, halign: "right" },
         8: { cellWidth: 11 },
       },
       theme: "grid",
@@ -545,8 +546,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       head: [pendingHeaders],
       body: [],
       styles: {
-        fontSize: 7,
-        cellPadding: 1.5,
+        fontSize: 9,
+        cellPadding: 2,
         font: fn,
         textColor: [0, 0, 0],
         lineColor: [0, 0, 0],
@@ -572,7 +573,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       afterPendingY = 20;
     }
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont(fn, "normal");
     doc.text(
       `Сумма доступного остатка на дату формирования выписки с учетом неподтвержденных операций: ${formatSignedRu(closingBalance)}`,
@@ -596,13 +597,13 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const fn = "Roboto";
     let y = 16;
 
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont(fn, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text("CARD ACCOUNT STATEMENT", pageWidth / 2, y, { align: "center" });
     y += 8;
 
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "bold");
     doc.text(
       `CARD ACCOUNT STATEMENT ${accountNumber} for the period from ${formatDateEn(start.toISOString())} to ${formatDateEn(end.toISOString())}`,
@@ -610,10 +611,11 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     );
     y += 10;
 
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont(fn, "normal");
+    const statementDateStrEn = formatDateEn(end.toISOString());
     const infoLines = [
-      `Statement date: ${formatDateEn(new Date().toISOString())}`,
+      `Statement date: ${statementDateStrEn}`,
       `Account currency: Russian Ruble`,
       `Account holder: ${ownerName}`,
       `Opening balance date: ${formatDateEn(start.toISOString())}`,
@@ -650,7 +652,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       "Transaction\ndescription",
       "Transaction\ncurrency",
       "Amount in\ntransaction\ncurrency",
-      "Commission\nin currency",
+      "Commission\nin transaction\ncurrency",
       "Card No.",
     ];
 
@@ -726,8 +728,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       columnStyles: {
         0: { cellWidth: 24, halign: "left" }, 1: { cellWidth: 24, halign: "left" },
         2: { cellWidth: 28, halign: "right" }, 3: { cellWidth: 28, halign: "right" },
-        4: { cellWidth: 80 }, 5: { cellWidth: 26 },
-        6: { cellWidth: 28, halign: "right" }, 7: { cellWidth: 20, halign: "right" },
+        4: { cellWidth: 75 }, 5: { cellWidth: 26 },
+        6: { cellWidth: 28, halign: "right" }, 7: { cellWidth: 25, halign: "right" },
         8: { cellWidth: 11 },
       },
       theme: "grid", rowPageBreak: "avoid", margin: { left: margin, right: margin },
@@ -759,7 +761,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       startY: footerY,
       head: [["Transaction\ndate", "Amount in\ntransaction currency", "Commission in\ntransaction currency", "Transaction\ncurrency", "Transaction\ndescription", "Card No."]],
       body: [],
-      styles: { fontSize: 7, cellPadding: 1.5, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2 },
+      styles: { fontSize: 9, cellPadding: 2, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2 },
       headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
       theme: "grid", margin: { left: margin, right: margin },
     });
@@ -768,7 +770,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     let afterPendingY = pendingFinalY + 6;
     if (afterPendingY > 270) { doc.addPage(); afterPendingY = 20; }
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont(fn, "normal");
     doc.text(
       `Available balance as of the statement date including pending operations: ${formatSignedEn(closingBalance)}`,
