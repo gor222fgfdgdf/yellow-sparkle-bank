@@ -506,7 +506,7 @@ const Index = () => {
         onOpenAccountCertificate={() => { setIsMoreOpen(false); setIsAccountCertificateOpen(true); }}
       />
       <AllTransactionsModal isOpen={isAllTransactionsOpen} onClose={() => setIsAllTransactionsOpen(false)} transactions={transactions} />
-      {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} cardHolderName={cardHolderName} />}
+      {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} cardHolderName={cardHolderName} cardNumber={mainAccount?.cardNumber || "4276"} />}
       <BudgetsModal isOpen={isBudgetsOpen} onClose={() => setIsBudgetsOpen(false)} transactions={transactions} />
       <SavingsGoalsModal isOpen={isSavingsGoalsOpen} onClose={() => setIsSavingsGoalsOpen(false)} onDeduct={handleSavingsDeduct} />
       <QRCodeModal isOpen={isQRCodeOpen} onClose={() => setIsQRCodeOpen(false)} userName={userName} cardNumber={mainAccount?.cardNumber || "0000"} onReceive={handleQRReceive} />
