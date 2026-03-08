@@ -3,6 +3,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 import { TrendingDown, TrendingUp, ArrowUp, ArrowDown, Minus, Bell, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import type { Transaction } from "./TransactionList";
 import SpendingLimitsModal, { LimitAlerts, type SpendingLimit, type LimitAlert } from "./SpendingLimitsModal";
 
