@@ -505,7 +505,7 @@ const Index = () => {
         onSetupPin={() => { setIsMoreOpen(false); setIsSettingUpPin(true); }}
         onOpenAccountCertificate={() => { setIsMoreOpen(false); setIsAccountCertificateOpen(true); }}
       />
-      <AllTransactionsModal isOpen={isAllTransactionsOpen} onClose={() => setIsAllTransactionsOpen(false)} transactions={transactions} />
+      <AllTransactionsModal isOpen={isAllTransactionsOpen} onClose={() => setIsAllTransactionsOpen(false)} transactions={transactions} accounts={accounts} />
       {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} cardHolderName={cardHolderName} cardNumber={mainAccount?.cardNumber || "4276"} />}
       <BudgetsModal isOpen={isBudgetsOpen} onClose={() => setIsBudgetsOpen(false)} transactions={transactions} />
       <SavingsGoalsModal isOpen={isSavingsGoalsOpen} onClose={() => setIsSavingsGoalsOpen(false)} onDeduct={handleSavingsDeduct} />
