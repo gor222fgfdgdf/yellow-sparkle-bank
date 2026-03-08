@@ -329,7 +329,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     // Title
     doc.setFontSize(12);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
     doc.text("ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ", pageWidth / 2, y, { align: "center" });
     y += 8;
