@@ -298,18 +298,18 @@ const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
           </div>
         </div>
         <div className={`flex items-center gap-2 p-3 rounded-xl ${
-          expensesDiff > 0 ? "bg-red-500/10" : expensesDiff < 0 ? "bg-green-500/10" : "bg-muted"
+          expensesDiff > 0 ? "bg-destructive/10" : expensesDiff < 0 ? "bg-primary/10" : "bg-muted"
         }`}>
           {expensesDiff > 0 ? (
-            <ArrowUp className="w-5 h-5 text-red-500" />
+            <ArrowUp className="w-5 h-5 text-destructive" />
           ) : expensesDiff < 0 ? (
-            <ArrowDown className="w-5 h-5 text-green-500" />
+            <ArrowDown className="w-5 h-5 text-primary" />
           ) : (
             <Minus className="w-5 h-5 text-muted-foreground" />
           )}
           <div>
             <span className={`font-semibold ${
-              expensesDiff > 0 ? "text-red-500" : expensesDiff < 0 ? "text-green-500" : "text-muted-foreground"
+              expensesDiff > 0 ? "text-destructive" : expensesDiff < 0 ? "text-primary" : "text-muted-foreground"
             }`}>
               {expensesDiff > 0 ? "+" : ""}{formatCurrency(Math.abs(expensesDiff))} ₽
             </span>
