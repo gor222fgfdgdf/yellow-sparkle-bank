@@ -335,7 +335,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     y += 8;
 
     // Subtitle
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "bold");
     doc.text(
       `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber} за период с ${formatDateRu(start.toISOString())} по ${formatDateRu(end.toISOString())}`,
