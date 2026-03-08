@@ -35,7 +35,7 @@ const HomeWidgetGrid = ({ totalBalance, onQRCode, onReferral, onCashback, onAnal
           <p className="text-sm font-semibold text-foreground">Доступно</p>
           <p className="text-sm text-foreground">баллов</p>
           <div className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground text-xs font-bold">4</span>
+            <span className="text-primary-foreground text-xs font-bold">{pointsDisplay}</span>
           </div>
         </button>
 
