@@ -770,7 +770,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     let afterPendingY = pendingFinalY + 6;
     if (afterPendingY > 270) { doc.addPage(); afterPendingY = 20; }
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont(fn, "normal");
     doc.text(
       `Available balance as of the statement date including pending operations: ${formatSignedEn(closingBalance)}`,
