@@ -426,7 +426,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     footerY += 10;
 
     doc.setFontSize(10);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text(isRu ? "ОПЕРАЦИИ, ОЖИДАЮЩИЕ ОБРАБОТКИ" : "PENDING OPERATIONS", margin, footerY);
     footerY += 4;
 
