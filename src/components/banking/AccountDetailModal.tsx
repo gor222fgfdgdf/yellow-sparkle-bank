@@ -29,14 +29,6 @@ const formatCurrencyShort = (value: number) => {
   return new Intl.NumberFormat("ru-RU").format(value);
 };
 
-// Investment portfolio data
-const investmentPortfolio = [
-  { name: "Сбербанк", ticker: "SBER", shares: 150, price: 268.50, change: 2.3 },
-  { name: "Газпром", ticker: "GAZP", shares: 200, price: 165.20, change: -1.2 },
-  { name: "Яндекс", ticker: "YNDX", shares: 25, price: 2850.00, change: 4.1 },
-  { name: "Лукойл", ticker: "LKOH", shares: 10, price: 7120.00, change: 0.8 },
-  { name: "МТС", ticker: "MTSS", shares: 100, price: 275.60, change: -0.5 },
-];
 
 const AccountDetailModal = ({ 
   isOpen, 
