@@ -325,26 +325,26 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const pageWidth = 297;
     const margin = 14;
     const fn = "Roboto";
-    let y = 16;
+    let y = 20;
 
     // Title
-    doc.setFontSize(12);
+    doc.setFontSize(14);
     doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
     doc.text("ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ", margin, y);
-    y += 8;
-
-    // Subtitle
-    doc.setFontSize(11);
-    doc.setFont(fn, "normal");
-    doc.text(
-      `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber} за период с ${formatDateRu(start.toISOString())} по ${formatDateRu(end.toISOString())}`,
-      margin, y, { maxWidth: pageWidth - margin * 2 }
-    );
     y += 10;
 
+    // Subtitle
+    doc.setFontSize(12);
+    doc.setFont(fn, "normal");
+    doc.text(
+      `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber}  за период с ${formatDateRu(start.toISOString())}  по ${formatDateRu(end.toISOString())}`,
+      margin, y, { maxWidth: pageWidth - margin * 2 }
+    );
+    y += 12;
+
     // Info fields
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     const statementDateStr = formatDateRu(end.toISOString());
     const infoLines = [
@@ -356,7 +356,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     ];
     infoLines.forEach((line) => {
       doc.text(line, margin, y);
-      y += 5;
+      y += 7;
     });
 
     // Calculate opening balance
@@ -371,13 +371,13 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const openingBalance = closingBalance - income + expense;
 
     doc.text(`Сумма входящего остатка в валюте счета на дату начала периода: ${formatSignedRu(openingBalance)}`, margin, y);
-    y += 8;
+    y += 10;
 
     // Section title
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     doc.text("ПОДТВЕРЖДЕННЫЕ ОПЕРАЦИИ", margin, y);
-    y += 4;
+    y += 6;
 
     // 9-column table matching RSHB format
     const tableHeaders = [
@@ -590,23 +590,23 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const pageWidth = 297;
     const margin = 14;
     const fn = "Roboto";
-    let y = 16;
+    let y = 20;
 
-    doc.setFontSize(12);
+    doc.setFontSize(14);
     doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
     doc.text("CARD ACCOUNT STATEMENT", margin, y);
-    y += 8;
+    y += 10;
 
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont(fn, "normal");
     doc.text(
       `CARD ACCOUNT STATEMENT ${accountNumber} for the period from ${formatDateEn(start.toISOString())} to ${formatDateEn(end.toISOString())}`,
       margin, y, { maxWidth: pageWidth - margin * 2 }
     );
-    y += 10;
+    y += 12;
 
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     const statementDateStrEn = formatDateEn(end.toISOString());
     const infoLines = [
@@ -618,7 +618,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     ];
     infoLines.forEach((line) => {
       doc.text(line, margin, y);
-      y += 5;
+      y += 7;
     });
 
     const sortedAsc = filteredTransactions.slice().sort((a, b) => {
@@ -632,12 +632,12 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const openingBalance = closingBalance - income + expense;
 
     doc.text(`Opening balance in account currency at the beginning of the period: ${formatSignedEn(openingBalance)}`, margin, y);
-    y += 8;
+    y += 10;
 
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     doc.text("CONFIRMED OPERATIONS", margin, y);
-    y += 4;
+    y += 6;
 
     const tableHeaders = [
       "Processing\ndate",

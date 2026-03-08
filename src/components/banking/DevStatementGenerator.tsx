@@ -307,27 +307,27 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     const pageWidth = 297;
     const margin = 14;
     const fn = "Roboto";
-    let y = 16;
+    let y = 20;
 
     const fmtDate = isRu ? formatDateRu : formatDateEn;
     const fmtSigned = isRu ? formatSignedRu : formatSignedEn;
     const fmtAbs = isRu ? formatAmountRu : formatAmountEn;
 
     // Title
-    doc.setFontSize(12);
+    doc.setFontSize(14);
     doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
     doc.text(isRu ? "ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ" : "CARD ACCOUNT STATEMENT", margin, y);
-    y += 8;
-
-    const periodLabel = isRu
-      ? `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber} за период с ${fmtDate(start.toISOString())} по ${fmtDate(end.toISOString())}`
-      : `CARD ACCOUNT STATEMENT ${accountNumber} for the period from ${fmtDate(start.toISOString())} to ${fmtDate(end.toISOString())}`;
-    doc.setFontSize(11);
-    doc.text(periodLabel, margin, y, { maxWidth: pageWidth - margin * 2 });
     y += 10;
 
-    doc.setFontSize(10);
+    const periodLabel = isRu
+      ? `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber}  за период с ${fmtDate(start.toISOString())}  по ${fmtDate(end.toISOString())}`
+      : `CARD ACCOUNT STATEMENT ${accountNumber} for the period from ${fmtDate(start.toISOString())} to ${fmtDate(end.toISOString())}`;
+    doc.setFontSize(12);
+    doc.text(periodLabel, margin, y, { maxWidth: pageWidth - margin * 2 });
+    y += 12;
+
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     const statementDateStr = fmtDate(end.toISOString());
     const infoLines = isRu ? [
@@ -343,7 +343,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
       `Opening balance date: ${fmtDate(start.toISOString())}`,
       `Branch/Office: Voronezh Regional Branch`,
     ];
-    infoLines.forEach((line) => { doc.text(line, margin, y); y += 5; });
+    infoLines.forEach((line) => { doc.text(line, margin, y); y += 7; });
 
     // Calculate balances
     const income = filteredTransactions.filter(tx => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
@@ -357,12 +357,12 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
         : `Opening balance in account currency at the beginning of the period: ${fmtSigned(openingBalance)}`,
       margin, y
     );
-    y += 8;
+    y += 10;
 
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     doc.text(isRu ? "ПОДТВЕРЖДЕННЫЕ ОПЕРАЦИИ" : "CONFIRMED OPERATIONS", margin, y);
-    y += 4;
+    y += 6;
 
     const tableHeaders = isRu ? [
       "Дата\nпроведения\nоперации", "Дата\nсовершения\nоперации", "Расход\nпо счету", "Приход\nпо счету",
