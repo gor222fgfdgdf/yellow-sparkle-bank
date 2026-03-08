@@ -61,10 +61,75 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LogOut, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// --- Global Search Results Component ---
+interface SearchItem {
+  label: string;
+  keywords: string[];
+  actionKey: string;
+}
+
+const searchItems: SearchItem[] = [
+  { label: "Платежи", keywords: ["платеж", "оплат", "payment"], actionKey: "payments" },
+  { label: "История операций", keywords: ["истори", "операци", "history"], actionKey: "history" },
+  { label: "Поддержка", keywords: ["поддержк", "помощ", "support", "чат"], actionKey: "support" },
+  { label: "Меню", keywords: ["меню", "настройк", "menu"], actionKey: "menu" },
+  { label: "Своё", keywords: ["своё", "свое", "lifestyle"], actionKey: "svoe" },
+  { label: "Перевод", keywords: ["перевод", "перевести", "transfer"], actionKey: "transfer" },
+  { label: "Пополнение", keywords: ["пополн", "topup"], actionKey: "topup" },
+  { label: "QR-код", keywords: ["qr", "куар"], actionKey: "qr" },
+  { label: "Перевод по СБП", keywords: ["сбп", "sbp", "телефон"], actionKey: "sbp" },
+  { label: "Кэшбэк", keywords: ["кэшбэк", "cashback", "баллы"], actionKey: "cashback" },
+  { label: "Валюты и курсы", keywords: ["валют", "курс", "обмен", "доллар", "евро", "юань"], actionKey: "currency" },
+  { label: "Подписки", keywords: ["подписк", "subscription"], actionKey: "subscriptions" },
+  { label: "Бюджеты", keywords: ["бюджет", "аналитик", "budget"], actionKey: "budgets" },
+  { label: "Цели", keywords: ["цел", "накоплен", "копилка", "goal"], actionKey: "goals" },
+  { label: "Кредиты", keywords: ["кредит", "loan", "заём"], actionKey: "loans" },
+  { label: "Страхование", keywords: ["страхов", "insurance"], actionKey: "insurance" },
+  { label: "Вклады", keywords: ["вклад", "депозит", "deposit"], actionKey: "deposits" },
+  { label: "Управление картами", keywords: ["карт", "card", "заморозить", "блокиров"], actionKey: "cards" },
+  { label: "Уведомления", keywords: ["уведомлен", "notification"], actionKey: "notifications" },
+  { label: "Выписка", keywords: ["выписк", "statement"], actionKey: "statement" },
+  { label: "Справка о счёте", keywords: ["справк", "certificate"], actionKey: "certificate" },
+  { label: "Благотворительность", keywords: ["благотвор", "charity", "пожертв"], actionKey: "charity" },
+  { label: "Финансовая грамотность", keywords: ["грамотн", "обучен", "education"], actionKey: "education" },
+  { label: "Программа лояльности", keywords: ["лояльн", "loyalty", "партнёр"], actionKey: "loyalty" },
+  { label: "Финансовый календарь", keywords: ["календар", "calendar"], actionKey: "calendar" },
+  { label: "Госуслуги и штрафы", keywords: ["госуслуг", "штраф", "government"], actionKey: "government" },
+];
+
+const GlobalSearchResults = ({ query, onSelect, actions }: { query: string; onSelect: (action: () => void) => void; actions: Record<string, () => void> }) => {
+  const q = query.toLowerCase();
+  const results = searchItems.filter(item =>
+    item.label.toLowerCase().includes(q) || item.keywords.some(kw => kw.includes(q) || q.includes(kw))
+  );
+
+  if (results.length === 0) {
+    return (
+      <div className="mt-2 bg-primary-foreground/10 rounded-xl p-3">
+        <p className="text-sm text-primary-foreground/70 text-center">Ничего не найдено</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 bg-primary-foreground/10 backdrop-blur rounded-xl overflow-hidden max-h-60 overflow-y-auto">
+      {results.map(item => (
+        <button
+          key={item.actionKey}
+          onClick={() => actions[item.actionKey] && onSelect(actions[item.actionKey])}
+          className="w-full text-left px-4 py-3 text-sm text-primary-foreground hover:bg-primary-foreground/10 transition-colors border-b border-primary-foreground/5 last:border-0"
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 const iconMap: Record<string, any> = {
   Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, 
   Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, 
-  Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target
+  Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, ArrowRightLeft: ArrowUpRight
 };
 
 const Index = () => {
