@@ -3,6 +3,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 import { TrendingDown, TrendingUp, ArrowUp, ArrowDown, Minus, Bell, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import type { Transaction } from "./TransactionList";
 import SpendingLimitsModal, { LimitAlerts, type SpendingLimit, type LimitAlert } from "./SpendingLimitsModal";
 
@@ -41,11 +43,9 @@ const formatCurrency = (value: number) => {
 
 const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
   const [period, setPeriod] = useState<PeriodFilter>("current");
+  const { user } = useAuth();
   const [limitsModalOpen, setLimitsModalOpen] = useState(false);
-  const [spendingLimits, setSpendingLimits] = useState<SpendingLimit[]>(() => {
-    const saved = localStorage.getItem("spendingLimits");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [spendingLimits, setSpendingLimits] = useState<SpendingLimit[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
   const { toast } = useToast();
 
@@ -201,9 +201,24 @@ const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
 
   const handleSaveLimits = (limits: SpendingLimit[]) => {
     setSpendingLimits(limits);
-    localStorage.setItem("spendingLimits", JSON.stringify(limits));
     setDismissedAlerts([]);
   };
+
+  // Load spending limits from DB on mount
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("spending_limits")
+      .select("*")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (data) {
+          setSpendingLimits(
+            data.map(l => ({ category: l.category, limit: Number(l.limit_amount), enabled: l.is_enabled !== false }))
+          );
+        }
+      });
+  }, [user]);
 
   const handleDismissAlert = (category: string) => {
     setDismissedAlerts(prev => [...prev, category]);
