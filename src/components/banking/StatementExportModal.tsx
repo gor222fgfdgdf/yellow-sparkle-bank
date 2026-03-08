@@ -729,9 +729,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       },
       theme: "grid", rowPageBreak: "avoid", margin: { left: margin, right: margin },
       didParseCell: (data) => {
-        if (data.section === "body" && data.row.index === tableData.length - 1) {
-          data.cell.styles.fontStyle = "bold";
-        }
+        // no bold - match original
       },
     });
 
