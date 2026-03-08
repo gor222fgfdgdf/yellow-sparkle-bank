@@ -15,6 +15,7 @@ interface Transaction {
   currency?: string;
   originalAmount?: number | null;
   commission?: number | null;
+  createdAt?: string;
 }
 
 interface TransactionDetailModalProps {
@@ -91,10 +92,12 @@ const formatDate = (dateString: string) => {
   return dateString;
 };
 
-const formatTime = () => {
-  const hours = Math.floor(Math.random() * 12) + 8;
-  const minutes = Math.floor(Math.random() * 60);
-  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+const formatTime = (createdAt?: string) => {
+  if (createdAt) {
+    const date = new Date(createdAt);
+    return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+  }
+  return "—";
 };
 
 const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: TransactionDetailModalProps) => {
@@ -166,13 +169,13 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
           {/* Main Info */}
           <div className="p-6 text-center border-b border-border">
             <div className={`w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center ${
-              transaction.isIncoming ? "bg-green-500/10" : "bg-muted"
+              transaction.isIncoming ? "bg-success/10" : "bg-muted"
             }`}>
-              <IconComponent className={`w-8 h-8 ${transaction.isIncoming ? "text-green-600" : "text-muted-foreground"}`} />
+              <IconComponent className={`w-8 h-8 ${transaction.isIncoming ? "text-success" : "text-muted-foreground"}`} />
             </div>
             <h3 className="text-xl font-bold text-foreground mb-1">{transaction.name}</h3>
             <p className="text-muted-foreground mb-4">{transaction.category}</p>
-            <p className={`text-3xl font-bold ${transaction.isIncoming ? "text-green-600" : "text-foreground"}`}>
+            <p className={`text-3xl font-bold ${transaction.isIncoming ? "text-success" : "text-foreground"}`}>
               {transaction.isIncoming ? "+" : "-"}
               {transaction.currency && transaction.currency !== 'RUB' && transaction.originalAmount != null
                 ? `${formatCurrency(transaction.originalAmount)} ${transaction.currency}`
@@ -199,7 +202,7 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Время</p>
-                <p className="font-medium text-foreground">{formatTime()}</p>
+                <p className="font-medium text-foreground">{formatTime(transaction.createdAt)}</p>
               </div>
             </div>
 

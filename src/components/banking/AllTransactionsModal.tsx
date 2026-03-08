@@ -62,7 +62,7 @@ const AllTransactionsModal = ({ isOpen, onClose, transactions }: AllTransactions
                   <p className="text-sm text-muted-foreground">{transaction.category} • {transaction.date}</p>
                 </div>
                 <span className={`font-semibold whitespace-nowrap ${
-                  transaction.isIncoming ? "text-green-600" : "text-foreground"
+                  transaction.isIncoming ? "text-success" : "text-foreground"
                 }`}>
                   {transaction.isIncoming ? "+" : "-"}{formatCurrency(transaction.amount)} ₽
                 </span>

@@ -136,7 +136,7 @@ const CurrencyExchangeModal = ({ isOpen, onClose, balance, onExchange }: Currenc
                       <p className="font-medium text-foreground">{formatCurrency(currency.sellRate)}</p>
                     </div>
                   </div>
-                  <div className={`flex items-center justify-end gap-1 text-sm ${currency.change >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  <div className={`flex items-center justify-end gap-1 text-sm ${currency.change >= 0 ? "text-success" : "text-destructive"}`}>
                     {currency.change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                     <span>{currency.change >= 0 ? "+" : ""}{formatCurrency(currency.change)}</span>
                   </div>

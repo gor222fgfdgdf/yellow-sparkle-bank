@@ -223,6 +223,7 @@ const Index = () => {
       currency: tx.currency || 'RUB',
       originalAmount: tx.original_amount != null ? Math.abs(Number(tx.original_amount)) : null,
       commission: tx.commission != null ? Number(tx.commission) : null,
+      createdAt: tx.created_at,
     };
   });
 
