@@ -758,13 +758,13 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                 <div key={item.id} className="bg-card rounded-xl p-4 border border-border">
                   <div className="flex items-start gap-3">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      item.sentiment === "positive" ? "bg-green-500/10" :
-                      item.sentiment === "negative" ? "bg-red-500/10" : "bg-muted"
+                      item.sentiment === "positive" ? "bg-primary/10" :
+                      item.sentiment === "negative" ? "bg-destructive/10" : "bg-muted"
                     }`}>
                       {item.sentiment === "positive" ? (
-                        <TrendingUp className="w-4 h-4 text-green-500" />
+                        <TrendingUp className="w-4 h-4 text-primary" />
                       ) : item.sentiment === "negative" ? (
-                        <TrendingDown className="w-4 h-4 text-red-500" />
+                        <TrendingDown className="w-4 h-4 text-destructive" />
                       ) : (
                         <Info className="w-4 h-4 text-muted-foreground" />
                       )}
