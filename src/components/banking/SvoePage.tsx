@@ -55,10 +55,10 @@ const serviceCards: ServiceCard[] = [
 ];
 
 const serviceGrid = [
-  { title: "Фермерские продукты", subtitle: "Доставка напрямую от фермеров", color: "bg-lime-400", textColor: "text-foreground", image: svoeFarm },
-  { title: "Дача и сад", subtitle: "", color: "bg-orange-500", textColor: "text-white", image: "" },
+  { title: "Фермерские продукты", subtitle: "Доставка напрямую от фермеров", color: "bg-accent", textColor: "text-foreground", image: svoeFarm },
+  { title: "Дача и сад", subtitle: "", color: "bg-primary/70", textColor: "text-primary-foreground", image: "" },
   { title: "Работа и учёба", subtitle: "", color: "bg-foreground", textColor: "text-card", image: "" },
-  { title: "Ипотека", subtitle: "Лучшие условия", color: "bg-blue-100 dark:bg-blue-900", textColor: "text-foreground", image: "" },
+  { title: "Ипотека", subtitle: "Лучшие условия", color: "bg-muted", textColor: "text-foreground", image: "" },
 ];
 
 const categoryImages: Record<string, string> = {
