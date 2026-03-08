@@ -524,7 +524,7 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                         </div>
                         <div className="text-right">
                           <p className="font-semibold text-foreground">{(bond.price * 10 * bond.quantity).toLocaleString("ru-RU")} ₽</p>
-                          <p className="text-sm text-green-500">{bond.yield}% доходность</p>
+                          <p className="text-sm text-primary">{bond.yield}% доходность</p>
                         </div>
                       </div>
                       <div className="flex gap-4 text-sm">
