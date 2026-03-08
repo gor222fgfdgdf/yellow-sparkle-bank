@@ -341,8 +341,7 @@ const SBPTransferModal = ({ isOpen, onClose, balance, onTransfer }: SBPTransferM
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </FullScreenModal>
   );
 };
 
