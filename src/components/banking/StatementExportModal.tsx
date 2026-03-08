@@ -573,7 +573,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       afterPendingY = 20;
     }
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont(fn, "normal");
     doc.text(
       `Сумма доступного остатка на дату формирования выписки с учетом неподтвержденных операций: ${formatSignedRu(closingBalance)}`,
