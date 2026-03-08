@@ -480,7 +480,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       headStyles: {
         fillColor: [255, 255, 255],
         textColor: [0, 0, 0],
-        fontStyle: "bold",
+        fontStyle: "normal",
         halign: "left",
         lineWidth: 0.2,
         lineColor: [0, 0, 0],
