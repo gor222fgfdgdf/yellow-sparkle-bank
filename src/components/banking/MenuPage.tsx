@@ -14,6 +14,7 @@ import QRCodeModal from "./QRCodeModal";
 import DevPdfTestPage from "./DevPdfTestPage";
 import DevStatementGenerator from "./DevStatementGenerator";
 import DevTransactionManager from "./DevTransactionManager";
+import DevCertificateGenerator from "./DevCertificateGenerator";
 import AccountCertificateModal from "./AccountCertificateModal";
 import BudgetsModal from "./BudgetsModal";
 import GeolocationModal from "./GeolocationModal";
@@ -272,6 +273,7 @@ const MenuPage = ({ onOpenCardManagement, onOpenSupport, userName, balance, port
   const [isDevTestOpen, setIsDevTestOpen] = useState(false);
   const [isDevStatementOpen, setIsDevStatementOpen] = useState(false);
   const [isDevTxManagerOpen, setIsDevTxManagerOpen] = useState(false);
+  const [isDevCertOpen, setIsDevCertOpen] = useState(false);
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
   const [isBudgetsOpen, setIsBudgetsOpen] = useState(false);
   const [isMapOpen, setIsMapOpen] = useState(false);
@@ -343,6 +345,7 @@ const MenuPage = ({ onOpenCardManagement, onOpenSupport, userName, balance, port
     { icon: CreditCard, label: "Лимиты на покупки через СБП", subtitle: "Установить лимиты на покупки в магазинах", action: () => setIsLimitsOpen(true) },
     { icon: Smartphone, label: "🛠 Разработка", subtitle: "Тестирование методов экспорта PDF", action: () => setIsDevTestOpen(true) },
     { icon: FileText, label: "🛠 Выписка из будущего", subtitle: "Генерация выписок за любые даты", action: () => setIsDevStatementOpen(true) },
+    { icon: FileText, label: "🛠 Справка из будущего", subtitle: "Генерация справок за любую дату", action: () => setIsDevCertOpen(true) },
     { icon: CreditCard, label: "🛠 Транзакции", subtitle: "Полное управление транзакциями (ПК)", action: () => setIsDevTxManagerOpen(true) },
   ];
 
@@ -583,6 +586,7 @@ const MenuPage = ({ onOpenCardManagement, onOpenSupport, userName, balance, port
       <DevPdfTestPage isOpen={isDevTestOpen} onClose={() => setIsDevTestOpen(false)} />
       <DevStatementGenerator isOpen={isDevStatementOpen} onClose={() => setIsDevStatementOpen(false)} />
       <DevTransactionManager isOpen={isDevTxManagerOpen} onClose={() => setIsDevTxManagerOpen(false)} />
+      <DevCertificateGenerator isOpen={isDevCertOpen} onClose={() => setIsDevCertOpen(false)} />
     </div>
   );
 };
