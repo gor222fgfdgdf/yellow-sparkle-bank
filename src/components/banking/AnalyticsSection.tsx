@@ -43,6 +43,7 @@ const formatCurrency = (value: number) => {
 
 const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
   const [period, setPeriod] = useState<PeriodFilter>("current");
+  const { user } = useAuth();
   const [limitsModalOpen, setLimitsModalOpen] = useState(false);
   const [spendingLimits, setSpendingLimits] = useState<SpendingLimit[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
