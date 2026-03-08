@@ -603,7 +603,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.text("CARD ACCOUNT STATEMENT", pageWidth / 2, y, { align: "center" });
     y += 8;
 
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "bold");
     doc.text(
       `CARD ACCOUNT STATEMENT ${accountNumber} for the period from ${formatDateEn(start.toISOString())} to ${formatDateEn(end.toISOString())}`,
