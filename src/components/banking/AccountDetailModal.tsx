@@ -167,7 +167,7 @@ const AccountDetailModal = ({
           ))}
         </div>
 
-        {!showAllTransactions && transactions.length > 5 && (
+        {!showAllTransactions && transactions.filter(t => t.accountId === account.id).length > 5 && (
           <button
             onClick={() => setShowAllTransactions(true)}
             className="w-full py-3 text-sm text-muted-foreground font-medium border-t border-border"

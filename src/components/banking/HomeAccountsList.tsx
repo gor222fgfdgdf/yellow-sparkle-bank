@@ -15,8 +15,8 @@ const getCardBadge = (account: Account) => {
   const name = account.name.toLowerCase();
   if (name.includes("union") || name.includes("юнион")) {
     return (
-      <div className="bg-teal-600 rounded-lg px-2.5 py-1.5 flex flex-col items-end min-w-[56px]">
-        <span className="text-[10px] font-bold" style={{ color: "white" }}>**{account.cardNumber}</span>
+      <div className="bg-primary rounded-lg px-2.5 py-1.5 flex flex-col items-end min-w-[56px]">
+        <span className="text-[10px] font-bold text-primary-foreground">**{account.cardNumber}</span>
         <UnionPayLogo className="w-10 h-5 mt-0.5" />
       </div>
     );

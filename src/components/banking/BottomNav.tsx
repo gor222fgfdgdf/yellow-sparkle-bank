@@ -28,7 +28,7 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
                 className="flex flex-col items-center -mt-4"
               >
                 <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all ${
-                  isActive ? "bg-primary" : "bg-primary"
+                  isActive ? "bg-primary scale-110" : "bg-primary/80"
                 }`}>
                   <tab.icon className="w-7 h-7 text-primary-foreground" />
                 </div>

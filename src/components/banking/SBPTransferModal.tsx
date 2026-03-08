@@ -90,9 +90,10 @@ const SBPTransferModal = ({ isOpen, onClose, balance, onTransfer }: SBPTransferM
 
   const handleBankSelect = (bank: typeof banks[0]) => {
     setSelectedBank(bank);
-    // Simulate recipient name lookup
+    // Generate consistent recipient name based on phone number
+    const nameIndex = phone.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
     const names = ["Иван И.", "Мария П.", "Алексей С.", "Екатерина К.", "Дмитрий В."];
-    setRecipientName(names[Math.floor(Math.random() * names.length)]);
+    setRecipientName(names[nameIndex % names.length]);
     setStep("amount");
   };
 
