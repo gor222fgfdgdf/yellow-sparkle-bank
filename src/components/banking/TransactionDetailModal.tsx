@@ -175,7 +175,7 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
             </div>
             <h3 className="text-xl font-bold text-foreground mb-1">{transaction.name}</h3>
             <p className="text-muted-foreground mb-4">{transaction.category}</p>
-            <p className={`text-3xl font-bold ${transaction.isIncoming ? "text-green-600" : "text-foreground"}`}>
+            <p className={`text-3xl font-bold ${transaction.isIncoming ? "text-success" : "text-foreground"}`}>
               {transaction.isIncoming ? "+" : "-"}
               {transaction.currency && transaction.currency !== 'RUB' && transaction.originalAmount != null
                 ? `${formatCurrency(transaction.originalAmount)} ${transaction.currency}`
