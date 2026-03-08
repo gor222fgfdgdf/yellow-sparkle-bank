@@ -584,12 +584,49 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
               key={q.label}
               variant="outline"
               size="sm"
-              onClick={() => { setStartDate(q.s); setEndDate(q.e); }}
+              onClick={() => { setStartDate(q.s); setEndDate(q.e); setSixMonthAnchor(""); }}
               className="text-xs"
             >
               {q.label}
             </Button>
           ))}
+        </div>
+
+        {/* 6-month range with anchor date */}
+        <div className="space-y-2">
+          <Label>За 6 месяцев до указанной даты</Label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input 
+                type="date" 
+                value={sixMonthAnchor} 
+                onChange={(e) => {
+                  setSixMonthAnchor(e.target.value);
+                  apply6Months(e.target.value);
+                }} 
+                className="pl-10" 
+                placeholder="Конечная дата"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const today = new Date().toISOString().slice(0, 10);
+                setSixMonthAnchor(today);
+                apply6Months(today);
+              }}
+              className="text-xs whitespace-nowrap"
+            >
+              Сегодня
+            </Button>
+          </div>
+          {sixMonthAnchor && (
+            <p className="text-xs text-muted-foreground">
+              Период: {startDate} — {endDate}
+            </p>
+          )}
         </div>
 
         {/* Export */}
