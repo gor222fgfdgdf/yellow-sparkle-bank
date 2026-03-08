@@ -331,7 +331,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setFontSize(12);
     doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
-    doc.text("ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ", pageWidth / 2, y, { align: "center" });
+    doc.text("ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ", margin, y);
     y += 8;
 
     // Subtitle
@@ -339,7 +339,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setFont(fn, "normal");
     doc.text(
       `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber} за период с ${formatDateRu(start.toISOString())} по ${formatDateRu(end.toISOString())}`,
-      pageWidth / 2, y, { align: "center", maxWidth: pageWidth - margin * 2 }
+      margin, y, { maxWidth: pageWidth - margin * 2 }
     );
     y += 10;
 
@@ -595,14 +595,14 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     doc.setFontSize(12);
     doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
-    doc.text("CARD ACCOUNT STATEMENT", pageWidth / 2, y, { align: "center" });
+    doc.text("CARD ACCOUNT STATEMENT", margin, y);
     y += 8;
 
     doc.setFontSize(11);
     doc.setFont(fn, "normal");
     doc.text(
       `CARD ACCOUNT STATEMENT ${accountNumber} for the period from ${formatDateEn(start.toISOString())} to ${formatDateEn(end.toISOString())}`,
-      pageWidth / 2, y, { align: "center", maxWidth: pageWidth - margin * 2 }
+      margin, y, { maxWidth: pageWidth - margin * 2 }
     );
     y += 10;
 
