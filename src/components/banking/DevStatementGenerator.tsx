@@ -393,7 +393,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
       startY: y,
       head: [tableHeaders],
       body: tableData,
-      styles: { fontSize: 9, cellPadding: 2, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2, overflow: "linebreak", valign: "top" },
+      styles: { fontSize: 11, cellPadding: 3, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2, overflow: "linebreak", valign: "top" },
       headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "normal", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
       columnStyles: {
         0: { cellWidth: 24, halign: "left" }, 1: { cellWidth: 24, halign: "left" },
