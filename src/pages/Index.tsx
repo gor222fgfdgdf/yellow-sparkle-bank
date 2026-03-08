@@ -372,6 +372,44 @@ const Index = () => {
                   autoFocus
                 />
               </div>
+              {globalSearchQuery && (
+                <GlobalSearchResults
+                  query={globalSearchQuery}
+                  onSelect={(action) => {
+                    setGlobalSearchOpen(false);
+                    setGlobalSearchQuery("");
+                    action();
+                  }}
+                  actions={{
+                    payments: () => setActiveTab("payments"),
+                    history: () => setActiveTab("history"),
+                    support: () => setActiveTab("support"),
+                    menu: () => setActiveTab("menu"),
+                    svoe: () => setActiveTab("svoe"),
+                    transfer: () => setIsTransferOpen(true),
+                    topup: () => setIsTopUpOpen(true),
+                    qr: () => setIsQRCodeOpen(true),
+                    sbp: () => setIsSBPTransferOpen(true),
+                    cashback: () => setIsCashbackOpen(true),
+                    currency: () => setIsCurrencyOpen(true),
+                    subscriptions: () => setIsSubscriptionsOpen(true),
+                    budgets: () => setIsBudgetsOpen(true),
+                    goals: () => setIsSavingsGoalsOpen(true),
+                    loans: () => setIsLoansOpen(true),
+                    insurance: () => setIsInsuranceOpen(true),
+                    deposits: () => setIsDepositsOpen(true),
+                    cards: () => setShowCardManagement(true),
+                    notifications: () => setIsNotificationsOpen(true),
+                    statement: () => setIsStatementExportOpen(true),
+                    certificate: () => setIsAccountCertificateOpen(true),
+                    charity: () => setIsCharityOpen(true),
+                    education: () => setIsEducationOpen(true),
+                    loyalty: () => setIsLoyaltyOpen(true),
+                    calendar: () => setIsCalendarOpen(true),
+                    government: () => setIsGovernmentOpen(true),
+                  }}
+                />
+              )}
             </div>
           )}
         </header>
