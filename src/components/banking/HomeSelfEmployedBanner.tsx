@@ -1,12 +1,16 @@
 import React from "react";
 import promoImage from "@/assets/promo-selfemployed.jpg";
 
-const HomeSelfEmployedBanner = React.forwardRef<HTMLDivElement, object>(
-  (_props, ref) => {
+interface HomeSelfEmployedBannerProps {
+  onClick?: () => void;
+}
+
+const HomeSelfEmployedBanner = React.forwardRef<HTMLDivElement, HomeSelfEmployedBannerProps>(
+  ({ onClick }, ref) => {
     return (
       <div ref={ref} className="bg-card rounded-2xl overflow-hidden p-4">
         <h2 className="text-lg font-bold text-foreground mb-3">Всё для самозанятых</h2>
-        <button className="w-full h-[110px] rounded-2xl overflow-hidden relative">
+        <button onClick={onClick} className="w-full h-[110px] rounded-2xl overflow-hidden relative">
           <img src={promoImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-violet-600/80 to-transparent" />
           <div className="relative z-10 h-full flex flex-col justify-center p-4">

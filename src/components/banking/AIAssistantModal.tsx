@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bot, Send, User, Sparkles, TrendingUp, PiggyBank, CreditCard, HelpCircle } from "lucide-react";
+import FullScreenModal from "./FullScreenModal";
 
 interface Message {
   id: string;
@@ -175,12 +175,12 @@ const AIAssistantModal = ({ isOpen, onClose, balance = 0 }: AIAssistantModalProp
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = input;
     setInput("");
     setIsTyping(true);
 
-    // Simulate AI response delay
     setTimeout(() => {
-      const response = generateResponse(input);
+      const response = generateResponse(currentInput);
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
@@ -194,32 +194,22 @@ const AIAssistantModal = ({ isOpen, onClose, balance = 0 }: AIAssistantModalProp
 
   const handleQuickQuestion = (query: string) => {
     setInput(query);
-    setTimeout(() => handleSend(), 100);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md h-[80vh] flex flex-col p-0">
-        <DialogHeader className="p-4 border-b">
-          <DialogTitle className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary-foreground" />
-            </div>
-            Финансовый помощник
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <FullScreenModal isOpen={isOpen} onClose={onClose} title="Финансовый помощник">
+      <div className="flex flex-col" style={{ minHeight: "70vh" }}>
+        <div className="flex-1 space-y-4 mb-4">
           {messages.length === 1 && (
             <div className="grid grid-cols-2 gap-2 mb-4">
               {quickQuestions.map((q, i) => (
                 <button
                   key={i}
                   onClick={() => handleQuickQuestion(q.query)}
-                  className="p-3 bg-card rounded-xl text-left hover:bg-muted transition-colors"
+                  className="p-3 bg-card rounded-xl text-left hover:bg-muted transition-colors border border-border"
                 >
                   <q.icon className="w-5 h-5 text-primary mb-2" />
-                  <p className="text-sm font-medium">{q.text}</p>
+                  <p className="text-sm font-medium text-foreground">{q.text}</p>
                 </button>
               ))}
             </div>
@@ -245,7 +235,7 @@ const AIAssistantModal = ({ isOpen, onClose, balance = 0 }: AIAssistantModalProp
                 className={`max-w-[80%] p-3 rounded-2xl ${
                   message.role === "user"
                     ? "bg-primary text-primary-foreground"
-                    : "bg-card"
+                    : "bg-muted text-foreground"
                 }`}
               >
                 <p className="text-sm whitespace-pre-line">{message.content}</p>
@@ -258,7 +248,7 @@ const AIAssistantModal = ({ isOpen, onClose, balance = 0 }: AIAssistantModalProp
               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                 <Bot className="w-4 h-4 text-muted-foreground" />
               </div>
-              <div className="bg-card p-3 rounded-2xl">
+              <div className="bg-muted p-3 rounded-2xl">
                 <div className="flex gap-1">
                   <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                   <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -271,22 +261,22 @@ const AIAssistantModal = ({ isOpen, onClose, balance = 0 }: AIAssistantModalProp
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="p-4 border-t">
+        <div className="sticky bottom-0 bg-background pt-2 -mx-4 px-4 pb-4 border-t border-border -mb-24">
           <div className="flex gap-2">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Задайте вопрос..."
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              className="flex-1"
+              className="flex-1 h-12 rounded-xl"
             />
-            <Button onClick={handleSend} disabled={!input.trim() || isTyping}>
-              <Send className="w-4 h-4" />
+            <Button onClick={handleSend} disabled={!input.trim() || isTyping} className="h-12 w-12 rounded-xl">
+              <Send className="w-5 h-5" />
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </FullScreenModal>
   );
 };
 

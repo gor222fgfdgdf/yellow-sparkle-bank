@@ -382,7 +382,7 @@ const Index = () => {
               Оформить новый продукт
             </Button>
             <HomeCurrencyRates onOpenCurrency={() => setIsCurrencyOpen(true)} />
-            <HomeSelfEmployedBanner />
+            <HomeSelfEmployedBanner onClick={() => setActiveTab("menu")} />
           </>
         );
     }

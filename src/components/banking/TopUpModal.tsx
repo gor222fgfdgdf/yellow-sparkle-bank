@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { X, CreditCard, Building, Smartphone } from "lucide-react";
+import { CreditCard, Building, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import FullScreenModal from "./FullScreenModal";
 
 interface TopUpModalProps {
   isOpen: boolean;
@@ -55,23 +56,11 @@ const TopUpModal = ({ isOpen, onClose, onTopUp }: TopUpModalProps) => {
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-card rounded-t-3xl p-6 animate-in slide-in-from-bottom duration-300">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-foreground">Пополнить счёт</h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-muted transition-colors"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-
+    <FullScreenModal isOpen={isOpen} onClose={onClose} title="Пополнить счёт">
+      <div className="space-y-6">
         {/* Methods */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3">
           <p className="text-sm font-medium text-muted-foreground">Способ пополнения</p>
           <div className="grid grid-cols-3 gap-3">
             {methods.map((method) => (
@@ -94,7 +83,7 @@ const TopUpModal = ({ isOpen, onClose, onTopUp }: TopUpModalProps) => {
         </div>
 
         {/* Amount Input */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3">
           <p className="text-sm font-medium text-muted-foreground">Сумма</p>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-foreground">₽</span>
@@ -109,7 +98,7 @@ const TopUpModal = ({ isOpen, onClose, onTopUp }: TopUpModalProps) => {
         </div>
 
         {/* Presets */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-2">
           {presets.map((preset) => (
             <button
               key={preset}
@@ -128,7 +117,7 @@ const TopUpModal = ({ isOpen, onClose, onTopUp }: TopUpModalProps) => {
           Пополнить
         </Button>
       </div>
-    </div>
+    </FullScreenModal>
   );
 };
 

@@ -1,296 +1,198 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Filter, ChevronRight, ShoppingCart, Coffee, Car, Utensils, ShoppingBag } from "lucide-react";
+import { useState, useMemo } from "react";
+import { MapPin, ShoppingCart, Coffee, Car, Utensils, ShoppingBag, CreditCard, Briefcase, Heart, Gamepad2, Smartphone, Home, Zap, Droplets, GraduationCap, Dumbbell, Tv, Fuel, Music } from "lucide-react";
 import { useTransactions } from "@/hooks/useTransactions";
-
-interface Location {
-  lat: number;
-  lng: number;
-  address: string;
-}
-
-interface TransactionWithLocation {
-  id: string;
-  name: string;
-  amount: number;
-  category: string;
-  date: string;
-  location: Location;
-  icon: any;
-}
+import FullScreenModal from "./FullScreenModal";
+import type { LucideIcon } from "lucide-react";
 
 interface GeolocationModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const categoryIcons: Record<string, any> = {
-  "Продукты": ShoppingCart,
-  "Рестораны": Utensils,
-  "Кофейни": Coffee,
-  "Транспорт": Car,
-  "Покупки": ShoppingBag,
+const iconMap: Record<string, LucideIcon> = {
+  ShoppingCart, Coffee, Car, Utensils, ShoppingBag, CreditCard, Briefcase, Heart,
+  Gamepad2, Smartphone, Home, Zap, Droplets, GraduationCap, Dumbbell, Tv, Fuel, Music,
 };
 
-const mockLocations: TransactionWithLocation[] = [
-  {
-    id: "1",
-    name: "Пятёрочка",
-    amount: -3450,
-    category: "Продукты",
-    date: "Сегодня, 14:32",
-    location: { lat: 55.7558, lng: 37.6173, address: "ул. Тверская, 15" },
-    icon: ShoppingCart,
-  },
-  {
-    id: "2",
-    name: "Кофемания",
-    amount: -650,
-    category: "Кофейни",
-    date: "Сегодня, 10:15",
-    location: { lat: 55.7539, lng: 37.6208, address: "Камергерский пер., 6" },
-    icon: Coffee,
-  },
-  {
-    id: "3",
-    name: "Яндекс.Такси",
-    amount: -890,
-    category: "Транспорт",
-    date: "Вчера, 22:45",
-    location: { lat: 55.7601, lng: 37.6188, address: "Пушкинская пл." },
-    icon: Car,
-  },
-  {
-    id: "4",
-    name: "Перекрёсток",
-    amount: -5670,
-    category: "Продукты",
-    date: "Вчера, 18:20",
-    location: { lat: 55.7512, lng: 37.6184, address: "ул. Петровка, 20" },
-    icon: ShoppingCart,
-  },
-  {
-    id: "5",
-    name: "Шоколадница",
-    amount: -420,
-    category: "Кофейни",
-    date: "2 дня назад",
-    location: { lat: 55.7545, lng: 37.6150, address: "Тверской бул., 9" },
-    icon: Coffee,
-  },
-];
+const categoryColors: Record<string, string> = {
+  "Продукты": "#22c55e",
+  "Кафе": "#f59e0b",
+  "Транспорт": "#3b82f6",
+  "Рестораны": "#f97316",
+  "Покупки": "#ec4899",
+  "Развлечения": "#f43f5e",
+  "Здоровье": "#ef4444",
+  "Связь": "#14b8a6",
+  "ЖКХ": "#06b6d4",
+  "Подписки": "#a855f7",
+};
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("ru-RU").format(Math.abs(amount));
 
 const GeolocationModal = ({ isOpen, onClose }: GeolocationModalProps) => {
+  const { data: transactions = [] } = useTransactions();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedTransaction, setSelectedTransaction] = useState<TransactionWithLocation | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
-  const categories = Array.from(new Set(mockLocations.map((t) => t.category)));
-  
-  const filteredTransactions = selectedCategory
-    ? mockLocations.filter((t) => t.category === selectedCategory)
-    : mockLocations;
+  // Group expenses by category
+  const categoryStats = useMemo(() => {
+    const stats: Record<string, { total: number; count: number; merchants: Record<string, { total: number; count: number }> }> = {};
+    transactions.filter(tx => !tx.is_income).forEach(tx => {
+      const cat = tx.category;
+      if (!stats[cat]) stats[cat] = { total: 0, count: 0, merchants: {} };
+      stats[cat].total += Math.abs(Number(tx.amount));
+      stats[cat].count += 1;
+      if (!stats[cat].merchants[tx.name]) stats[cat].merchants[tx.name] = { total: 0, count: 0 };
+      stats[cat].merchants[tx.name].total += Math.abs(Number(tx.amount));
+      stats[cat].merchants[tx.name].count += 1;
+    });
+    return Object.entries(stats)
+      .sort((a, b) => b[1].total - a[1].total)
+      .map(([category, data]) => ({
+        category,
+        ...data,
+        merchantList: Object.entries(data.merchants)
+          .sort((a, b) => b[1].total - a[1].total)
+          .map(([name, mdata]) => ({ name, ...mdata })),
+      }));
+  }, [transactions]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(Math.abs(amount));
-  };
+  // Recent expenses for selected category or all
+  const recentExpenses = useMemo(() => {
+    return transactions
+      .filter(tx => !tx.is_income && (!selectedCategory || tx.category === selectedCategory))
+      .slice(0, 20);
+  }, [transactions, selectedCategory]);
 
-  const getCategoryTotal = (category: string) => {
-    return mockLocations
-      .filter((t) => t.category === category)
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-  };
-
-  if (selectedTransaction) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <button onClick={() => setSelectedTransaction(null)} className="text-muted-foreground hover:text-foreground">
-                ←
-              </button>
-              Детали транзакции
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="bg-card rounded-xl p-4">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <selectedTransaction.icon className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold">{selectedTransaction.name}</p>
-                  <p className="text-sm text-muted-foreground">{selectedTransaction.category}</p>
-                </div>
-                <p className="text-lg font-bold text-destructive">-{formatCurrency(selectedTransaction.amount)}</p>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="w-4 h-4" />
-                {selectedTransaction.date}
-              </div>
-            </div>
-
-            <div className="bg-card rounded-xl overflow-hidden">
-              <div className="h-48 bg-muted relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="w-8 h-8 text-primary mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Карта недоступна</p>
-                    <p className="text-xs text-muted-foreground">Интеграция с картами в разработке</p>
-                  </div>
-                </div>
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                  <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    Точка покупки
-                  </div>
-                </div>
-              </div>
-              <div className="p-4">
-                <p className="font-medium">{selectedTransaction.location.address}</p>
-                <p className="text-sm text-muted-foreground">
-                  Координаты: {selectedTransaction.location.lat.toFixed(4)}, {selectedTransaction.location.lng.toFixed(4)}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-card rounded-xl p-4 space-y-2">
-              <h4 className="font-medium">Статистика по этому месту</h4>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Всего покупок</span>
-                <span>5 раз</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Средний чек</span>
-                <span>{formatCurrency(2500)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Всего потрачено</span>
-                <span className="font-semibold">{formatCurrency(12500)}</span>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  const selectedStats = selectedCategory
+    ? categoryStats.find(c => c.category === selectedCategory)
+    : null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MapPin className="w-5 h-5" />
-            География покупок
-          </DialogTitle>
-        </DialogHeader>
+    <FullScreenModal isOpen={isOpen} onClose={onClose} title="География покупок">
+      <div className="space-y-4">
+        {/* Category filter chips */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              selectedCategory === null ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
+            }`}
+          >
+            Все
+          </button>
+          {categoryStats.slice(0, 8).map(({ category }) => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                selectedCategory === category ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
 
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <Button
-              variant={viewMode === "list" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-              className="flex-1"
-            >
-              Список
-            </Button>
-            <Button
-              variant={viewMode === "map" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("map")}
-              className="flex-1"
-            >
-              Карта
-            </Button>
+        {/* Category breakdown grid */}
+        {!selectedCategory && (
+          <div className="grid grid-cols-2 gap-3">
+            {categoryStats.slice(0, 6).map(({ category, total, count }) => {
+              const color = categoryColors[category] || "#6b7280";
+              return (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className="bg-card rounded-xl p-4 text-left hover:bg-muted transition-colors border border-border"
+                >
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center mb-2" style={{ backgroundColor: `${color}20` }}>
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+                  </div>
+                  <p className="font-medium text-foreground text-sm">{category}</p>
+                  <p className="text-lg font-bold text-foreground mt-1">{formatCurrency(total)} ₽</p>
+                  <p className="text-xs text-muted-foreground">{count} операций</p>
+                </button>
+              );
+            })}
           </div>
+        )}
 
-          {viewMode === "map" ? (
-            <div className="bg-muted rounded-xl h-64 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground">Карта покупок</p>
-                <p className="text-sm text-muted-foreground">Интеграция в разработке</p>
+        {/* Selected category detail */}
+        {selectedCategory && selectedStats && (
+          <div className="space-y-4">
+            <div className="bg-card rounded-xl p-4 border border-border">
+              <h3 className="font-bold text-foreground text-lg">{selectedCategory}</h3>
+              <div className="grid grid-cols-3 gap-4 mt-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Всего потрачено</p>
+                  <p className="font-bold text-foreground">{formatCurrency(selectedStats.total)} ₽</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Операций</p>
+                  <p className="font-bold text-foreground">{selectedStats.count}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Средний чек</p>
+                  <p className="font-bold text-foreground">{formatCurrency(selectedStats.total / selectedStats.count)} ₽</p>
+                </div>
               </div>
             </div>
-          ) : (
-            <>
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                <Button
-                  variant={selectedCategory === null ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(null)}
-                >
-                  Все
-                </Button>
-                {categories.map((cat) => (
-                  <Button
-                    key={cat}
-                    variant={selectedCategory === cat ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedCategory(cat)}
-                    className="whitespace-nowrap"
-                  >
-                    {cat}
-                  </Button>
-                ))}
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                {categories.map((cat) => {
-                  const Icon = categoryIcons[cat] || ShoppingBag;
-                  return (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`p-4 rounded-xl text-left transition-colors ${
-                        selectedCategory === cat ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
-                      }`}
-                    >
-                      <Icon className={`w-6 h-6 mb-2 ${selectedCategory === cat ? "" : "text-primary"}`} />
-                      <p className="font-medium text-sm">{cat}</p>
-                      <p className={`text-xs ${selectedCategory === cat ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                        {formatCurrency(getCategoryTotal(cat))}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-
+            {/* Top merchants */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-2">Популярные места</h4>
               <div className="space-y-2">
-                <h4 className="font-medium text-sm text-muted-foreground">Последние покупки</h4>
-                {filteredTransactions.map((tx) => (
-                  <button
-                    key={tx.id}
-                    onClick={() => setSelectedTransaction(tx)}
-                    className="w-full p-3 bg-card rounded-xl flex items-center gap-3 hover:bg-muted transition-colors text-left"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <tx.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{tx.name}</p>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <MapPin className="w-3 h-3" />
-                        <span className="truncate">{tx.location.address}</span>
+                {selectedStats.merchantList.slice(0, 10).map((merchant) => (
+                  <div key={merchant.name} className="flex items-center justify-between p-3 bg-card rounded-xl border border-border">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                        <MapPin className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground text-sm">{merchant.name}</p>
+                        <p className="text-xs text-muted-foreground">{merchant.count} покупок</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-destructive">-{formatCurrency(tx.amount)}</p>
-                      <p className="text-xs text-muted-foreground">{tx.date}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  </button>
+                    <p className="font-semibold text-foreground">{formatCurrency(merchant.total)} ₽</p>
+                  </div>
                 ))}
               </div>
-            </>
-          )}
+            </div>
+          </div>
+        )}
+
+        {/* Recent transactions */}
+        <div>
+          <h4 className="font-semibold text-foreground mb-2">
+            {selectedCategory ? `Последние в «${selectedCategory}»` : "Последние траты"}
+          </h4>
+          <div className="space-y-1">
+            {recentExpenses.map((tx) => {
+              const Icon = iconMap[tx.icon] || CreditCard;
+              const txDate = new Date(tx.date);
+              const dateStr = txDate.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+              return (
+                <div key={tx.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground text-sm truncate">{tx.name}</p>
+                    <p className="text-xs text-muted-foreground">{tx.category} • {dateStr}</p>
+                  </div>
+                  <p className="font-semibold text-foreground text-sm">
+                    {tx.currency !== 'RUB' && tx.original_amount
+                      ? `${formatCurrency(Math.abs(Number(tx.original_amount)))} ${tx.currency}`
+                      : `${formatCurrency(Math.abs(Number(tx.amount)))} ₽`
+                    }
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </FullScreenModal>
   );
 };
 
