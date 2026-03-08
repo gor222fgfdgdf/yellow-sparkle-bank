@@ -323,7 +323,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     const periodLabel = isRu
       ? `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber} за период с ${fmtDate(start.toISOString())} по ${fmtDate(end.toISOString())}`
       : `CARD ACCOUNT STATEMENT ${accountNumber} for the period from ${fmtDate(start.toISOString())} to ${fmtDate(end.toISOString())}`;
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.text(periodLabel, pageWidth / 2, y, { align: "center", maxWidth: pageWidth - margin * 2 });
     y += 10;
 
