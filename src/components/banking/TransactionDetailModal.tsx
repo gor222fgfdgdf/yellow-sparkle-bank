@@ -131,6 +131,8 @@ const generateRealisticTime = (txId: string, category: string, name: string) => 
 };
 
 const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: TransactionDetailModalProps) => {
+  const { data: cashbackCategories = [] } = useCashbackCategories();
+  
   if (!isOpen || !transaction) return null;
 
   const IconComponent = transaction.icon;
