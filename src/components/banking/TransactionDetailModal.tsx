@@ -314,20 +314,24 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
           {/* Cashback info for expenses (exclude internal transfers) */}
           {!transaction.isIncoming && 
            !transaction.category.toLowerCase().includes("перевод") && 
-           !transaction.category.toLowerCase().includes("пополнение") && (
-            <div className="mx-4 mb-4 p-4 bg-primary/10 rounded-2xl">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Кэшбэк по операции</p>
-                  <p className="font-bold text-primary">+{formatCurrency(Math.round(transaction.amount * 0.01))} ₽</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Категория</p>
-                  <p className="font-medium text-foreground">1%</p>
+           !transaction.category.toLowerCase().includes("пополнение") && (() => {
+             const matchedCat = cashbackCategories.find(c => c.is_selected && c.category === transaction.category);
+             const pct = matchedCat ? matchedCat.percentage : 1;
+             return (
+              <div className="mx-4 mb-4 p-4 bg-primary/10 rounded-2xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Кэшбэк по операции</p>
+                    <p className="font-bold text-primary">+{formatCurrency(Math.round(transaction.amount * pct / 100))} ₽</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Категория</p>
+                    <p className="font-medium text-foreground">{pct}%</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+             );
+           })()}
         </div>
 
         {/* Actions */}
