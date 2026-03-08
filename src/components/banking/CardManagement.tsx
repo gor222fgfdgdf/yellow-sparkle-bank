@@ -24,6 +24,7 @@ import UnionPayLogo from "./UnionPayLogo";
 interface CardManagementProps {
   onClose: () => void;
   cardHolderName?: string;
+  cardNumber?: string;
 }
 
 const formatCurrency = (value: number) => {
