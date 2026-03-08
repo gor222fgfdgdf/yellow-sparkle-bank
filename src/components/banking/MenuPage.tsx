@@ -12,6 +12,7 @@ import CurrencyExchangeModal from "./CurrencyExchangeModal";
 import InvestmentPortfolioModal from "./InvestmentPortfolioModal";
 import QRCodeModal from "./QRCodeModal";
 import DevPdfTestPage from "./DevPdfTestPage";
+import DevStatementGenerator from "./DevStatementGenerator";
 
 interface MenuPageProps {
   onOpenCardManagement: () => void;
@@ -40,6 +41,7 @@ const MenuPage = ({ onOpenCardManagement, userName, balance, portfolioValue, car
   const [isInvestOpen, setIsInvestOpen] = useState(false);
   const [isQRLoginOpen, setIsQRLoginOpen] = useState(false);
   const [isDevTestOpen, setIsDevTestOpen] = useState(false);
+  const [isDevStatementOpen, setIsDevStatementOpen] = useState(false);
 
   const userInitials = userName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
 
@@ -99,6 +101,7 @@ const MenuPage = ({ onOpenCardManagement, userName, balance, portfolioValue, car
     { icon: Smartphone, label: "Мои устройства", subtitle: "Добавьте используемое устройство", action: () => toast({ title: "Устройства", description: "Текущее устройство: это приложение" }) },
     { icon: CreditCard, label: "Лимиты на покупки через СБП", subtitle: "Установить лимиты на покупки в магазинах", action: () => setIsLimitsOpen(true) },
     { icon: Smartphone, label: "🛠 Разработка", subtitle: "Тестирование методов экспорта PDF", action: () => setIsDevTestOpen(true) },
+    { icon: FileText, label: "🛠 Выписка из будущего", subtitle: "Генерация выписок за любые даты", action: () => setIsDevStatementOpen(true) },
   ];
 
   return (
@@ -325,6 +328,7 @@ const MenuPage = ({ onOpenCardManagement, userName, balance, portfolioValue, car
         onReceive={() => {}}
       />
       <DevPdfTestPage isOpen={isDevTestOpen} onClose={() => setIsDevTestOpen(false)} />
+      <DevStatementGenerator isOpen={isDevStatementOpen} onClose={() => setIsDevStatementOpen(false)} />
     </div>
   );
 };
