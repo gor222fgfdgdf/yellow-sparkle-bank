@@ -329,14 +329,15 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
 
     doc.setFontSize(9);
     doc.setFont(fn, "normal");
+    const statementDateStr = fmtDate(end.toISOString());
     const infoLines = isRu ? [
-      `Дата выписки: ${fmtDate(new Date().toISOString())}`,
+      `Дата выписки: ${statementDateStr}`,
       `Валюта счёта: Российский рубль`,
       `Владелец счёта: ${ownerName}`,
       `Дата входящего остатка: ${fmtDate(start.toISOString())}`,
       `Филиал/Отделение: Воронежский региональный филиал`,
     ] : [
-      `Statement date: ${fmtDate(new Date().toISOString())}`,
+      `Statement date: ${statementDateStr}`,
       `Account currency: Russian Ruble`,
       `Account holder: ${ownerName}`,
       `Opening balance date: ${fmtDate(start.toISOString())}`,
