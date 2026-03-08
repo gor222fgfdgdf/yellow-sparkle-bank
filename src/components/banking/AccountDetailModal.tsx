@@ -50,7 +50,7 @@ const AccountDetailModal = ({
 
   if (!isOpen) return null;
 
-  const accountTransactions = transactions.slice(0, showAllTransactions ? 20 : 5);
+  const accountTransactions = transactions.filter(t => t.accountId === account.id).slice(0, showAllTransactions ? 20 : 5);
 
   // Group transactions by date
   const groupedTransactions: Record<string, Transaction[]> = {};
@@ -167,7 +167,7 @@ const AccountDetailModal = ({
           ))}
         </div>
 
-        {!showAllTransactions && transactions.length > 5 && (
+        {!showAllTransactions && transactions.filter(t => t.accountId === account.id).length > 5 && (
           <button
             onClick={() => setShowAllTransactions(true)}
             className="w-full py-3 text-sm text-muted-foreground font-medium border-t border-border"
@@ -278,7 +278,7 @@ const AccountDetailModal = ({
         <TransactionDetailModal
           isOpen={!!selectedTx}
           onClose={() => setSelectedTx(null)}
-          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, accountName: account.name, accountCardNumber: account.cardNumber }}
+          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, accountName: account.name, accountCardNumber: account.cardNumber, createdAt: selectedTx.createdAt }}
         />
       )}
     </div>
