@@ -147,14 +147,7 @@ const SBPTransferModal = ({ isOpen, onClose, balance, onTransfer }: SBPTransferM
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-card rounded-t-3xl p-6 animate-in slide-in-from-bottom duration-300 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-foreground">Перевод по СБП</h2>
-          <button onClick={handleClose} className="p-2 rounded-full hover:bg-muted transition-colors">
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
+    <FullScreenModal isOpen={isOpen} onClose={handleClose} title="Перевод по СБП">
 
         {/* Progress */}
         <div className="flex gap-1 mb-6">
