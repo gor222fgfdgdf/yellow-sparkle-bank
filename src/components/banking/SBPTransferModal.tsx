@@ -144,7 +144,7 @@ const SBPTransferModal = ({ isOpen, onClose, balance, onTransfer }: SBPTransferM
     onClose();
   };
 
-  if (!isOpen) return null;
+  
 
   return (
     <FullScreenModal isOpen={isOpen} onClose={handleClose} title="Перевод по СБП">
