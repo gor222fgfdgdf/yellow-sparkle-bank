@@ -612,7 +612,7 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
               {watchlist.length > 0 && !searchQuery && (
                 <div className="bg-card rounded-2xl p-4 border border-border">
                   <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <Star className="w-4 h-4 text-yellow-500" />
+                    <Star className="w-4 h-4 text-primary" />
                     Избранное
                   </h3>
                   <div className="space-y-2">
