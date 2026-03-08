@@ -597,7 +597,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     const fn = "Roboto";
     let y = 16;
 
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont(fn, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text("CARD ACCOUNT STATEMENT", pageWidth / 2, y, { align: "center" });
