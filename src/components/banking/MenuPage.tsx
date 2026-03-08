@@ -12,6 +12,7 @@ import CurrencyExchangeModal from "./CurrencyExchangeModal";
 import InvestmentPortfolioModal from "./InvestmentPortfolioModal";
 import QRCodeModal from "./QRCodeModal";
 import DevPdfTestPage from "./DevPdfTestPage";
+import DevStatementGenerator from "./DevStatementGenerator";
 
 interface MenuPageProps {
   onOpenCardManagement: () => void;
