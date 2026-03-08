@@ -625,7 +625,7 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                         <span className="font-medium text-foreground">{stock.symbol}</span>
                         <div className="flex items-center gap-2">
                           <span className="text-foreground">{stock.price.toLocaleString("ru-RU")} ₽</span>
-                          <span className={`text-sm ${stock.change >= 0 ? "text-green-500" : "text-red-500"}`}>
+                          <span className={`text-sm ${stock.change >= 0 ? "text-primary" : "text-destructive"}`}>
                             {stock.change >= 0 ? "+" : ""}{stock.changePercent}%
                           </span>
                         </div>
