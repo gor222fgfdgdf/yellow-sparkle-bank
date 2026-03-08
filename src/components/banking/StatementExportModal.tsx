@@ -523,7 +523,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     // Pending operations section
     doc.setFontSize(10);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text("ОПЕРАЦИИ, ОЖИДАЮЩИЕ ОБРАБОТКИ", margin, footerY);
     footerY += 4;
 
