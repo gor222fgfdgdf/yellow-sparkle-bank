@@ -169,9 +169,9 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
           {/* Main Info */}
           <div className="p-6 text-center border-b border-border">
             <div className={`w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center ${
-              transaction.isIncoming ? "bg-green-500/10" : "bg-muted"
+              transaction.isIncoming ? "bg-success/10" : "bg-muted"
             }`}>
-              <IconComponent className={`w-8 h-8 ${transaction.isIncoming ? "text-green-600" : "text-muted-foreground"}`} />
+              <IconComponent className={`w-8 h-8 ${transaction.isIncoming ? "text-success" : "text-muted-foreground"}`} />
             </div>
             <h3 className="text-xl font-bold text-foreground mb-1">{transaction.name}</h3>
             <p className="text-muted-foreground mb-4">{transaction.category}</p>
