@@ -611,10 +611,11 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     );
     y += 10;
 
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont(fn, "normal");
+    const statementDateStrEn = formatDateEn(end.toISOString());
     const infoLines = [
-      `Statement date: ${formatDateEn(new Date().toISOString())}`,
+      `Statement date: ${statementDateStrEn}`,
       `Account currency: Russian Ruble`,
       `Account holder: ${ownerName}`,
       `Opening balance date: ${formatDateEn(start.toISOString())}`,
