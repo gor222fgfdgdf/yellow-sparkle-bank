@@ -49,8 +49,8 @@ const serviceCards: ServiceCard[] = [
     title: "Путешествия",
     subtitle: "Компенсация до 100% стоимости баллами программы лояльности",
     badge: "Скидки до 30%",
-    color: "bg-purple-500",
-    textColor: "text-white",
+    color: "bg-primary/80",
+    textColor: "text-primary-foreground",
   },
 ];
 
