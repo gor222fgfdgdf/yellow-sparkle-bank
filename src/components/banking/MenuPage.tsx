@@ -101,6 +101,7 @@ const MenuPage = ({ onOpenCardManagement, userName, balance, portfolioValue, car
     { icon: Smartphone, label: "Мои устройства", subtitle: "Добавьте используемое устройство", action: () => toast({ title: "Устройства", description: "Текущее устройство: это приложение" }) },
     { icon: CreditCard, label: "Лимиты на покупки через СБП", subtitle: "Установить лимиты на покупки в магазинах", action: () => setIsLimitsOpen(true) },
     { icon: Smartphone, label: "🛠 Разработка", subtitle: "Тестирование методов экспорта PDF", action: () => setIsDevTestOpen(true) },
+    { icon: FileText, label: "🛠 Выписка из будущего", subtitle: "Генерация выписок за любые даты", action: () => setIsDevStatementOpen(true) },
   ];
 
   return (
