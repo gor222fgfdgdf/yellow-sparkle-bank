@@ -41,6 +41,7 @@ const MenuPage = ({ onOpenCardManagement, userName, balance, portfolioValue, car
   const [isInvestOpen, setIsInvestOpen] = useState(false);
   const [isQRLoginOpen, setIsQRLoginOpen] = useState(false);
   const [isDevTestOpen, setIsDevTestOpen] = useState(false);
+  const [isDevStatementOpen, setIsDevStatementOpen] = useState(false);
 
   const userInitials = userName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
 
