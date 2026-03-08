@@ -652,7 +652,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       "Transaction\ndescription",
       "Transaction\ncurrency",
       "Amount in\ntransaction\ncurrency",
-      "Commission\nin currency",
+      "Commission\nin transaction\ncurrency",
       "Card No.",
     ];
 
