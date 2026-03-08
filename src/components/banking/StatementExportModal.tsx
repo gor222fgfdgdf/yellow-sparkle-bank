@@ -500,12 +500,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       rowPageBreak: "avoid",
       margin: { left: margin, right: margin },
       didParseCell: (data) => {
-        if (data.section === "body") {
-          const isLast = data.row.index === tableData.length - 1;
-          if (isLast) {
-            data.cell.styles.fontStyle = "bold";
-          }
-        }
+        // no bold for totals - match original
       },
     });
 
