@@ -476,8 +476,8 @@ const StoriesBanner = ({
                 <div className="space-y-3">
                   {currentStory.content.details.map((detail, idx) => (
                     <div key={idx} className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
-                        <Check className="w-4 h-4 text-green-500" />
+                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Check className="w-4 h-4 text-primary" />
                       </div>
                       <span className="text-sm text-foreground">{detail}</span>
                     </div>

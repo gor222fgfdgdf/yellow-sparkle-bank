@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { X, Phone, Building2, Star, StarOff, Clock, Check, Search } from "lucide-react";
+import { Phone, Building2, Star, StarOff, Clock, Check, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import FullScreenModal from "./FullScreenModal";
 
 interface SavedRecipient {
   id: string;
@@ -143,17 +144,10 @@ const SBPTransferModal = ({ isOpen, onClose, balance, onTransfer }: SBPTransferM
     onClose();
   };
 
-  if (!isOpen) return null;
+  
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-card rounded-t-3xl p-6 animate-in slide-in-from-bottom duration-300 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-foreground">Перевод по СБП</h2>
-          <button onClick={handleClose} className="p-2 rounded-full hover:bg-muted transition-colors">
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
+    <FullScreenModal isOpen={isOpen} onClose={handleClose} title="Перевод по СБП">
 
         {/* Progress */}
         <div className="flex gap-1 mb-6">
@@ -225,7 +219,7 @@ const SBPTransferModal = ({ isOpen, onClose, balance, onTransfer }: SBPTransferM
                         className="p-2"
                       >
                         {recipient.isFavorite ? (
-                          <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                          <Star className="w-5 h-5 text-primary fill-primary" />
                         ) : (
                           <StarOff className="w-5 h-5 text-muted-foreground" />
                         )}
@@ -347,8 +341,7 @@ const SBPTransferModal = ({ isOpen, onClose, balance, onTransfer }: SBPTransferM
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </FullScreenModal>
   );
 };
 

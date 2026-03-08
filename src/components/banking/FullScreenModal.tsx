@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactNode, forwardRef } from "react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 
 interface FullScreenModalProps {
@@ -10,31 +10,35 @@ interface FullScreenModalProps {
   headerRight?: ReactNode;
 }
 
-const FullScreenModal = ({ isOpen, onClose, title, children, headerRight }: FullScreenModalProps) => {
-  useSwipeBack({ onBack: onClose, enabled: isOpen });
+const FullScreenModal = forwardRef<HTMLDivElement, FullScreenModalProps>(
+  ({ isOpen, onClose, title, children, headerRight }, ref) => {
+    useSwipeBack({ onBack: onClose, enabled: isOpen });
 
-  if (!isOpen) return null;
+    if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 bg-background overflow-y-auto" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)' }}>
-      <div className="max-w-lg mx-auto min-h-screen">
-        <header className="bg-background border-b border-border">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-3">
-              <button onClick={onClose} className="p-2 rounded-full hover:bg-muted transition-colors">
-                <ArrowLeft className="w-5 h-5 text-foreground" />
-              </button>
-              <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+    return (
+      <div ref={ref} className="fixed inset-0 z-50 bg-background overflow-y-auto" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)' }}>
+        <div className="max-w-lg mx-auto min-h-screen">
+          <header className="bg-background border-b border-border">
+            <div className="flex items-center justify-between px-4 py-3">
+              <div className="flex items-center gap-3">
+                <button onClick={onClose} className="p-2 rounded-full hover:bg-muted transition-colors">
+                  <ArrowLeft className="w-5 h-5 text-foreground" />
+                </button>
+                <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+              </div>
+              {headerRight && <div>{headerRight}</div>}
             </div>
-            {headerRight && <div>{headerRight}</div>}
+          </header>
+          <div className="p-4 pb-24">
+            {children}
           </div>
-        </header>
-        <div className="p-4 pb-24">
-          {children}
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
+
+FullScreenModal.displayName = "FullScreenModal";
 
 export default FullScreenModal;

@@ -349,7 +349,7 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                               <h3 className="text-xl font-bold text-foreground">{selectedStock.symbol}</h3>
                               <button onClick={() => toggleWatchlist(selectedStock.symbol)}>
                                 {watchlist.includes(selectedStock.symbol) ? (
-                                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                                  <Star className="w-5 h-5 text-primary fill-primary" />
                                 ) : (
                                   <StarOff className="w-5 h-5 text-muted-foreground" />
                                 )}
@@ -498,14 +498,14 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                           <div className="text-left">
                             <div className="flex items-center gap-2">
                               <p className="font-semibold text-foreground">{stock.symbol}</p>
-                              {watchlist.includes(stock.symbol) && <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
+                              {watchlist.includes(stock.symbol) && <Star className="w-3 h-3 text-primary fill-primary" />}
                             </div>
                             <p className="text-sm text-muted-foreground">{stock.quantity} шт. • {stock.sector}</p>
                           </div>
                         </div>
                         <div className="text-right">
                           <p className="font-semibold text-foreground">{(stock.price * stock.quantity).toLocaleString("ru-RU")} ₽</p>
-                          <p className={`text-sm ${stock.change >= 0 ? "text-green-500" : "text-red-500"}`}>
+                          <p className={`text-sm ${stock.change >= 0 ? "text-primary" : "text-destructive"}`}>
                             {stock.change >= 0 ? "+" : ""}{stock.changePercent}%
                           </p>
                         </div>
@@ -524,7 +524,7 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                         </div>
                         <div className="text-right">
                           <p className="font-semibold text-foreground">{(bond.price * 10 * bond.quantity).toLocaleString("ru-RU")} ₽</p>
-                          <p className="text-sm text-green-500">{bond.yield}% доходность</p>
+                          <p className="text-sm text-primary">{bond.yield}% доходность</p>
                         </div>
                       </div>
                       <div className="flex gap-4 text-sm">
@@ -571,12 +571,12 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                     <div key={trade.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                       <div className="flex items-center gap-2">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                          trade.type === "buy" ? "bg-green-500/10" : "bg-red-500/10"
+                          trade.type === "buy" ? "bg-primary/10" : "bg-destructive/10"
                         }`}>
                           {trade.type === "buy" ? (
-                            <ArrowDownRight className="w-3 h-3 text-green-500" />
+                            <ArrowDownRight className="w-3 h-3 text-primary" />
                           ) : (
-                            <ArrowUpRight className="w-3 h-3 text-red-500" />
+                            <ArrowUpRight className="w-3 h-3 text-destructive" />
                           )}
                         </div>
                         <div>
@@ -612,7 +612,7 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
               {watchlist.length > 0 && !searchQuery && (
                 <div className="bg-card rounded-2xl p-4 border border-border">
                   <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <Star className="w-4 h-4 text-yellow-500" />
+                    <Star className="w-4 h-4 text-primary" />
                     Избранное
                   </h3>
                   <div className="space-y-2">
@@ -625,7 +625,7 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                         <span className="font-medium text-foreground">{stock.symbol}</span>
                         <div className="flex items-center gap-2">
                           <span className="text-foreground">{stock.price.toLocaleString("ru-RU")} ₽</span>
-                          <span className={`text-sm ${stock.change >= 0 ? "text-green-500" : "text-red-500"}`}>
+                          <span className={`text-sm ${stock.change >= 0 ? "text-primary" : "text-destructive"}`}>
                             {stock.change >= 0 ? "+" : ""}{stock.changePercent}%
                           </span>
                         </div>
@@ -653,14 +653,14 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                       <div className="text-left">
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-foreground">{stock.symbol}</p>
-                          {watchlist.includes(stock.symbol) && <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
+                          {watchlist.includes(stock.symbol) && <Star className="w-3 h-3 text-primary fill-primary" />}
                         </div>
                         <p className="text-sm text-muted-foreground">{stock.name}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-foreground">{stock.price.toLocaleString("ru-RU")} ₽</p>
-                      <p className={`text-sm ${stock.change >= 0 ? "text-green-500" : "text-red-500"}`}>
+                      <p className={`text-sm ${stock.change >= 0 ? "text-primary" : "text-destructive"}`}>
                         {stock.change >= 0 ? "+" : ""}{stock.changePercent}%
                       </p>
                     </div>
@@ -758,13 +758,13 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                 <div key={item.id} className="bg-card rounded-xl p-4 border border-border">
                   <div className="flex items-start gap-3">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      item.sentiment === "positive" ? "bg-green-500/10" :
-                      item.sentiment === "negative" ? "bg-red-500/10" : "bg-muted"
+                      item.sentiment === "positive" ? "bg-primary/10" :
+                      item.sentiment === "negative" ? "bg-destructive/10" : "bg-muted"
                     }`}>
                       {item.sentiment === "positive" ? (
-                        <TrendingUp className="w-4 h-4 text-green-500" />
+                        <TrendingUp className="w-4 h-4 text-primary" />
                       ) : item.sentiment === "negative" ? (
-                        <TrendingDown className="w-4 h-4 text-red-500" />
+                        <TrendingDown className="w-4 h-4 text-destructive" />
                       ) : (
                         <Info className="w-4 h-4 text-muted-foreground" />
                       )}
