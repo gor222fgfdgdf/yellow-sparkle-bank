@@ -375,7 +375,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     // Section title
     doc.setFontSize(10);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text("ПОДТВЕРЖДЕННЫЕ ОПЕРАЦИИ", margin, y);
     y += 4;
 
