@@ -287,7 +287,7 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER", cardNumber = "
                 <p className="text-primary-foreground text-sm font-medium">Россельхозбанк</p>
               </div>
               <div className="absolute bottom-16 left-6">
-                <p className="text-primary-foreground text-lg tracking-widest font-mono">•••• •••• •••• 7823</p>
+                <p className="text-primary-foreground text-lg tracking-widest font-mono">•••• •••• •••• {cardNumber}</p>
               </div>
               <div className="absolute bottom-6 left-6">
               <p className="text-primary-foreground/70 text-xs">ВЛАДЕЛЕЦ</p>
