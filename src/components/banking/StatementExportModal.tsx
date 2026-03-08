@@ -190,12 +190,12 @@ const buildStatementDescriptionEn = (tx: Transaction, dateStr: string) => {
 
   if (catLower.includes('зарплат') || nameLower.includes('мани мен')) {
     if (nameLower.includes('аванс')) {
-      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nAdvance payment credit\nfrom OOO MFK "Mani Men" (TIN 7704784072)`;
+      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nAdvance payment credit\nfrom LLC "MFC MoneyMan" (TIN 7704784072)`;
     }
     if (nameLower.includes('отпускн')) {
-      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nVacation pay credit\nfrom OOO MFK "Mani Men" (TIN 7704784072)`;
+      return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nVacation pay credit\nfrom LLC "MFC MoneyMan" (TIN 7704784072)`;
     }
-    return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nSalary and bonus credit\nfrom OOO MFK "Mani Men" (TIN 7704784072)`;
+    return `RUS, DBO TRANSFER RSHB INTERNET-BANK\nSalary and bonus credit\nfrom LLC "MFC MoneyMan" (TIN 7704784072)`;
   }
 
   if (tx.is_income && (nameLower.includes('перевод') || catLower.includes('перевод'))) {
