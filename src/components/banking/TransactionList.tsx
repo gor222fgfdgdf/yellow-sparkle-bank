@@ -17,6 +17,7 @@ export interface Transaction {
   currency?: string;
   originalAmount?: number | null;
   commission?: number | null;
+  createdAt?: string;
 }
 
 interface TransactionListProps {

@@ -202,7 +202,7 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Время</p>
-                <p className="font-medium text-foreground">{formatTime()}</p>
+                <p className="font-medium text-foreground">{formatTime(transaction.createdAt)}</p>
               </div>
             </div>
 
