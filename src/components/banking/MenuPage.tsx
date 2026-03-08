@@ -14,6 +14,7 @@ import QRCodeModal from "./QRCodeModal";
 import DevPdfTestPage from "./DevPdfTestPage";
 import DevStatementGenerator from "./DevStatementGenerator";
 import DevTransactionManager from "./DevTransactionManager";
+import DevCertificateGenerator from "./DevCertificateGenerator";
 import AccountCertificateModal from "./AccountCertificateModal";
 import BudgetsModal from "./BudgetsModal";
 import GeolocationModal from "./GeolocationModal";
