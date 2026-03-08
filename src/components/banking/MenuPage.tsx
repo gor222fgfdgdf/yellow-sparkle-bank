@@ -345,6 +345,7 @@ const MenuPage = ({ onOpenCardManagement, onOpenSupport, userName, balance, port
     { icon: CreditCard, label: "Лимиты на покупки через СБП", subtitle: "Установить лимиты на покупки в магазинах", action: () => setIsLimitsOpen(true) },
     { icon: Smartphone, label: "🛠 Разработка", subtitle: "Тестирование методов экспорта PDF", action: () => setIsDevTestOpen(true) },
     { icon: FileText, label: "🛠 Выписка из будущего", subtitle: "Генерация выписок за любые даты", action: () => setIsDevStatementOpen(true) },
+    { icon: FileText, label: "🛠 Справка из будущего", subtitle: "Генерация справок за любую дату", action: () => setIsDevCertOpen(true) },
     { icon: CreditCard, label: "🛠 Транзакции", subtitle: "Полное управление транзакциями (ПК)", action: () => setIsDevTxManagerOpen(true) },
   ];
 
