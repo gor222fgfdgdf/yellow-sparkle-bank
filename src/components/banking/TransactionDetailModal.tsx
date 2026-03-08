@@ -311,10 +311,39 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
             )}
           </div>
 
-          {/* Cashback info for expenses (exclude internal transfers) */}
+          {/* ATM commission info */}
+          {!transaction.isIncoming && 
+           (transaction.category.toLowerCase().includes("наличные") || 
+            transaction.category.toLowerCase().includes("снятие") ||
+            transaction.name.toLowerCase().includes("atm")) && (() => {
+             // RSHB: комиссия за снятие за рубежом — 1% от суммы, мин. 199₽
+             const rawAmount = transaction.originalAmount != null ? transaction.amount : transaction.amount;
+             const percentFee = rawAmount * 0.01;
+             const atmCommission = Math.max(199, Math.round(percentFee));
+             const feePercent = atmCommission === 199 ? `(мин. 199 ₽)` : `(1%)`;
+             return (
+              <div className="mx-4 mb-4 p-4 bg-destructive/10 rounded-2xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Комиссия за снятие</p>
+                    <p className="font-bold text-destructive">-{formatCurrency(atmCommission)} ₽</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Тариф</p>
+                    <p className="font-medium text-foreground">1% {feePercent}</p>
+                  </div>
+                </div>
+              </div>
+             );
+           })()}
+
+          {/* Cashback info for expenses (exclude internal transfers, cash withdrawals) */}
           {!transaction.isIncoming && 
            !transaction.category.toLowerCase().includes("перевод") && 
-           !transaction.category.toLowerCase().includes("пополнение") && (() => {
+           !transaction.category.toLowerCase().includes("пополнение") &&
+           !transaction.category.toLowerCase().includes("наличные") &&
+           !transaction.category.toLowerCase().includes("снятие") &&
+           !transaction.name.toLowerCase().includes("atm") && (() => {
              const matchedCat = cashbackCategories.find(c => c.is_selected && c.category === transaction.category);
              const pct = matchedCat ? matchedCat.percentage : 1;
              return (
