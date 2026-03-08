@@ -328,6 +328,7 @@ const MenuPage = ({ onOpenCardManagement, userName, balance, portfolioValue, car
         onReceive={() => {}}
       />
       <DevPdfTestPage isOpen={isDevTestOpen} onClose={() => setIsDevTestOpen(false)} />
+      <DevStatementGenerator isOpen={isDevStatementOpen} onClose={() => setIsDevStatementOpen(false)} />
     </div>
   );
 };
