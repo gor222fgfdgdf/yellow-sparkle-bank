@@ -346,8 +346,9 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     // Info fields
     doc.setFontSize(10);
     doc.setFont(fn, "normal");
+    const statementDateStr = formatDateRu(end.toISOString());
     const infoLines = [
-      `Дата выписки: ${formatDateRu(new Date().toISOString())}`,
+      `Дата выписки: ${statementDateStr}`,
       `Валюта счёта: Российский рубль`,
       `Владелец счёта: ${ownerName}`,
       `Дата входящего остатка: ${formatDateRu(start.toISOString())}`,
