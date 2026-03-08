@@ -101,7 +101,7 @@ const AccountDetailModal = ({
 
       {/* 3 Action Buttons */}
       <div className="flex justify-center gap-8 py-5">
-        <button onClick={() => { onClose(); onTransfer(); }} className="flex flex-col items-center gap-2">
+        <button onClick={() => { onClose(); onTransfer?.(); }} className="flex flex-col items-center gap-2">
           <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
             <ArrowRight className="w-6 h-6 text-primary-foreground" />
           </div>

@@ -392,7 +392,7 @@ const Index = () => {
   if (selectedAccount) {
     return (
       <div className="min-h-screen bg-background">
-        <AccountDetailModal isOpen={true} onClose={() => setSelectedAccount(null)} account={selectedAccount} transactions={transactions} onTopUp={() => setIsTopUpOpen(true)} onCardSettings={() => { setSelectedAccount(null); setShowCardManagement(true); }} cardHolderName={cardHolderName} onOpenStatementExport={() => { setSelectedAccount(null); setIsStatementExportOpen(true); }} onOpenAccountCertificate={() => { setSelectedAccount(null); setIsAccountCertificateOpen(true); }} />
+        <AccountDetailModal isOpen={true} onClose={() => setSelectedAccount(null)} account={selectedAccount} transactions={transactions} onTransfer={() => setIsTransferOpen(true)} onTopUp={() => setIsTopUpOpen(true)} onCardSettings={() => { setSelectedAccount(null); setShowCardManagement(true); }} cardHolderName={cardHolderName} onOpenStatementExport={() => { setSelectedAccount(null); setIsStatementExportOpen(true); }} onOpenAccountCertificate={() => { setSelectedAccount(null); setIsAccountCertificateOpen(true); }} />
         <TransferModal isOpen={isTransferOpen} onClose={() => setIsTransferOpen(false)} balance={mainAccountBalance} onTransfer={handleTransfer} />
         
         <TopUpModal isOpen={isTopUpOpen} onClose={() => setIsTopUpOpen(false)} onTopUp={handleTopUp} />
@@ -505,7 +505,7 @@ const Index = () => {
         onSetupPin={() => { setIsMoreOpen(false); setIsSettingUpPin(true); }}
         onOpenAccountCertificate={() => { setIsMoreOpen(false); setIsAccountCertificateOpen(true); }}
       />
-      <AllTransactionsModal isOpen={isAllTransactionsOpen} onClose={() => setIsAllTransactionsOpen(false)} transactions={transactions} />
+      <AllTransactionsModal isOpen={isAllTransactionsOpen} onClose={() => setIsAllTransactionsOpen(false)} transactions={transactions} accounts={accounts} />
       {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} cardHolderName={cardHolderName} cardNumber={mainAccount?.cardNumber || "4276"} />}
       <BudgetsModal isOpen={isBudgetsOpen} onClose={() => setIsBudgetsOpen(false)} transactions={transactions} />
       <SavingsGoalsModal isOpen={isSavingsGoalsOpen} onClose={() => setIsSavingsGoalsOpen(false)} onDeduct={handleSavingsDeduct} />

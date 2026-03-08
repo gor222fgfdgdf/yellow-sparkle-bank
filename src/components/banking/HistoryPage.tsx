@@ -165,7 +165,7 @@ const HistoryPage = ({ transactions, accounts }: HistoryPageProps) => {
       {/* Analytics or Transactions view */}
       {viewMode === "analytics" ? (
         <div className="px-4">
-          <AnalyticsSection transactions={periodFiltered} />
+          <AnalyticsSection transactions={transactions} />
         </div>
       ) : (
         <>
