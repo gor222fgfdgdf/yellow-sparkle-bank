@@ -13,6 +13,7 @@ import InvestmentPortfolioModal from "./InvestmentPortfolioModal";
 import QRCodeModal from "./QRCodeModal";
 import DevPdfTestPage from "./DevPdfTestPage";
 import DevStatementGenerator from "./DevStatementGenerator";
+import DevTransactionManager from "./DevTransactionManager";
 
 interface MenuPageProps {
   onOpenCardManagement: () => void;
