@@ -127,9 +127,9 @@ const GlobalSearchResults = ({ query, onSelect, actions }: { query: string; onSe
 };
 
 const iconMap: Record<string, any> = {
-  Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, 
+  Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, ArrowRightLeft, Home, 
   Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, 
-  Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, ArrowRightLeft: ArrowUpRight
+  Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target
 };
 
 const Index = () => {
