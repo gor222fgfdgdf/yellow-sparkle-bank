@@ -273,6 +273,7 @@ const MenuPage = ({ onOpenCardManagement, onOpenSupport, userName, balance, port
   const [isDevTestOpen, setIsDevTestOpen] = useState(false);
   const [isDevStatementOpen, setIsDevStatementOpen] = useState(false);
   const [isDevTxManagerOpen, setIsDevTxManagerOpen] = useState(false);
+  const [isDevCertOpen, setIsDevCertOpen] = useState(false);
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
   const [isBudgetsOpen, setIsBudgetsOpen] = useState(false);
   const [isMapOpen, setIsMapOpen] = useState(false);
