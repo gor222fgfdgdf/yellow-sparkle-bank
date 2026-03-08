@@ -412,23 +412,23 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     let footerY = finalY + 6;
     if (footerY > 185) { doc.addPage(); footerY = 20; }
 
-    doc.setFontSize(9);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
     doc.text(isRu ? `Дата исходящего остатка: ${fmtDate(end.toISOString())}` : `Closing balance date: ${fmtDate(end.toISOString())}`, margin, footerY);
-    footerY += 5;
+    footerY += 7;
     doc.text(
       isRu
         ? `Исходящий остаток в валюте счета на дату окончания периода: ${fmtSigned(closingBalance)}`
         : `Closing balance in account currency at the end of the period: ${fmtSigned(closingBalance)}`,
       margin, footerY
     );
-    footerY += 10;
+    footerY += 12;
 
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     doc.text(isRu ? "ОПЕРАЦИИ, ОЖИДАЮЩИЕ ОБРАБОТКИ" : "PENDING OPERATIONS", margin, footerY);
-    footerY += 4;
+    footerY += 6;
 
     const pendingHeaders = isRu
       ? ["Дата совершения\nоперации", "Сумма в валюте\nоперации", "Комиссия в валюте\nоперации", "Валюта\nоперации", "Содержание\nоперации", "№ карты"]
