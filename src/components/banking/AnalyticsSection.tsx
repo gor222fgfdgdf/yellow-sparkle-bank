@@ -42,10 +42,7 @@ const formatCurrency = (value: number) => {
 const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
   const [period, setPeriod] = useState<PeriodFilter>("current");
   const [limitsModalOpen, setLimitsModalOpen] = useState(false);
-  const [spendingLimits, setSpendingLimits] = useState<SpendingLimit[]>(() => {
-    const saved = localStorage.getItem("spendingLimits");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [spendingLimits, setSpendingLimits] = useState<SpendingLimit[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
   const { toast } = useToast();
 
