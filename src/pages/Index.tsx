@@ -222,7 +222,21 @@ const Index = () => {
     if (!mainAccount) return;
     await updateBalance.mutateAsync({ accountId: mainAccount.id, newBalance: mainAccountBalance - amount });
   };
-  const handleCurrencyExchange = () => {};
+  const handleCurrencyExchange = async (amount: number, from: string, to: string) => {
+    if (!mainAccount) return;
+    // Create a transaction recording the exchange
+    await createTransaction.mutateAsync({
+      account_id: mainAccount.id,
+      name: `Обмен ${from} → ${to}`,
+      category: "Валюта",
+      amount: from === "RUB" ? -amount : amount,
+      is_income: from !== "RUB",
+      icon: "ArrowRightLeft",
+      date: new Date().toISOString().split("T")[0],
+      currency: from === "RUB" ? to : from,
+      original_amount: from === "RUB" ? null : amount,
+    });
+  };
 
   if (isLocked) return <PinLockScreen onUnlock={() => setIsLocked(false)} />;
   if (isSettingUpPin) return <PinLockScreen isSettingUp onUnlock={() => {}} onSetupComplete={() => setIsSettingUpPin(false)} />;
