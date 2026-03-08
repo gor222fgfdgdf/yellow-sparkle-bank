@@ -388,7 +388,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       "Содержание\nоперации",
       "Валюта\nоперации",
       "Сумма в\nвалюте\nоперации",
-      "Комиссия\nв валюте",
+      "Комиссия в\nвалюте\nоперации",
       "№ карты",
     ];
 
