@@ -31,7 +31,7 @@ const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("ru-RU").format(value);
 };
 
-const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManagementProps) => {
+const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER", cardNumber = "4276" }: CardManagementProps) => {
   const [isCardFrozen, setIsCardFrozen] = useState(false);
 
   useSwipeBack({ onBack: onClose });
