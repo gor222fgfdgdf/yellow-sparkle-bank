@@ -30,11 +30,14 @@ export const useTransactions = (accountId?: string) => {
 
       const today = new Date().toISOString().split('T')[0];
 
+      const now = new Date().toISOString();
+
       let queryBuilder = supabase
         .from("transactions")
         .select("*")
         .eq("user_id", user.id)
         .lte("date", today)
+        .lte("created_at", now)
         .order("date", { ascending: false })
         .order("created_at", { ascending: false });
 
