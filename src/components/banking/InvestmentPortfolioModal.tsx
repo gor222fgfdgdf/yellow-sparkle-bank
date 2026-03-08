@@ -349,7 +349,7 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                               <h3 className="text-xl font-bold text-foreground">{selectedStock.symbol}</h3>
                               <button onClick={() => toggleWatchlist(selectedStock.symbol)}>
                                 {watchlist.includes(selectedStock.symbol) ? (
-                                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                                  <Star className="w-5 h-5 text-primary fill-primary" />
                                 ) : (
                                   <StarOff className="w-5 h-5 text-muted-foreground" />
                                 )}
