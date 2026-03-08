@@ -327,11 +327,11 @@ const Index = () => {
       <div className="bg-gradient-to-br from-[hsl(75,65%,55%)] via-[hsl(120,55%,45%)] to-[hsl(145,63%,38%)]" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)' }}>
         <header>
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-            <button className="w-10 h-10 rounded-full bg-primary-foreground/15 flex items-center justify-center">
-              <Eye className="w-5 h-5 text-primary-foreground" />
+            <button onClick={() => setBalanceHidden(h => !h)} className="w-10 h-10 rounded-full bg-primary-foreground/15 flex items-center justify-center">
+              <Eye className={`w-5 h-5 text-primary-foreground ${balanceHidden ? 'opacity-50' : ''}`} />
             </button>
             <div className="flex items-center gap-2">
-              <button className="w-10 h-10 rounded-full bg-primary-foreground/15 flex items-center justify-center">
+              <button onClick={() => setGlobalSearchOpen(s => !s)} className="w-10 h-10 rounded-full bg-primary-foreground/15 flex items-center justify-center">
                 <Search className="w-5 h-5 text-primary-foreground" />
               </button>
               <button onClick={() => setIsNotificationsOpen(true)} className="w-10 h-10 rounded-full bg-primary-foreground/15 flex items-center justify-center relative">
@@ -343,6 +343,21 @@ const Index = () => {
               </button>
             </div>
           </div>
+          {globalSearchOpen && activeTab === "home" && (
+            <div className="max-w-lg mx-auto px-4 pb-3">
+              <div className="flex items-center gap-2 bg-primary-foreground/20 rounded-xl px-3 py-2">
+                <Search className="w-4 h-4 text-primary-foreground/70" />
+                <input
+                  type="text"
+                  placeholder="Поиск по приложению..."
+                  value={globalSearchQuery}
+                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                  className="flex-1 bg-transparent text-sm text-primary-foreground outline-none placeholder:text-primary-foreground/50"
+                  autoFocus
+                />
+              </div>
+            </div>
+          )}
         </header>
         {/* Promo banner inside green area */}
         {activeTab === "home" && (
