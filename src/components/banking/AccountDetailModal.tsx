@@ -278,7 +278,7 @@ const AccountDetailModal = ({
         <TransactionDetailModal
           isOpen={!!selectedTx}
           onClose={() => setSelectedTx(null)}
-          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, accountName: account.name, accountCardNumber: account.cardNumber }}
+          transaction={{ ...selectedTx, isIncoming: selectedTx.isIncoming || false, accountName: account.name, accountCardNumber: account.cardNumber, createdAt: selectedTx.createdAt }}
         />
       )}
     </div>
