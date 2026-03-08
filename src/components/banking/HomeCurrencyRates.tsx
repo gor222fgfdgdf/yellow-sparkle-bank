@@ -5,8 +5,8 @@ interface HomeCurrencyRatesProps {
 }
 
 const currencies = [
-  { code: "USD", name: "Доллар", flag: "🇺🇸", buy: "79,71", sell: "72,49" },
-  { code: "CNY", name: "Юань", flag: "🇨🇳", buy: "11,35", sell: "10,90" },
+  { code: "USD", name: "Доллар", flag: "🇺🇸", buy: "92,45", sell: "89,80" },
+  { code: "CNY", name: "Юань", flag: "🇨🇳", buy: "12,85", sell: "12,40" },
 ];
 
 const HomeCurrencyRates = React.forwardRef<HTMLDivElement, HomeCurrencyRatesProps>(
