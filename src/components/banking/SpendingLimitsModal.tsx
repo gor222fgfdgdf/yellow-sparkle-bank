@@ -175,12 +175,12 @@ export const LimitAlerts = ({ alerts, onDismiss }: LimitAlertsProps) => {
       {alerts.map((alert) => {
         const isExceeded = alert.percentage >= 100;
         return (
-          <div key={alert.category} className={`flex items-center gap-3 p-3 rounded-xl ${isExceeded ? "bg-red-500/10" : "bg-amber-500/10"}`}>
-            <div className={`p-2 rounded-full ${isExceeded ? "bg-red-500/20" : "bg-amber-500/20"}`}>
-              <AlertTriangle className={`w-4 h-4 ${isExceeded ? "text-red-500" : "text-amber-500"}`} />
+          <div key={alert.category} className={`flex items-center gap-3 p-3 rounded-xl ${isExceeded ? "bg-destructive/10" : "bg-accent"}`}>
+            <div className={`p-2 rounded-full ${isExceeded ? "bg-destructive/20" : "bg-accent-foreground/20"}`}>
+              <AlertTriangle className={`w-4 h-4 ${isExceeded ? "text-destructive" : "text-accent-foreground"}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium ${isExceeded ? "text-red-500" : "text-amber-500"}`}>
+              <p className={`text-sm font-medium ${isExceeded ? "text-destructive" : "text-accent-foreground"}`}>
                 {isExceeded ? "Лимит превышен" : "Приближение к лимиту"}
               </p>
               <p className="text-xs text-muted-foreground">
