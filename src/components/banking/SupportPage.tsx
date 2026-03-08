@@ -72,9 +72,9 @@ const SupportPage = () => {
     if (method === "Chat") {
       setIsChatOpen(true);
     } else if (method === "Call") {
-      toast({ title: "Звонок", description: "Соединяем с 8-800-555-777..." });
+      toast({ title: "Звонок", description: "Набираем 8-800-100-1100..." });
     } else if (method === "Email") {
-      toast({ title: "Email", description: "Открываем support@tinkbank.ru" });
+      toast({ title: "Email", description: "Открываем support@rshb.ru" });
     }
   };
 

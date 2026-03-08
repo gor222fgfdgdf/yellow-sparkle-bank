@@ -191,7 +191,10 @@ const AccountDetailModal = ({
           <h2 className="text-lg font-bold text-foreground">Услуги</h2>
         </div>
         <div className="px-4 pb-4 grid grid-cols-2 gap-3">
-          <button className="bg-muted/50 rounded-2xl p-4 h-[100px] flex flex-col justify-between text-left">
+          <button 
+            onClick={() => toast.info("Снятие наличных по QR-коду доступно в банкоматах РСХБ. Поднесите QR-код к сканеру банкомата.")}
+            className="bg-muted/50 rounded-2xl p-4 h-[100px] flex flex-col justify-between text-left"
+          >
             <p className="text-sm font-medium text-foreground leading-tight">Снять наличные<br/>по QR-коду</p>
             <QrCode className="w-6 h-6 text-primary self-end" />
           </button>
@@ -209,13 +212,22 @@ const AccountDetailModal = ({
             <p className="text-sm font-medium text-foreground leading-tight">Сформировать<br/>выписку</p>
             <FileText className="w-6 h-6 text-primary self-end" />
           </button>
-          <button className="bg-muted/50 rounded-2xl p-4 h-[100px] flex flex-col justify-between text-left">
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText(`https://pay.rshb.ru/top-up/${account.accountNumber || account.cardNumber}`);
+              toast.success("Ссылка для пополнения скопирована в буфер обмена");
+            }}
+            className="bg-muted/50 rounded-2xl p-4 h-[100px] flex flex-col justify-between text-left"
+          >
             <p className="text-sm font-medium text-foreground leading-tight">Ссылка<br/>для пополнения</p>
             <Link2 className="w-6 h-6 text-primary self-end" />
           </button>
         </div>
         <div className="px-4 pb-4">
-          <button className="w-full bg-muted/50 rounded-2xl p-4 h-[80px] flex items-center justify-between text-left">
+          <button 
+            onClick={() => toast.info("Автопополнение настраивается через раздел «Платежи» → «Автоплатежи». Выберите источник и сумму пополнения.")}
+            className="w-full bg-muted/50 rounded-2xl p-4 h-[80px] flex items-center justify-between text-left"
+          >
             <p className="text-sm font-medium text-foreground leading-tight">Подключить<br/>автопополнение</p>
             <RefreshCw className="w-6 h-6 text-primary" />
           </button>
@@ -228,7 +240,10 @@ const AccountDetailModal = ({
           <h2 className="text-lg font-bold text-foreground">Детали карты</h2>
         </div>
         <div className="divide-y divide-border">
-          <button className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-muted/30 transition-colors">
+          <button 
+            onClick={() => toast.info("UnionPay Classic QuickPass — дебетовая карта для оплаты в 180+ странах, бесконтактные платежи, бесплатное обслуживание.")}
+            className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-muted/30 transition-colors"
+          >
             <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
               <Info className="w-4 h-4 text-muted-foreground" />
             </div>

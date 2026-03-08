@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, QrCode, Send, Bell, Diamond, DollarSign, CalendarCheck, FileText, Percent, Shield, Users, Scan, Globe, Coffee as TipsIcon, Search, MessageCircle, Eye } from "lucide-react";
+import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, ArrowRightLeft, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, QrCode, Send, Bell, Diamond, DollarSign, CalendarCheck, FileText, Percent, Shield, Users, Scan, Globe, Coffee as TipsIcon, Search, MessageCircle, Eye } from "lucide-react";
 import RSHBLogo from "@/components/banking/RSHBLogo";
 import AccountsList, { type Account } from "@/components/banking/AccountsList";
 import QuickActions from "@/components/banking/QuickActions";
@@ -61,8 +61,73 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LogOut, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// --- Global Search Results Component ---
+interface SearchItem {
+  label: string;
+  keywords: string[];
+  actionKey: string;
+}
+
+const searchItems: SearchItem[] = [
+  { label: "Платежи", keywords: ["платеж", "оплат", "payment"], actionKey: "payments" },
+  { label: "История операций", keywords: ["истори", "операци", "history"], actionKey: "history" },
+  { label: "Поддержка", keywords: ["поддержк", "помощ", "support", "чат"], actionKey: "support" },
+  { label: "Меню", keywords: ["меню", "настройк", "menu"], actionKey: "menu" },
+  { label: "Своё", keywords: ["своё", "свое", "lifestyle"], actionKey: "svoe" },
+  { label: "Перевод", keywords: ["перевод", "перевести", "transfer"], actionKey: "transfer" },
+  { label: "Пополнение", keywords: ["пополн", "topup"], actionKey: "topup" },
+  { label: "QR-код", keywords: ["qr", "куар"], actionKey: "qr" },
+  { label: "Перевод по СБП", keywords: ["сбп", "sbp", "телефон"], actionKey: "sbp" },
+  { label: "Кэшбэк", keywords: ["кэшбэк", "cashback", "баллы"], actionKey: "cashback" },
+  { label: "Валюты и курсы", keywords: ["валют", "курс", "обмен", "доллар", "евро", "юань"], actionKey: "currency" },
+  { label: "Подписки", keywords: ["подписк", "subscription"], actionKey: "subscriptions" },
+  { label: "Бюджеты", keywords: ["бюджет", "аналитик", "budget"], actionKey: "budgets" },
+  { label: "Цели", keywords: ["цел", "накоплен", "копилка", "goal"], actionKey: "goals" },
+  { label: "Кредиты", keywords: ["кредит", "loan", "заём"], actionKey: "loans" },
+  { label: "Страхование", keywords: ["страхов", "insurance"], actionKey: "insurance" },
+  { label: "Вклады", keywords: ["вклад", "депозит", "deposit"], actionKey: "deposits" },
+  { label: "Управление картами", keywords: ["карт", "card", "заморозить", "блокиров"], actionKey: "cards" },
+  { label: "Уведомления", keywords: ["уведомлен", "notification"], actionKey: "notifications" },
+  { label: "Выписка", keywords: ["выписк", "statement"], actionKey: "statement" },
+  { label: "Справка о счёте", keywords: ["справк", "certificate"], actionKey: "certificate" },
+  { label: "Благотворительность", keywords: ["благотвор", "charity", "пожертв"], actionKey: "charity" },
+  { label: "Финансовая грамотность", keywords: ["грамотн", "обучен", "education"], actionKey: "education" },
+  { label: "Программа лояльности", keywords: ["лояльн", "loyalty", "партнёр"], actionKey: "loyalty" },
+  { label: "Финансовый календарь", keywords: ["календар", "calendar"], actionKey: "calendar" },
+  { label: "Госуслуги и штрафы", keywords: ["госуслуг", "штраф", "government"], actionKey: "government" },
+];
+
+const GlobalSearchResults = ({ query, onSelect, actions }: { query: string; onSelect: (action: () => void) => void; actions: Record<string, () => void> }) => {
+  const q = query.toLowerCase();
+  const results = searchItems.filter(item =>
+    item.label.toLowerCase().includes(q) || item.keywords.some(kw => kw.includes(q) || q.includes(kw))
+  );
+
+  if (results.length === 0) {
+    return (
+      <div className="mt-2 bg-primary-foreground/10 rounded-xl p-3">
+        <p className="text-sm text-primary-foreground/70 text-center">Ничего не найдено</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 bg-primary-foreground/10 backdrop-blur rounded-xl overflow-hidden max-h-60 overflow-y-auto">
+      {results.map(item => (
+        <button
+          key={item.actionKey}
+          onClick={() => actions[item.actionKey] && onSelect(actions[item.actionKey])}
+          className="w-full text-left px-4 py-3 text-sm text-primary-foreground hover:bg-primary-foreground/10 transition-colors border-b border-primary-foreground/5 last:border-0"
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 const iconMap: Record<string, any> = {
-  Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, 
+  Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, ArrowRightLeft, Home, 
   Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, 
   Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target
 };
@@ -222,7 +287,21 @@ const Index = () => {
     if (!mainAccount) return;
     await updateBalance.mutateAsync({ accountId: mainAccount.id, newBalance: mainAccountBalance - amount });
   };
-  const handleCurrencyExchange = () => {};
+  const handleCurrencyExchange = async (amount: number, from: string, to: string) => {
+    if (!mainAccount) return;
+    // Create a transaction recording the exchange
+    await createTransaction.mutateAsync({
+      account_id: mainAccount.id,
+      name: `Обмен ${from} → ${to}`,
+      category: "Валюта",
+      amount: from === "RUB" ? -amount : amount,
+      is_income: from !== "RUB",
+      icon: "ArrowRightLeft",
+      date: new Date().toISOString().split("T")[0],
+      currency: from === "RUB" ? to : from,
+      original_amount: from === "RUB" ? null : amount,
+    });
+  };
 
   if (isLocked) return <PinLockScreen onUnlock={() => setIsLocked(false)} />;
   if (isSettingUpPin) return <PinLockScreen isSettingUp onUnlock={() => {}} onSetupComplete={() => setIsSettingUpPin(false)} />;
@@ -288,11 +367,13 @@ const Index = () => {
               onReferral={() => setIsReferralOpen(true)}
               onCashback={() => setIsCashbackOpen(true)}
               onAnalytics={() => setIsBudgetsOpen(true)}
+              balanceHidden={balanceHidden}
             />
             <HomeAccountsList
               accounts={accounts}
               onAccountClick={handleAccountClick}
               onShowAll={() => setShowCardManagement(true)}
+              balanceHidden={balanceHidden}
             />
             <Button 
               onClick={() => setActiveTab("menu")}
@@ -356,6 +437,44 @@ const Index = () => {
                   autoFocus
                 />
               </div>
+              {globalSearchQuery && (
+                <GlobalSearchResults
+                  query={globalSearchQuery}
+                  onSelect={(action) => {
+                    setGlobalSearchOpen(false);
+                    setGlobalSearchQuery("");
+                    action();
+                  }}
+                  actions={{
+                    payments: () => setActiveTab("payments"),
+                    history: () => setActiveTab("history"),
+                    support: () => setActiveTab("support"),
+                    menu: () => setActiveTab("menu"),
+                    svoe: () => setActiveTab("svoe"),
+                    transfer: () => setIsTransferOpen(true),
+                    topup: () => setIsTopUpOpen(true),
+                    qr: () => setIsQRCodeOpen(true),
+                    sbp: () => setIsSBPTransferOpen(true),
+                    cashback: () => setIsCashbackOpen(true),
+                    currency: () => setIsCurrencyOpen(true),
+                    subscriptions: () => setIsSubscriptionsOpen(true),
+                    budgets: () => setIsBudgetsOpen(true),
+                    goals: () => setIsSavingsGoalsOpen(true),
+                    loans: () => setIsLoansOpen(true),
+                    insurance: () => setIsInsuranceOpen(true),
+                    deposits: () => setIsDepositsOpen(true),
+                    cards: () => setShowCardManagement(true),
+                    notifications: () => setIsNotificationsOpen(true),
+                    statement: () => setIsStatementExportOpen(true),
+                    certificate: () => setIsAccountCertificateOpen(true),
+                    charity: () => setIsCharityOpen(true),
+                    education: () => setIsEducationOpen(true),
+                    loyalty: () => setIsLoyaltyOpen(true),
+                    calendar: () => setIsCalendarOpen(true),
+                    government: () => setIsGovernmentOpen(true),
+                  }}
+                />
+              )}
             </div>
           )}
         </header>
