@@ -445,7 +445,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     let afterPendingY = pendingFinalY + 6;
     if (afterPendingY > 270) { doc.addPage(); afterPendingY = 20; }
 
-    doc.setFontSize(9);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     doc.text(
       isRu
