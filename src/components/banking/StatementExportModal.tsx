@@ -728,8 +728,8 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       columnStyles: {
         0: { cellWidth: 24, halign: "left" }, 1: { cellWidth: 24, halign: "left" },
         2: { cellWidth: 28, halign: "right" }, 3: { cellWidth: 28, halign: "right" },
-        4: { cellWidth: 80 }, 5: { cellWidth: 26 },
-        6: { cellWidth: 28, halign: "right" }, 7: { cellWidth: 20, halign: "right" },
+        4: { cellWidth: 75 }, 5: { cellWidth: 26 },
+        6: { cellWidth: 28, halign: "right" }, 7: { cellWidth: 25, halign: "right" },
         8: { cellWidth: 11 },
       },
       theme: "grid", rowPageBreak: "avoid", margin: { left: margin, right: margin },
