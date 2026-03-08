@@ -345,10 +345,20 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     ];
     infoLines.forEach((line) => { doc.text(line, margin, y); y += 7; });
 
-    // Calculate balances
+    // Calculate balances from all transactions up to endDate (not from useAccounts which uses today)
     const income = filteredTransactions.filter(tx => tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
     const expense = filteredTransactions.filter(tx => !tx.is_income).reduce((s, tx) => s + Math.abs(tx.amount), 0);
-    const closingBalance = account ? account.balance : accounts.reduce((s, a) => s + a.balance, 0);
+
+    // Compute closing balance by summing all transactions up to endDate for the selected account(s)
+    const closingBalance = (() => {
+      let total = 0;
+      for (const tx of allTransactions) {
+        if (tx.date > endDate) continue;
+        if (selectedAccount !== "all" && tx.account_id !== selectedAccount) continue;
+        total += Number(tx.amount);
+      }
+      return total;
+    })();
     const openingBalance = closingBalance - income + expense;
 
     doc.text(
