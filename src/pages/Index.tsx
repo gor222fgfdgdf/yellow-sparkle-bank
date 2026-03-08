@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, QrCode, Send, Bell, Diamond, DollarSign, CalendarCheck, FileText, Percent, Shield, Users, Scan, Globe, Coffee as TipsIcon, Search, MessageCircle, Eye } from "lucide-react";
+import { Car, Coffee, ShoppingBag, Tv, Utensils, Fuel, Music, ArrowUpRight, ArrowRightLeft, Home, Smartphone, Zap, Droplets, Briefcase, Heart, Gamepad2, GraduationCap, Dumbbell, CreditCard, PiggyBank, TrendingUp, Wallet, Target, QrCode, Send, Bell, Diamond, DollarSign, CalendarCheck, FileText, Percent, Shield, Users, Scan, Globe, Coffee as TipsIcon, Search, MessageCircle, Eye } from "lucide-react";
 import RSHBLogo from "@/components/banking/RSHBLogo";
 import AccountsList, { type Account } from "@/components/banking/AccountsList";
 import QuickActions from "@/components/banking/QuickActions";
