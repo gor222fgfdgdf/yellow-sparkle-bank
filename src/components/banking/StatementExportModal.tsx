@@ -513,19 +513,19 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       footerY = 20;
     }
 
-    doc.setFontSize(9);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
     doc.text(`Дата исходящего остатка: ${formatDateRu(end.toISOString())}`, margin, footerY);
-    footerY += 5;
+    footerY += 7;
     doc.text(`Исходящий остаток в валюте счета на дату окончания периода: ${formatSignedRu(closingBalance)}`, margin, footerY);
-    footerY += 10;
+    footerY += 12;
 
     // Pending operations section
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     doc.text("ОПЕРАЦИИ, ОЖИДАЮЩИЕ ОБРАБОТКИ", margin, footerY);
-    footerY += 4;
+    footerY += 6;
 
     const pendingHeaders = [
       "Дата совершения\nоперации",
