@@ -302,11 +302,13 @@ const Index = () => {
               onReferral={() => setIsReferralOpen(true)}
               onCashback={() => setIsCashbackOpen(true)}
               onAnalytics={() => setIsBudgetsOpen(true)}
+              balanceHidden={balanceHidden}
             />
             <HomeAccountsList
               accounts={accounts}
               onAccountClick={handleAccountClick}
               onShowAll={() => setShowCardManagement(true)}
+              balanceHidden={balanceHidden}
             />
             <Button 
               onClick={() => setActiveTab("menu")}
