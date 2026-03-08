@@ -349,8 +349,8 @@ const AnalyticsSection = ({ transactions }: AnalyticsSectionProps) => {
                     </div>
                   </div>
                   <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium ${
-                    cat.diff > 0 ? "bg-red-500/10 text-red-500" : 
-                    cat.diff < 0 ? "bg-green-500/10 text-green-500" : 
+                    cat.diff > 0 ? "bg-destructive/10 text-destructive" : 
+                    cat.diff < 0 ? "bg-primary/10 text-primary" : 
                     "bg-muted text-muted-foreground"
                   }`}>
                     {cat.diff > 0 ? <ArrowUp className="w-3 h-3" /> : 
