@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { X, Phone, Building2, Star, StarOff, Clock, Check, Search } from "lucide-react";
+import { Phone, Building2, Star, StarOff, Clock, Check, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import FullScreenModal from "./FullScreenModal";
 
 interface SavedRecipient {
   id: string;
