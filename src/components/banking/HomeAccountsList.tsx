@@ -6,6 +6,7 @@ interface HomeAccountsListProps {
   accounts: Account[];
   onAccountClick: (account: Account) => void;
   onShowAll?: () => void;
+  balanceHidden?: boolean;
 }
 
 const formatCurrency = (value: number) => new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2 }).format(value);
@@ -28,7 +29,7 @@ const getCardBadge = (account: Account) => {
   return null;
 };
 
-const HomeAccountsList = ({ accounts, onAccountClick, onShowAll }: HomeAccountsListProps) => {
+const HomeAccountsList = ({ accounts, onAccountClick, onShowAll, balanceHidden }: HomeAccountsListProps) => {
   return (
     <div className="bg-card rounded-2xl overflow-hidden">
       <div className="px-4 pt-4 pb-2">
@@ -44,7 +45,7 @@ const HomeAccountsList = ({ accounts, onAccountClick, onShowAll }: HomeAccountsL
           >
             <div className="flex-1 min-w-0">
               <p className="text-xl font-bold text-foreground">
-                {formatCurrency(account.balance)} ₽
+                {balanceHidden ? "••••••" : `${formatCurrency(account.balance)} ₽`}
               </p>
               <p className="text-sm text-muted-foreground truncate">{account.name}</p>
             </div>

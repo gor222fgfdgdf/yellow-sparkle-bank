@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Bell, BellOff, AlertTriangle, Check } from "lucide-react";
+import { Bell, AlertTriangle, Check } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import FullScreenModal from "./FullScreenModal";
 
 export interface SpendingLimit {
   category: string;
@@ -28,6 +31,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Покупки": "#ec4899",
   "Развлечения": "#f43f5e",
   "Подписки": "#a855f7",
+  "Рестораны": "#f97316",
   "Связь": "#14b8a6",
   "Здоровье": "#ef4444",
   "Спорт": "#10b981",
@@ -35,108 +39,119 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Другое": "#6b7280",
 };
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("ru-RU").format(value);
-};
+const formatCurrency = (value: number) => new Intl.NumberFormat("ru-RU").format(value);
 
-const SpendingLimitsModal = ({
-  open,
-  onOpenChange,
-  limits,
-  onSaveLimits,
-  categories,
-}: SpendingLimitsModalProps) => {
+const SpendingLimitsModal = ({ open, onOpenChange, limits, onSaveLimits, categories }: SpendingLimitsModalProps) => {
   const [localLimits, setLocalLimits] = useState<SpendingLimit[]>([]);
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (open) {
-      const existingLimitsMap = new Map(limits.map(l => [l.category, l]));
-      const allLimits = categories.map(cat => {
-        const existing = existingLimitsMap.get(cat);
-        return existing || { category: cat, limit: 0, enabled: false };
-      });
-      setLocalLimits(allLimits);
+    if (open && user) {
+      // Load limits from DB
+      supabase
+        .from("spending_limits")
+        .select("*")
+        .eq("user_id", user.id)
+        .then(({ data }) => {
+          const dbLimitsMap = new Map((data || []).map(l => [l.category, l]));
+          const allLimits = categories.map(cat => {
+            const existing = dbLimitsMap.get(cat);
+            return existing
+              ? { category: cat, limit: Number(existing.limit_amount), enabled: existing.is_enabled !== false }
+              : { category: cat, limit: 0, enabled: false };
+          });
+          setLocalLimits(allLimits);
+        });
     }
-  }, [open, limits, categories]);
+  }, [open, user, categories]);
 
   const handleLimitChange = (category: string, value: string) => {
     const numValue = parseInt(value.replace(/\D/g, "")) || 0;
-    setLocalLimits(prev =>
-      prev.map(l => (l.category === category ? { ...l, limit: numValue } : l))
-    );
+    setLocalLimits(prev => prev.map(l => l.category === category ? { ...l, limit: numValue } : l));
   };
 
   const handleToggle = (category: string) => {
-    setLocalLimits(prev =>
-      prev.map(l => (l.category === category ? { ...l, enabled: !l.enabled } : l))
-    );
+    setLocalLimits(prev => prev.map(l => l.category === category ? { ...l, enabled: !l.enabled } : l));
   };
 
-  const handleSave = () => {
-    onSaveLimits(localLimits.filter(l => l.limit > 0));
-    onOpenChange(false);
+  const handleSave = async () => {
+    if (!user) return;
+    setSaving(true);
+
+    try {
+      // Delete existing limits
+      await supabase.from("spending_limits").delete().eq("user_id", user.id);
+
+      // Insert new limits
+      const toInsert = localLimits
+        .filter(l => l.limit > 0)
+        .map(l => ({
+          user_id: user.id,
+          category: l.category,
+          limit_amount: l.limit,
+          is_enabled: l.enabled,
+        }));
+
+      if (toInsert.length > 0) {
+        const { error } = await supabase.from("spending_limits").insert(toInsert);
+        if (error) throw error;
+      }
+
+      onSaveLimits(localLimits.filter(l => l.limit > 0));
+      toast({ title: "Сохранено", description: "Лимиты расходов обновлены" });
+      onOpenChange(false);
+    } catch {
+      toast({ title: "Ошибка", description: "Не удалось сохранить лимиты", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-primary" />
-            Лимиты расходов
-          </DialogTitle>
-        </DialogHeader>
+    <FullScreenModal isOpen={open} onClose={() => onOpenChange(false)} title="Лимиты расходов">
+      <p className="text-sm text-muted-foreground mb-4">
+        Установите лимиты для категорий. Вы получите уведомление при превышении.
+      </p>
 
-        <p className="text-sm text-muted-foreground mb-4">
-          Установите лимиты для категорий. Вы получите уведомление при превышении.
-        </p>
-
-        <div className="space-y-3">
-          {localLimits.map((item) => {
-            const color = CATEGORY_COLORS[item.category] || CATEGORY_COLORS["Другое"];
-            return (
+      <div className="space-y-3">
+        {localLimits.map((item) => {
+          const color = CATEGORY_COLORS[item.category] || CATEGORY_COLORS["Другое"];
+          return (
+            <div key={item.category} className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl">
               <div
-                key={item.category}
-                className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl"
+                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                style={{ backgroundColor: `${color}20` }}
               >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: `${color}20` }}
-                >
-                  <div
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: color }}
+                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{item.category}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <Input
+                    type="text"
+                    value={item.limit > 0 ? formatCurrency(item.limit) : ""}
+                    onChange={(e) => handleLimitChange(item.category, e.target.value)}
+                    placeholder="Лимит в ₽"
+                    className="h-8 text-sm"
                   />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {item.category}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Input
-                      type="text"
-                      value={item.limit > 0 ? formatCurrency(item.limit) : ""}
-                      onChange={(e) => handleLimitChange(item.category, e.target.value)}
-                      placeholder="Лимит в ₽"
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                </div>
-                <Switch
-                  checked={item.enabled}
-                  onCheckedChange={() => handleToggle(item.category)}
-                  disabled={item.limit === 0}
-                />
               </div>
-            );
-          })}
-        </div>
+              <Switch
+                checked={item.enabled}
+                onCheckedChange={() => handleToggle(item.category)}
+                disabled={item.limit === 0}
+              />
+            </div>
+          );
+        })}
+      </div>
 
-        <Button onClick={handleSave} className="w-full mt-4">
-          Сохранить
-        </Button>
-      </DialogContent>
-    </Dialog>
+      <Button onClick={handleSave} className="w-full mt-4" disabled={saving}>
+        {saving ? "Сохранение..." : "Сохранить"}
+      </Button>
+    </FullScreenModal>
   );
 };
 
@@ -158,17 +173,9 @@ export const LimitAlerts = ({ alerts, onDismiss }: LimitAlertsProps) => {
   return (
     <div className="space-y-2 mb-4">
       {alerts.map((alert) => {
-        const color = CATEGORY_COLORS[alert.category] || CATEGORY_COLORS["Другое"];
         const isExceeded = alert.percentage >= 100;
-        const isWarning = alert.percentage >= 80 && alert.percentage < 100;
-
         return (
-          <div
-            key={alert.category}
-            className={`flex items-center gap-3 p-3 rounded-xl ${
-              isExceeded ? "bg-red-500/10" : "bg-amber-500/10"
-            }`}
-          >
+          <div key={alert.category} className={`flex items-center gap-3 p-3 rounded-xl ${isExceeded ? "bg-red-500/10" : "bg-amber-500/10"}`}>
             <div className={`p-2 rounded-full ${isExceeded ? "bg-red-500/20" : "bg-amber-500/20"}`}>
               <AlertTriangle className={`w-4 h-4 ${isExceeded ? "text-red-500" : "text-amber-500"}`} />
             </div>
@@ -180,10 +187,7 @@ export const LimitAlerts = ({ alerts, onDismiss }: LimitAlertsProps) => {
                 {alert.category}: {formatCurrency(alert.spent)} / {formatCurrency(alert.limit)} ₽ ({alert.percentage.toFixed(0)}%)
               </p>
             </div>
-            <button
-              onClick={() => onDismiss(alert.category)}
-              className="p-1 rounded-full hover:bg-muted transition-colors"
-            >
+            <button onClick={() => onDismiss(alert.category)} className="p-1 rounded-full hover:bg-muted transition-colors">
               <Check className="w-4 h-4 text-muted-foreground" />
             </button>
           </div>
