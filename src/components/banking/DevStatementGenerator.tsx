@@ -183,6 +183,17 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
   const [isExporting, setIsExporting] = useState(false);
   const [readyBlob, setReadyBlob] = useState<Blob | null>(null);
   const [readyFilename, setReadyFilename] = useState("");
+  const [sixMonthAnchor, setSixMonthAnchor] = useState<string>("");
+
+  const apply6Months = useCallback((anchorDate: string) => {
+    if (!anchorDate) return;
+    const end = new Date(anchorDate);
+    const start = new Date(anchorDate);
+    start.setMonth(start.getMonth() - 6);
+    start.setDate(start.getDate() + 1);
+    setStartDate(start.toISOString().slice(0, 10));
+    setEndDate(end.toISOString().slice(0, 10));
+  }, []);
 
   // Fetch ALL transactions without date filter (includes future)
   const { data: allTransactions = [], isLoading } = useQuery({
