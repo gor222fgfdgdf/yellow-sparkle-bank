@@ -1,6 +1,7 @@
 import { X, Calendar, Tag, CreditCard, Clock, MapPin, Receipt, Copy, Share2, Flag, ChevronRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useCashbackCategories } from "@/hooks/useCashback";
 
 interface Transaction {
   id: string;
