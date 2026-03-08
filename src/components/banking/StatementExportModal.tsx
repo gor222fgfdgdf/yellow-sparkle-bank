@@ -344,7 +344,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     y += 10;
 
     // Info fields
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont(fn, "normal");
     const infoLines = [
       `Дата выписки: ${formatDateRu(new Date().toISOString())}`,
