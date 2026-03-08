@@ -219,7 +219,7 @@ const SBPTransferModal = ({ isOpen, onClose, balance, onTransfer }: SBPTransferM
                         className="p-2"
                       >
                         {recipient.isFavorite ? (
-                          <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                          <Star className="w-5 h-5 text-primary fill-primary" />
                         ) : (
                           <StarOff className="w-5 h-5 text-muted-foreground" />
                         )}
