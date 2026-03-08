@@ -436,7 +436,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
 
     autoTable(doc, {
       startY: footerY, head: [pendingHeaders], body: [],
-      styles: { fontSize: 9, cellPadding: 2, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2 },
+      styles: { fontSize: 11, cellPadding: 3, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2 },
       headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "normal", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
       theme: "grid", margin: { left: margin, right: margin },
     });
