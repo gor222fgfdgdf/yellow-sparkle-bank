@@ -737,18 +737,18 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     let footerY = finalY + 6;
     if (footerY > 185) { doc.addPage(); footerY = 20; }
 
-    doc.setFontSize(9);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
     doc.text(`Closing balance date: ${formatDateEn(end.toISOString())}`, margin, footerY);
-    footerY += 5;
+    footerY += 7;
     doc.text(`Closing balance in account currency at the end of the period: ${formatSignedEn(closingBalance)}`, margin, footerY);
-    footerY += 10;
+    footerY += 12;
 
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(fn, "normal");
     doc.text("PENDING OPERATIONS", margin, footerY);
-    footerY += 4;
+    footerY += 6;
 
     autoTable(doc, {
       startY: footerY,
