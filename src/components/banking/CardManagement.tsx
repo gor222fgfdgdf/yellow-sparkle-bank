@@ -24,13 +24,14 @@ import UnionPayLogo from "./UnionPayLogo";
 interface CardManagementProps {
   onClose: () => void;
   cardHolderName?: string;
+  cardNumber?: string;
 }
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("ru-RU").format(value);
 };
 
-const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManagementProps) => {
+const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER", cardNumber = "4276" }: CardManagementProps) => {
   const [isCardFrozen, setIsCardFrozen] = useState(false);
 
   useSwipeBack({ onBack: onClose });
@@ -124,8 +125,8 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
 
             <div className="bg-card rounded-2xl p-5 shadow-sm space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                  <Plane className="w-5 h-5 text-blue-500" />
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Plane className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-foreground">За границей</p>
@@ -148,8 +149,8 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
 
             <div className="bg-card rounded-2xl p-5 shadow-sm space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
-                  <CreditCard className="w-5 h-5 text-orange-500" />
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <CreditCard className="w-5 h-5 text-destructive" />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-foreground">Снятие в банкомате</p>
@@ -286,7 +287,7 @@ const CardManagement = ({ onClose, cardHolderName = "CARDHOLDER" }: CardManageme
                 <p className="text-primary-foreground text-sm font-medium">Россельхозбанк</p>
               </div>
               <div className="absolute bottom-16 left-6">
-                <p className="text-primary-foreground text-lg tracking-widest font-mono">•••• •••• •••• 7823</p>
+                <p className="text-primary-foreground text-lg tracking-widest font-mono">•••• •••• •••• {cardNumber}</p>
               </div>
               <div className="absolute bottom-6 left-6">
               <p className="text-primary-foreground/70 text-xs">ВЛАДЕЛЕЦ</p>

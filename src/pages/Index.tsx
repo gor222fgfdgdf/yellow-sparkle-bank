@@ -398,7 +398,7 @@ const Index = () => {
         <TopUpModal isOpen={isTopUpOpen} onClose={() => setIsTopUpOpen(false)} onTopUp={handleTopUp} />
         <StatementExportModal isOpen={isStatementExportOpen} onClose={() => setIsStatementExportOpen(false)} transactions={(dbTransactions || []).map(tx => ({ id: tx.id, name: tx.name, category: tx.category, amount: Number(tx.amount), date: tx.date, is_income: tx.is_income || false, account_id: tx.account_id, created_at: tx.created_at, currency: tx.currency, original_amount: tx.original_amount != null ? Number(tx.original_amount) : null, commission: tx.commission != null ? Number(tx.commission) : null }))} accounts={(dbAccounts || []).map(acc => ({ id: acc.id, name: acc.name, balance: Number(acc.balance), card_number: acc.card_number, account_number: acc.account_number, type: acc.type }))} />
         <AccountCertificateModal isOpen={isAccountCertificateOpen} onClose={() => setIsAccountCertificateOpen(false)} />
-        {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} cardHolderName={cardHolderName} />}
+        {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} cardHolderName={cardHolderName} cardNumber={mainAccount?.cardNumber || "4276"} />}
       </div>
     );
   }
@@ -506,7 +506,7 @@ const Index = () => {
         onOpenAccountCertificate={() => { setIsMoreOpen(false); setIsAccountCertificateOpen(true); }}
       />
       <AllTransactionsModal isOpen={isAllTransactionsOpen} onClose={() => setIsAllTransactionsOpen(false)} transactions={transactions} />
-      {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} cardHolderName={cardHolderName} />}
+      {showCardManagement && <CardManagement onClose={() => setShowCardManagement(false)} cardHolderName={cardHolderName} cardNumber={mainAccount?.cardNumber || "4276"} />}
       <BudgetsModal isOpen={isBudgetsOpen} onClose={() => setIsBudgetsOpen(false)} transactions={transactions} />
       <SavingsGoalsModal isOpen={isSavingsGoalsOpen} onClose={() => setIsSavingsGoalsOpen(false)} onDeduct={handleSavingsDeduct} />
       <QRCodeModal isOpen={isQRCodeOpen} onClose={() => setIsQRCodeOpen(false)} userName={userName} cardNumber={mainAccount?.cardNumber || "0000"} onReceive={handleQRReceive} />
