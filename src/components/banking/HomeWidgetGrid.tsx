@@ -1,5 +1,6 @@
 import { QrCode, Users, BarChart3 } from "lucide-react";
 import UnionPayLogo from "./UnionPayLogo";
+import { useCashbackBalance } from "@/hooks/useCashback";
 
 interface HomeWidgetGridProps {
   totalBalance: number;
@@ -13,6 +14,9 @@ interface HomeWidgetGridProps {
 const formatCurrency = (value: number) => new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2 }).format(value);
 
 const HomeWidgetGrid = ({ totalBalance, onQRCode, onReferral, onCashback, onAnalytics, balanceHidden }: HomeWidgetGridProps) => {
+  const { data: cashbackBalance } = useCashbackBalance();
+  const points = cashbackBalance?.balance || 0;
+  const pointsDisplay = points >= 1000 ? `${(points / 1000).toFixed(1)}K` : Math.round(points).toString();
   return (
     <div className="bg-card rounded-2xl p-3">
       <div className="grid grid-cols-4 gap-2 auto-rows-auto">
