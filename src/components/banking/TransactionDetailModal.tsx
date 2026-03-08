@@ -92,10 +92,12 @@ const formatDate = (dateString: string) => {
   return dateString;
 };
 
-const formatTime = () => {
-  const hours = Math.floor(Math.random() * 12) + 8;
-  const minutes = Math.floor(Math.random() * 60);
-  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+const formatTime = (createdAt?: string) => {
+  if (createdAt) {
+    const date = new Date(createdAt);
+    return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+  }
+  return "—";
 };
 
 const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: TransactionDetailModalProps) => {
