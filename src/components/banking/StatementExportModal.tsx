@@ -755,7 +755,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       head: [["Transaction\ndate", "Amount in\ntransaction currency", "Commission in\ntransaction currency", "Transaction\ncurrency", "Transaction\ndescription", "Card No."]],
       body: [],
       styles: { fontSize: 9, cellPadding: 2, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2 },
-      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "normal", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
       theme: "grid", margin: { left: margin, right: margin },
     });
 
