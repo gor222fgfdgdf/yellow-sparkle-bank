@@ -77,6 +77,9 @@ const Index = () => {
   const createTransaction = useCreateTransaction();
 
   const [activeTab, setActiveTabState] = useState("home");
+  const [balanceHidden, setBalanceHidden] = useState(false);
+  const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const setActiveTab = useCallback((tab: string) => {
     setActiveTabState(tab);
     window.scrollTo({ top: 0, behavior: "instant" });
