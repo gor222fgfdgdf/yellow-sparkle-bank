@@ -92,12 +92,41 @@ const formatDate = (dateString: string) => {
   return dateString;
 };
 
-const formatTime = (createdAt?: string) => {
-  if (createdAt) {
-    const date = new Date(createdAt);
-    return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+const generateRealisticTime = (txId: string, category: string, name: string) => {
+  // Generate a deterministic but realistic time based on transaction ID
+  const hash = txId.replace(/-/g, '').split('').reduce((acc, ch, i) => acc + ch.charCodeAt(0) * (i + 1), 0);
+  
+  const catLower = category.toLowerCase();
+  const nameLower = name.toLowerCase();
+  
+  // Define realistic time ranges per category
+  let minHour = 9, maxHour = 21;
+  
+  if (catLower.includes('продукт') || catLower.includes('супермаркет')) {
+    minHour = 10; maxHour = 21; // grocery shopping
+  } else if (catLower.includes('ресторан') || catLower.includes('кафе') || nameLower.includes('кофе') || nameLower.includes('coffee')) {
+    minHour = 10; maxHour = 22;
+  } else if (catLower.includes('транспорт') || nameLower.includes('такси') || nameLower.includes('grab')) {
+    minHour = 7; maxHour = 23;
+  } else if (catLower.includes('развлечен')) {
+    minHour = 14; maxHour = 23;
+  } else if (catLower.includes('зарплат') || catLower.includes('доход')) {
+    minHour = 10; maxHour = 16; // salary credits during business hours
+  } else if (catLower.includes('связь') || catLower.includes('подписк')) {
+    minHour = 0; maxHour = 23; // automated payments any time
+  } else if (catLower.includes('жкх') || catLower.includes('коммунал')) {
+    minHour = 9; maxHour = 18;
+  } else if (catLower.includes('снятие') || nameLower.includes('atm')) {
+    minHour = 9; maxHour = 22;
+  } else if (catLower.includes('перевод')) {
+    minHour = 8; maxHour = 22;
   }
-  return "—";
+  
+  const hourRange = maxHour - minHour;
+  const hours = minHour + (hash % hourRange);
+  const minutes = (hash * 7 + 13) % 60;
+  
+  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 };
 
 const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: TransactionDetailModalProps) => {
@@ -202,7 +231,7 @@ const TransactionDetailModal = ({ isOpen, onClose, transaction, onRepeat }: Tran
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Время</p>
-                <p className="font-medium text-foreground">{formatTime(transaction.createdAt)}</p>
+                <p className="font-medium text-foreground">{generateRealisticTime(transaction.id, transaction.category, transaction.name)}</p>
               </div>
             </div>
 
