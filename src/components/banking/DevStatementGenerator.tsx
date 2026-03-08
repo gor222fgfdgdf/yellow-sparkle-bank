@@ -360,7 +360,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     y += 8;
 
     doc.setFontSize(10);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text(isRu ? "ПОДТВЕРЖДЕННЫЕ ОПЕРАЦИИ" : "CONFIRMED OPERATIONS", margin, y);
     y += 4;
 
