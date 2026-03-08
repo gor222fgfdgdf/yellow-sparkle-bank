@@ -746,7 +746,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     footerY += 10;
 
     doc.setFontSize(10);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text("PENDING OPERATIONS", margin, footerY);
     footerY += 4;
 
