@@ -498,7 +498,7 @@ const InvestmentPortfolioModal = ({ isOpen, onClose, portfolioValue }: Investmen
                           <div className="text-left">
                             <div className="flex items-center gap-2">
                               <p className="font-semibold text-foreground">{stock.symbol}</p>
-                              {watchlist.includes(stock.symbol) && <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
+                              {watchlist.includes(stock.symbol) && <Star className="w-3 h-3 text-primary fill-primary" />}
                             </div>
                             <p className="text-sm text-muted-foreground">{stock.quantity} шт. • {stock.sector}</p>
                           </div>
