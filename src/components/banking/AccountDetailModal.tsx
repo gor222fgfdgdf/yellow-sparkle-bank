@@ -50,7 +50,7 @@ const AccountDetailModal = ({
 
   if (!isOpen) return null;
 
-  const accountTransactions = transactions.slice(0, showAllTransactions ? 20 : 5);
+  const accountTransactions = transactions.filter(t => t.accountId === account.id).slice(0, showAllTransactions ? 20 : 5);
 
   // Group transactions by date
   const groupedTransactions: Record<string, Transaction[]> = {};
