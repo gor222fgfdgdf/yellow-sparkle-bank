@@ -599,7 +599,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     y += 8;
 
     doc.setFontSize(11);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text(
       `CARD ACCOUNT STATEMENT ${accountNumber} for the period from ${formatDateEn(start.toISOString())} to ${formatDateEn(end.toISOString())}`,
       pageWidth / 2, y, { align: "center", maxWidth: pageWidth - margin * 2 }
