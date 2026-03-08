@@ -315,7 +315,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
 
     // Title
     doc.setFontSize(12);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
     doc.text(isRu ? "ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ" : "CARD ACCOUNT STATEMENT", pageWidth / 2, y, { align: "center" });
     y += 8;
@@ -360,7 +360,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     y += 8;
 
     doc.setFontSize(10);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text(isRu ? "ПОДТВЕРЖДЕННЫЕ ОПЕРАЦИИ" : "CONFIRMED OPERATIONS", margin, y);
     y += 4;
 
@@ -394,7 +394,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
       head: [tableHeaders],
       body: tableData,
       styles: { fontSize: 9, cellPadding: 2, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2, overflow: "linebreak", valign: "top" },
-      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "normal", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
       columnStyles: {
         0: { cellWidth: 24, halign: "left" }, 1: { cellWidth: 24, halign: "left" },
         2: { cellWidth: 28, halign: "right" }, 3: { cellWidth: 28, halign: "right" },
@@ -404,9 +404,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
       },
       theme: "grid", rowPageBreak: "avoid", margin: { left: margin, right: margin },
       didParseCell: (data) => {
-        if (data.section === "body" && data.row.index === tableData.length - 1) {
-          data.cell.styles.fontStyle = "bold";
-        }
+        // no bold for totals row - match original
       },
     });
 
@@ -428,7 +426,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     footerY += 10;
 
     doc.setFontSize(10);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text(isRu ? "ОПЕРАЦИИ, ОЖИДАЮЩИЕ ОБРАБОТКИ" : "PENDING OPERATIONS", margin, footerY);
     footerY += 4;
 
@@ -439,7 +437,7 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     autoTable(doc, {
       startY: footerY, head: [pendingHeaders], body: [],
       styles: { fontSize: 9, cellPadding: 2, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2 },
-      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "normal", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
       theme: "grid", margin: { left: margin, right: margin },
     });
 

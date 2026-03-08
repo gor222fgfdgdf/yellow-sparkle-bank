@@ -329,14 +329,14 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     // Title
     doc.setFontSize(12);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
     doc.text("ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ", pageWidth / 2, y, { align: "center" });
     y += 8;
 
     // Subtitle
     doc.setFontSize(11);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text(
       `ВЫПИСКА ПО КАРТОЧНОМУ СЧЕТУ ${accountNumber} за период с ${formatDateRu(start.toISOString())} по ${formatDateRu(end.toISOString())}`,
       pageWidth / 2, y, { align: "center", maxWidth: pageWidth - margin * 2 }
@@ -375,7 +375,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     // Section title
     doc.setFontSize(10);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text("ПОДТВЕРЖДЕННЫЕ ОПЕРАЦИИ", margin, y);
     y += 4;
 
@@ -480,7 +480,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       headStyles: {
         fillColor: [255, 255, 255],
         textColor: [0, 0, 0],
-        fontStyle: "bold",
+        fontStyle: "normal",
         halign: "left",
         lineWidth: 0.2,
         lineColor: [0, 0, 0],
@@ -500,12 +500,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       rowPageBreak: "avoid",
       margin: { left: margin, right: margin },
       didParseCell: (data) => {
-        if (data.section === "body") {
-          const isLast = data.row.index === tableData.length - 1;
-          if (isLast) {
-            data.cell.styles.fontStyle = "bold";
-          }
-        }
+        // no bold for totals - match original
       },
     });
 
@@ -528,7 +523,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
 
     // Pending operations section
     doc.setFontSize(10);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text("ОПЕРАЦИИ, ОЖИДАЮЩИЕ ОБРАБОТКИ", margin, footerY);
     footerY += 4;
 
@@ -556,7 +551,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       headStyles: {
         fillColor: [255, 255, 255],
         textColor: [0, 0, 0],
-        fontStyle: "bold",
+        fontStyle: "normal",
         halign: "left",
         lineWidth: 0.2,
         lineColor: [0, 0, 0],
@@ -598,13 +593,13 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     let y = 16;
 
     doc.setFontSize(12);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.setTextColor(0, 0, 0);
     doc.text("CARD ACCOUNT STATEMENT", pageWidth / 2, y, { align: "center" });
     y += 8;
 
     doc.setFontSize(11);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text(
       `CARD ACCOUNT STATEMENT ${accountNumber} for the period from ${formatDateEn(start.toISOString())} to ${formatDateEn(end.toISOString())}`,
       pageWidth / 2, y, { align: "center", maxWidth: pageWidth - margin * 2 }
@@ -640,7 +635,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     y += 8;
 
     doc.setFontSize(10);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text("CONFIRMED OPERATIONS", margin, y);
     y += 4;
 
@@ -722,7 +717,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
         lineColor: [0, 0, 0], lineWidth: 0.2, overflow: "linebreak", valign: "top",
       },
       headStyles: {
-        fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold",
+        fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "normal",
         halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0],
       },
       columnStyles: {
@@ -734,9 +729,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       },
       theme: "grid", rowPageBreak: "avoid", margin: { left: margin, right: margin },
       didParseCell: (data) => {
-        if (data.section === "body" && data.row.index === tableData.length - 1) {
-          data.cell.styles.fontStyle = "bold";
-        }
+        // no bold - match original
       },
     });
 
@@ -753,7 +746,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     footerY += 10;
 
     doc.setFontSize(10);
-    doc.setFont(fn, "bold");
+    doc.setFont(fn, "normal");
     doc.text("PENDING OPERATIONS", margin, footerY);
     footerY += 4;
 
@@ -762,7 +755,7 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
       head: [["Transaction\ndate", "Amount in\ntransaction currency", "Commission in\ntransaction currency", "Transaction\ncurrency", "Transaction\ndescription", "Card No."]],
       body: [],
       styles: { fontSize: 9, cellPadding: 2, font: fn, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2 },
-      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "normal", halign: "left", lineWidth: 0.2, lineColor: [0, 0, 0] },
       theme: "grid", margin: { left: margin, right: margin },
     });
 
