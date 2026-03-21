@@ -79,7 +79,7 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
   const accountsWithFutureBalances = useMemo(() => {
     const balanceMap: Record<string, number> = {};
     for (const tx of allTransactions) {
-      if (tx.date <= certificateDate) {
+      if (tx.date <= balanceDate) {
         balanceMap[tx.account_id] = (balanceMap[tx.account_id] || 0) + Number(tx.amount);
       }
     }
@@ -87,7 +87,7 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
       ...acc,
       balance: balanceMap[acc.id] ?? 0,
     }));
-  }, [accounts, allTransactions, certificateDate]);
+  }, [accounts, allTransactions, balanceDate]);
 
   const loadImage = (src: string): Promise<HTMLImageElement> => {
     return new Promise((resolve, reject) => {
