@@ -238,7 +238,7 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
 
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    doc.text(`The above information is provided as of ${dateStr}.`, margin, footerY);
+    doc.text(`The above information is provided as of ${balDateStr}.`, margin, footerY);
     footerY += 16;
 
     // Signature block
