@@ -167,7 +167,9 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
 
     // Description text
     doc.setFontSize(9);
-    const descText = `In accordance with your request dated ${dateStr}, JSC "Rosselhozbank" provides information about the following accounts (deposits) opened at the Bank / about closed accounts (deposits):`;
+    const balDate = new Date(balanceDate);
+    const balDateStr = `"${String(balDate.getDate()).padStart(2, "0")}" ${getMonthNameEn(balDate.getMonth())} ${balDate.getFullYear()}`;
+    const descText = `In accordance with your request dated ${dateStr}, JSC "Rosselhozbank" provides information about the following accounts (deposits) opened at the Bank as of ${balDateStr} / about closed accounts (deposits):`;
     const splitDesc = doc.splitTextToSize(descText, pageWidth - margin * 2);
     doc.text(splitDesc, margin, y);
     y += splitDesc.length * 5 + 4;
