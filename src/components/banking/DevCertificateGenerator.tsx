@@ -45,9 +45,11 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
   const [isExporting, setIsExporting] = useState(false);
   const [readyBlob, setReadyBlob] = useState<Blob | null>(null);
   const [readyFilename, setReadyFilename] = useState("");
-  const [certificateDate, setCertificateDate] = useState<string>(
-    new Date().toISOString().slice(0, 10)
-  );
+  const [certificateDate, setCertificateDate] = useState<string>(() => {
+    const future = new Date();
+    future.setMonth(future.getMonth() + 1);
+    return future.toISOString().slice(0, 10);
+  });
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
