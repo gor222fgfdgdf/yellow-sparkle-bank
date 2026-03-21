@@ -50,6 +50,11 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
     future.setMonth(future.getMonth() + 1);
     return future.toISOString().slice(0, 10);
   });
+  const [balanceDate, setBalanceDate] = useState<string>(() => {
+    const future = new Date();
+    future.setMonth(future.getMonth() + 1);
+    return future.toISOString().slice(0, 10);
+  });
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
