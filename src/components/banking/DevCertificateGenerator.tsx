@@ -378,12 +378,12 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
             </div>
             <div>
               <p className="font-semibold text-foreground">Справка об открытых/закрытых счетах</p>
-              <p className="text-sm text-muted-foreground">Формат: PDF • Дата: {formatDateRu(new Date(certificateDate))}</p>
+              <p className="text-sm text-muted-foreground">Формат: PDF • Выдана: {formatDateRu(new Date(certificateDate))} • Балансы на: {formatDateRu(new Date(balanceDate))}</p>
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
             Документ содержит информацию обо всех ваших счетах ({accountCount} шт.),
-            открытых в АО «Россельхозбанк», с балансами на {formatDateRu(new Date(certificateDate))}.
+            открытых в АО «Россельхозбанк», с балансами на {formatDateRu(new Date(balanceDate))}.
           </p>
         </div>
 
