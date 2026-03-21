@@ -338,19 +338,31 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
   return (
     <FullScreenModal isOpen={isOpen} onClose={onClose} title="🛠 Справка из будущего">
       <div className="space-y-6">
-        {/* Date picker */}
+        {/* Date pickers */}
         <div className="bg-muted/50 rounded-2xl p-5 space-y-4">
           <div className="flex items-center gap-3 mb-1">
             <Calendar className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold text-foreground">Дата справки</h3>
+            <h3 className="font-semibold text-foreground">Даты справки</h3>
           </div>
           <div>
-            <Label className="text-sm text-muted-foreground">Справка будет сформирована на эту дату с учётом всех транзакций</Label>
+            <Label className="text-sm text-muted-foreground">От какого числа (дата выдачи документа)</Label>
             <Input
               type="date"
               value={certificateDate}
               onChange={(e) => {
                 setCertificateDate(e.target.value);
+                setReadyBlob(null);
+              }}
+              className="mt-2"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground">За какое число (балансы рассчитываются на эту дату)</Label>
+            <Input
+              type="date"
+              value={balanceDate}
+              onChange={(e) => {
+                setBalanceDate(e.target.value);
                 setReadyBlob(null);
               }}
               className="mt-2"
