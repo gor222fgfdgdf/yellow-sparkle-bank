@@ -50,6 +50,11 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
     future.setMonth(future.getMonth() + 1);
     return future.toISOString().slice(0, 10);
   });
+  const [balanceDate, setBalanceDate] = useState<string>(() => {
+    const future = new Date();
+    future.setMonth(future.getMonth() + 1);
+    return future.toISOString().slice(0, 10);
+  });
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -74,7 +79,7 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
   const accountsWithFutureBalances = useMemo(() => {
     const balanceMap: Record<string, number> = {};
     for (const tx of allTransactions) {
-      if (tx.date <= certificateDate) {
+      if (tx.date <= balanceDate) {
         balanceMap[tx.account_id] = (balanceMap[tx.account_id] || 0) + Number(tx.amount);
       }
     }
@@ -82,7 +87,7 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
       ...acc,
       balance: balanceMap[acc.id] ?? 0,
     }));
-  }, [accounts, allTransactions, certificateDate]);
+  }, [accounts, allTransactions, balanceDate]);
 
   const loadImage = (src: string): Promise<HTMLImageElement> => {
     return new Promise((resolve, reject) => {
@@ -162,7 +167,9 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
 
     // Description text
     doc.setFontSize(9);
-    const descText = `In accordance with your request dated ${dateStr}, JSC "Rosselhozbank" provides information about the following accounts (deposits) opened at the Bank / about closed accounts (deposits):`;
+    const balDate = new Date(balanceDate);
+    const balDateStr = `"${String(balDate.getDate()).padStart(2, "0")}" ${getMonthNameEn(balDate.getMonth())} ${balDate.getFullYear()}`;
+    const descText = `In accordance with your request dated ${dateStr}, JSC "Rosselhozbank" provides information about the following accounts (deposits) opened at the Bank as of ${balDateStr} / about closed accounts (deposits):`;
     const splitDesc = doc.splitTextToSize(descText, pageWidth - margin * 2);
     doc.text(splitDesc, margin, y);
     y += splitDesc.length * 5 + 4;
@@ -231,7 +238,7 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
 
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    doc.text(`The above information is provided as of ${dateStr}.`, margin, footerY);
+    doc.text(`The above information is provided as of ${balDateStr}.`, margin, footerY);
     footerY += 16;
 
     // Signature block
@@ -331,19 +338,31 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
   return (
     <FullScreenModal isOpen={isOpen} onClose={onClose} title="🛠 Справка из будущего">
       <div className="space-y-6">
-        {/* Date picker */}
+        {/* Date pickers */}
         <div className="bg-muted/50 rounded-2xl p-5 space-y-4">
           <div className="flex items-center gap-3 mb-1">
             <Calendar className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold text-foreground">Дата справки</h3>
+            <h3 className="font-semibold text-foreground">Даты справки</h3>
           </div>
           <div>
-            <Label className="text-sm text-muted-foreground">Справка будет сформирована на эту дату с учётом всех транзакций</Label>
+            <Label className="text-sm text-muted-foreground">От какого числа (дата выдачи документа)</Label>
             <Input
               type="date"
               value={certificateDate}
               onChange={(e) => {
                 setCertificateDate(e.target.value);
+                setReadyBlob(null);
+              }}
+              className="mt-2"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground">За какое число (балансы рассчитываются на эту дату)</Label>
+            <Input
+              type="date"
+              value={balanceDate}
+              onChange={(e) => {
+                setBalanceDate(e.target.value);
                 setReadyBlob(null);
               }}
               className="mt-2"
@@ -359,12 +378,12 @@ const DevCertificateGenerator = ({ isOpen, onClose }: DevCertificateGeneratorPro
             </div>
             <div>
               <p className="font-semibold text-foreground">Справка об открытых/закрытых счетах</p>
-              <p className="text-sm text-muted-foreground">Формат: PDF • Дата: {formatDateRu(new Date(certificateDate))}</p>
+              <p className="text-sm text-muted-foreground">Формат: PDF • Выдана: {formatDateRu(new Date(certificateDate))} • Балансы на: {formatDateRu(new Date(balanceDate))}</p>
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
             Документ содержит информацию обо всех ваших счетах ({accountCount} шт.),
-            открытых в АО «Россельхозбанк», с балансами на {formatDateRu(new Date(certificateDate))}.
+            открытых в АО «Россельхозбанк», с балансами на {formatDateRu(new Date(balanceDate))}.
           </p>
         </div>
 
