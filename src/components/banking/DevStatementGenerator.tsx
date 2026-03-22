@@ -472,9 +472,21 @@ const DevStatementGenerator = ({ isOpen, onClose }: DevStatementGeneratorProps) 
     setReadyBlob(null);
     try {
       const doc = await generatePDF();
-      const filename = lang === "en"
-        ? `dev_statement_${startDate}_${endDate}.pdf`
-        : `dev_vypiska_${startDate}_${endDate}.pdf`;
+      const monthNamesRu = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+      const monthNamesEn = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+      const buildDevFilename = () => {
+        const s = new Date(startDate);
+        const e = new Date(endDate);
+        const sameMonth = s.getFullYear() === e.getFullYear() && s.getMonth() === e.getMonth();
+        if (sameMonth) {
+          const m = e.getMonth();
+          const y = e.getFullYear();
+          const monthName = lang === "en" ? monthNamesEn[m] : monthNamesRu[m];
+          return lang === "en" ? `statement_${monthName}_${y}.pdf` : `vypiska_${monthName}_${y}.pdf`;
+        }
+        return lang === "en" ? `statement_${startDate}_${endDate}.pdf` : `vypiska_${startDate}_${endDate}.pdf`;
+      };
+      const filename = buildDevFilename();
       const blob = doc.output("blob");
 
       const file = new File([blob], filename, { type: "application/pdf" });
