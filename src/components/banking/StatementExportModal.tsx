@@ -781,9 +781,25 @@ const StatementExportModal = ({ isOpen, onClose, transactions, accounts }: State
     setReadyBlob(null);
     try {
       const doc = lang === "en" ? await generateEnPDF() : await generatePDF();
-      const filename = lang === "en"
-        ? `statement_${new Date().toISOString().split("T")[0]}.pdf`
-        : `vypiska_${new Date().toISOString().split("T")[0]}.pdf`;
+      const { start, end } = getDateRange();
+      const monthNamesRu = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+      const monthNamesEn = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+      const buildFilename = () => {
+        const s = start;
+        const e = end;
+        // Check if range covers exactly one calendar month
+        const sameMonth = s.getFullYear() === e.getFullYear() && s.getMonth() === e.getMonth();
+        const isFullMonth = sameMonth && s.getDate() <= 1;
+        if (isFullMonth || period === "month") {
+          const m = e.getMonth();
+          const y = e.getFullYear();
+          const monthName = lang === "en" ? monthNamesEn[m] : monthNamesRu[m];
+          return lang === "en" ? `statement_${monthName}_${y}.pdf` : `vypiska_${monthName}_${y}.pdf`;
+        }
+        const fmt = (d: Date) => d.toISOString().split("T")[0];
+        return lang === "en" ? `statement_${fmt(s)}_${fmt(e)}.pdf` : `vypiska_${fmt(s)}_${fmt(e)}.pdf`;
+      };
+      const filename = buildFilename();
       const blob = doc.output("blob");
 
       const file = new File([blob], filename, { type: "application/pdf" });
