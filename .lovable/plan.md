@@ -1,45 +1,70 @@
 
+## Обзор
 
-# Исправление редиректа на логин Lovable в iOS-приложении
+Добавить ~50-60 реалистичных транзакций во вьетнамских донгах (VND) за период 21 апреля — 8 мая 2026 по трём городам:
+- **21 апреля — 3 мая**: Хошимин (Ho Chi Minh City)
+- **3 — 5 мая**: Нячанг (Nha Trang)
+- **5 — 8 мая**: Дананг (Da Nang)
 
-## Проблема
+## Курс и расчёты
 
-Capacitor загружает preview URL (`https://c2d2ddb7-...lovableproject.com`), который требует авторизации в аккаунте Lovable. В нативном WKWebView пользователь не авторизован в Lovable, поэтому происходит редирект на страницу входа Lovable.
+- Курс ЦБ: ~29.79 ₽ за 10 000 VND → **0.002979 ₽/VND**
+- Для `amount` (рубли): `original_amount × 0.002979`, с небольшой вариацией по дням
+- ATM: комиссия банкомата Вьетнама ~55 000 VND, комиссия РСХБ 1% (мин. 199 ₽)
 
-## Решение
+## Реальные точки по городам
 
-Заменить preview URL на опубликованный (published) URL приложения в `capacitor.config.ts`.
+### Хошимин (21.04 — 03.05)
+- **Кафе**: THE COFFEE HOUSE, HIGHLANDS COFFEE, PHUC LONG, STARBUCKS DISTRICT 1
+- **Рестораны**: PHO 24, BANH MI HUYNH HOA, COM TAM SUON, BUN BO HUE 3A
+- **Продукты**: CO.OP MART, WINMART, BACH HOA XANH
+- **Шопинг**: VINCOM CENTER SAIGON, SAIGON CENTRE
+- **Транспорт**: GRAB VN (такси/мото)
+- **ATM**: VIETCOMBANK ATM, TECHCOMBANK ATM, BIDV ATM
+- **Прочее**: CIRCLE K, GS25
 
-### Изменения в `capacitor.config.ts`
+### Нячанг (03.05 — 05.05)
+- **Кафе**: HIGHLANDS COFFEE NHA TRANG, RAINFOREST CAFE
+- **Рестораны**: LANTERNS VIETNAMESE, LOUISIANE BREWHOUSE
+- **Продукты**: VINMART NHA TRANG
+- **ATM**: VIETINBANK ATM NHA TRANG
 
-Заменить:
-```text
-url: 'https://c2d2ddb7-eee0-4d3c-8c51-1d25a45053ec.lovableproject.com?forceHideBadge=true'
-```
+### Дананг (05.05 — 08.05)
+- **Кафе**: CONG CAPHE DA NANG, 43 FACTORY COFFEE
+- **Рестораны**: MI QUANG 1A, BANH TRANG THIT HEO
+- **Продукты**: LOTTE MART DA NANG, VINMART DA NANG
+- **ATM**: SACOMBANK ATM DA NANG
 
-На:
-```text
-url: 'https://yellow-sparkle-bank.lovable.app?forceHideBadge=true'
-```
+## Типичные суммы (VND)
 
-Также обновить `allowNavigation`:
-```text
-allowNavigation: ['*.lovable.app']
-```
+| Категория | Диапазон VND | ~RUB |
+|---|---|---|
+| Кофе | 35 000 — 75 000 | 104 — 224 |
+| Уличная еда | 40 000 — 80 000 | 119 — 238 |
+| Ресторан | 120 000 — 350 000 | 357 — 1 043 |
+| Продукты (мини) | 80 000 — 200 000 | 238 — 596 |
+| Продукты (супермаркет) | 300 000 — 800 000 | 894 — 2 383 |
+| Grab такси | 50 000 — 150 000 | 149 — 447 |
+| ATM снятие | 5 000 000 — 10 000 000 | 14 895 — 29 790 |
+| Шопинг | 200 000 — 1 500 000 | 596 — 4 469 |
 
-## Важно
+## Примерные снятия в банкоматах (3 штуки)
 
-Перед этим убедитесь, что приложение **опубликовано** (нажмите кнопку "Publish" в Lovable). Публичный URL доступен без авторизации.
+1. **24 апреля** — VIETCOMBANK ATM D1 HCMC — 8 000 000 VND (~23 832 ₽ + комиссия ~55 000 VND включена в amount + РСХБ 1% = 238 ₽)
+2. **3 мая** — VIETINBANK ATM NHA TRANG — 5 000 000 VND (~14 895 ₽ + комиссии)
+3. **6 мая** — SACOMBANK ATM DA NANG — 6 000 000 VND (~17 874 ₽ + комиссии)
 
-## После применения
+## Технические детали
 
-```text
-git pull
-npx cap sync ios
-npx cap run ios
-```
+1. **Вставка транзакций** через insert tool (~50-60 записей)
+2. **Обновление баланса** accounts — вычесть общую сумму расходов
+3. **VND уже в списке валют** DevTransactionManager (`CURRENCIES` включает `VND`)
+4. **created_at**: будет установлен в будущее (после даты транзакции) для dev-режима, аналогично существующим THB-транзакциям
+5. **Паттерн**: 2-4 транзакции в день (кофе утром, обед, продукты вечером, иногда шопинг/такси)
 
-## Техническая справка
+## Результат
 
-Единственный файл изменения -- `capacitor.config.ts`. Preview URL предназначен для разработки в браузере, где вы авторизованы в Lovable. Published URL -- публичный и работает в любом контексте, включая нативный WebView.
-
+- ~55 новых транзакций в VND
+- 3 снятия наличных в банкоматах с комиссиями
+- Баланс пересчитан
+- Все транзакции с реальными названиями вьетнамских заведений
